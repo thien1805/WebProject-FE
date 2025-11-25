@@ -13,22 +13,13 @@ import Medical from "./pages/Medical/Medical";
 
 // ==== PATIENT SIDE ====
 import PatientDashboard from "./pages/PatientDashboard/PatientDashboard";
-
-// ==== DOCTOR SIDE - DASHBOARD ROOT ====
+import PatientProfilePage from "./pages/PatientDashboard/components/profile/PatientProfilePage";
+import PatientAppointmentsPage from "./pages/PatientDashboard/components/appointments/PatientAppointmentsPage";
+// ==== DOCTOR SIDE ====
 import DoctorDashboard from "./pages/Doctor-dashboard/DoctorDashboard";
-
-// ==== DOCTOR SIDE - PATIENTS ====
 import DoctorPatientList from "./pages/Doctor-dashboard/Doctor-patient/DoctorPatientList";
-import DoctorAddPatient from "./pages/Doctor-dashboard/Doctor-patient/DoctorAddPatient";
-import DoctorEditPatient from "./pages/Doctor-dashboard/Doctor-patient/DoctorEditPatient";
-
-// ==== DOCTOR SIDE - APPOINTMENTS ====
 import DoctorAppointmentLog from "./pages/Doctor-dashboard/Doctor-appointments/DoctorAppointmentLog";
-
-// ==== DOCTOR SIDE - CALENDAR ====
 import DoctorCalendar from "./pages/Doctor-dashboard/Doctor-calendar/DoctorCalendar";
-
-// ==== DOCTOR SIDE - SETTINGS ====
 import DoctorProfile from "./pages/Doctor-dashboard/Doctor-settings/DoctorProfile";
 import DoctorSettings from "./pages/Doctor-dashboard/Doctor-settings/DoctorSettings";
 
@@ -48,34 +39,23 @@ const App = () => {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/medical" element={<Medical />} />
 
-          {/* Patient dashboard (user side) */}
-          {/* Đường này dùng để test trực tiếp: http://localhost:5173/dashboard */}
+          {/* Patient side */}
+          {/* đường test nhanh vẫn giữ được */}
           <Route path="/dashboard" element={<PatientDashboard />} />
-          {/* Bạn vẫn có thể giữ thêm /patient/dashboard nếu muốn */}
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
-
-          {/* ===== DOCTOR SIDE ===== */}
-          {/* Dashboard chính của doctor */}
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-
-          {/* Patients */}
-          <Route path="/doctor/patients" element={<DoctorPatientList />} />
-          <Route path="/doctor/patients/add" element={<DoctorAddPatient />} />
+          <Route path="/patient/profile" element={<PatientProfilePage />} />
           <Route
-            path="/doctor/patients/edit/:id"
-            element={<DoctorEditPatient />}
-          />
-
-          {/* Appointments */}
+            path="/patient/appointments"
+            element={<PatientAppointmentsPage />}
+              />
+          {/* ===== DOCTOR SIDE ===== */}
+          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctor/patients" element={<DoctorPatientList />} />
           <Route
             path="/doctor/appointments"
             element={<DoctorAppointmentLog />}
           />
-
-          {/* Calendar */}
           <Route path="/doctor/calendar" element={<DoctorCalendar />} />
-
-          {/* Settings */}
           <Route
             path="/doctor/settings/profile"
             element={<DoctorProfile />}

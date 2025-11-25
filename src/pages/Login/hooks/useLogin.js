@@ -1,9 +1,12 @@
+// src/pages/Login/hooks/useLogin.js
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../../../api/authAPI';
+import { useAuth } from '../../../context/AuthContext';
 
 export const useLogin = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,7 +24,6 @@ export const useLogin = () => {
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -31,67 +33,73 @@ export const useLogin = () => {
     setError('');
 
     try {
-      // Clear token cũ trước khi login (tránh conflict với token blacklist)
+      // Xoá token cũ
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
-      
-      // Sử dụng hàm login từ authAPI.js - tự động lưu JWT vào localStorage
-      const data = await login({
+
+      // Login qua AuthContext
+      const result = await login({
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       });
 
-      console.log('Login response:', data);
-      
-      // Kiểm tra response - backend trả về { success: true, tokens: {...}, user: {...} }
-      if (data && (data.success === true || data.tokens || data.user)) {
-        console.log('✅ Login successful!', data);
-        console.log('🔑 Access Token:', data.tokens?.access);
-        console.log('👤 User Info:', data.user);
-        
-        setSuccess(true);
-        
-        // Redirect sau khi login thành công
-        setTimeout(() => {
-          // Redirect dựa trên role của user
-          const user = data.user;
-          if (user?.role === 'doctor') {
-            navigate('/doctor/dashboard');
-          } else if (user?.role === 'admin') {
-            navigate('/admin/dashboard');
-          } else {
-            navigate('/'); // Patient hoặc default về home
-          }
-        }, 1500);
+      console.log('Login result from AuthContext:', result);
+
+      if (!result || !result.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      const user = result.user;
+      console.log('👤 User Info:', user);
+
+      setSuccess(true);
+
+      // Chuẩn hoá role
+      const rawRole =
+        user.role || user.accountType || user.userType || 'patient';
+      const role = String(rawRole).toLowerCase();
+
+      console.log('🔎 Role after normalize:', role);
+
+      // 👉 Redirect NGAY sau khi login thành công
+      if (role === 'doctor') {
+        navigate('/doctor/dashboard');
+      } else if (role === 'admin') {
+        navigate('/admin/dashboard');
       } else {
-        // Response không đúng format
-        setError(data?.message || 'Invalid response from server');
-        console.error('Invalid login response:', data);
+        // patient hoặc bất kỳ role nào khác
+        navigate('/patient/dashboard');
       }
     } catch (err) {
-      // Xử lý lỗi từ API
       console.error('Login error:', err);
       console.error('Error type:', typeof err);
-      console.error('Error keys:', err && typeof err === 'object' ? Object.keys(err) : 'no keys');
-      
-      // Xử lý nhiều format error
+      console.error(
+        'Error keys:',
+        err && typeof err === 'object' ? Object.keys(err) : 'no keys'
+      );
+
       let errorMessage = 'Invalid email or password';
-      
+
       if (typeof err === 'string') {
         errorMessage = err;
       } else if (err && typeof err === 'object') {
-        errorMessage = err.message || err.detail || err.error || err.general || 'Invalid email or password';
-        
-        // Nếu có lỗi validation từ backend (array)
+        errorMessage =
+          err.message ||
+          err.detail ||
+          err.error ||
+          err.general ||
+          'Invalid email or password';
+
         if (Array.isArray(err.message)) {
           errorMessage = err.message[0];
         } else if (Array.isArray(err.detail)) {
           errorMessage = err.detail[0];
         }
       }
-      
+
       setError(errorMessage);
+      setSuccess(false);
     } finally {
       setLoading(false);
     }
@@ -113,4 +121,3 @@ export const useLogin = () => {
     handleKeyPress,
   };
 };
-

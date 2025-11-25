@@ -152,9 +152,9 @@
 /* CARDS */
 
 .pd-card {
-  background: #ffffff;
+  background: #80d7ef;
   border-radius: 18px;
-  padding: 18px 20px;
+  padding: 25px 30px;
   box-shadow: 0 4px 8px rgba(15, 23, 42, 0.04);
 }
 
@@ -356,4 +356,192 @@
   .pd-stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================
+   Patient Profile Card
+   ========================== */
+
+.pd-profile-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;            /* 🔹 card màu trắng */
+  /* gap: 16px; */
+  max-width: 720px;
+  margin: 50px auto;
+  padding: 10px 16px;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* Header: avatar + name + Edit button */
+.pd-profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pd-profile-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pd-profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e0f2fe, #f5f3ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 20px;
+}
+
+.pd-profile-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pd-profile-email {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Edit button (outline) */
+.pd-outline-btn {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pd-outline-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+/* Info grid in view mode – từng item có khung riêng */
+.pd-profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .pd-profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pd-profile-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f9fafb;              /* 🔹 khung nhạt cho từng info */
+  border: 1px solid #e5e7eb;
+}
+
+.pd-profile-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+}
+
+.pd-profile-value {
+  font-size: 14px;
+  color: #111827;
+}
+
+/* Edit form */
+.pd-profile-form {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pd-profile-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .pd-profile-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pd-profile-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pd-profile-form-field label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.pd-profile-form-field input {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pd-profile-form-field input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.35);
+}
+
+/* Subsection title (e.g. Change password) */
+.pd-profile-subsection-title {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Action buttons */
+.pd-profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.pd-ghost-btn {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pd-ghost-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
 }

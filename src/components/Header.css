@@ -183,3 +183,116 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(188, 223, 241, 0.4);
 }
+
+/* Nút Patient Account / Doctor Dashboard – pastel xanh lơ */
+.patient-account-btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  border: 2px solid #9BD3E5;      /* viền xanh lơ pastel */
+  background-color: #E9F7FB;      /* nền pastel nhạt */
+  color: #1B6B8F;                 /* chữ xanh đậm hơn tí */
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 8px rgba(155, 211, 229, 0.35);
+}
+
+.patient-account-btn:hover {
+  background-color: #d3eff8;
+  border-color: #7fc3dd;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(155, 211, 229, 0.5);
+}
+
+/* Nhóm account bên phải */
+.header-account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Nút avatar + tên + mũi tên xuống (dropdown toggle) */
+.account-menu {
+  position: relative;
+}
+
+.account-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #E5E7EB;  
+  background-color: #d3dff6;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.account-toggle:hover {
+  background-color: #F3FAFD;
+  color: #164a64;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* Avatar */
+.account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #90c9ea;
+  color: #299fda;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.account-name {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dropdown account có viền rõ ràng */
+.account-dropdown {
+  position: absolute;
+  right: 0;
+  top: 115%;
+  margin-top: 0.4rem;
+  width: 14rem;
+  background: rgba(245, 245, 245, 0.98);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 0.9rem;
+  box-shadow: 0 10px 30px rgba(31, 38, 135, 0.18);
+  border: 1px solid rgba(155, 211, 229, 0.8);  /* viền xanh lơ */
+  padding: 0.35rem 0;
+  z-index: 60;
+}
+
+/* Dùng lại dropdown-item sẵn có */
+.account-dropdown .dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Logout */
+.dropdown-item--danger {
+  color: #b91c1c;
+}
+
+.dropdown-item--danger:hover {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+}

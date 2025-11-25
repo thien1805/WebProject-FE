@@ -2,23 +2,36 @@
 import React from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 import "./PatientDashboard.css";
 import { usePatientDashboard } from "./hooks/usePatientDashboard";
+
+// top-level widgets
 import DashboardStats from "./components/DashboardStats";
 import DashboardTabs from "./components/DashboardTabs";
+
+// tab: appointments
 import AppointmentList from "./components/appointments/AppointmentList";
-// (3 tab còn lại sẽ làm sau)
-import HealthMetricsSummary from "./components/metrics/HealthMetricsSummary";
+
+// tab: profile
 import PatientProfileCard from "./components/profile/PatientProfileCard";
+
+// tab: records
 import MedicalRecordList from "./components/records/MedicalRecordList";
 
 export default function PatientDashboard() {
+  // 🔹 TẤT CẢ HOOK PHẢI Ở ĐÂY
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const {
     user,
     stats,
     tabs,
     appointments,
+    records,
+    metrics,
     statusOptions,
     activeTab,
     setActiveTab,
@@ -28,7 +41,15 @@ export default function PatientDashboard() {
     error,
   } = usePatientDashboard();
 
-  // Trong lúc loading lần đầu
+  // 🔹 sync tab với ?tab=profile / appointments / ...
+  React.useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams, setActiveTab]);
+
+  // 🔹 sau khi gọi hook MỚI được if/return
   if (loading && !user) {
     return (
       <>
@@ -40,7 +61,6 @@ export default function PatientDashboard() {
     );
   }
 
-  // Nếu gọi API lỗi và hook chưa kịp set demo data vì lý do nào đó
   if (!loading && !user) {
     return (
       <>
@@ -54,21 +74,22 @@ export default function PatientDashboard() {
     );
   }
 
-  // Tới đây chắc chắn đã có user (từ API thật hoặc demo fallback)
   const initialLetter = user?.name?.charAt(0)?.toUpperCase() ?? "?";
+
+  const handleHeroBookClick = () => {
+    navigate("/patient/appointments");
+  };
 
   return (
     <>
       <Header />
 
       <main className="pd-page">
-        {/* Hero section */}
+        {/* HERO */}
         <section className="pd-hero-card">
           <div className="pd-hero-left">
             <div className="pd-hero-avatar">
-              <div className="pd-hero-avatar-inner">
-                {initialLetter}
-              </div>
+              <div className="pd-hero-avatar-inner">{initialLetter}</div>
             </div>
             <div>
               <h1 className="pd-hero-title">Hello, {user.name}!</h1>
@@ -79,30 +100,34 @@ export default function PatientDashboard() {
           </div>
 
           <div className="pd-hero-right">
-            <button type="button" className="pd-primary-btn">
+            <button
+              type="button"
+              className="pd-primary-btn"
+              onClick={handleHeroBookClick}
+            >
               📅 Book a new appointment
             </button>
           </div>
         </section>
 
-        {/* Optional: hiện thông báo lỗi nhỏ nếu đang dùng demo data */}
+        {/* nếu đang dùng dữ liệu demo vì API lỗi: */}
         {error && (
           <div className="pd-card pd-empty-tab" style={{ marginTop: 0 }}>
             {error}
           </div>
         )}
 
-        {/* Stats */}
+        {/* STATS */}
         <DashboardStats stats={stats} />
 
-        {/* Tabs */}
+        {/* TABS */}
         <DashboardTabs
           tabs={tabs}
           activeTab={activeTab}
           onChange={setActiveTab}
         />
 
-        {/* Tab content */}
+        {/* TAB CONTENT */}
         {activeTab === "appointments" && (
           <AppointmentList
             appointments={appointments}
@@ -112,13 +137,12 @@ export default function PatientDashboard() {
           />
         )}
 
-        {activeTab !== "appointments" && (
-          <div className="pd-card pd-empty-tab">
-            The section “{tabs.find((t) => t.id === activeTab)?.label}” will be
-            implemented later.
-          </div>
-        )}
+        {activeTab === "records" && <MedicalRecordList records={records} />}
+
+        {activeTab === "profile" && <PatientProfileCard user={user} />}
       </main>
+
+      <Footer />
     </>
   );
 }

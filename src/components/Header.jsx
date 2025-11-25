@@ -13,6 +13,16 @@ const Header = () => {
   const displayName = user?.fullName || user?.name || "Account";
   const initial = displayName.charAt(0).toUpperCase();
 
+  const role =
+    user?.role || user?.accountType || user?.userType || "patient";
+
+  const isPatient = role === "patient";
+  const isDoctor = role === "doctor";
+
+  const dashboardPath = isDoctor
+    ? "/doctor/dashboard"
+    : "/patient/dashboard";
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -23,13 +33,20 @@ const Header = () => {
     }
   };
 
-  // Khi bấm menu "Booking" trên thanh nav
   const handleBookingClick = (e) => {
     e.preventDefault();
-    if (isAuth) {
-      navigate("/dashboard"); // đã login → vào dashboard
+
+    if (!isAuth) {
+      navigate("/login");
+      return;
+    }
+
+    if (isPatient) {
+      navigate("/patient/appointments");
+    } else if (isDoctor) {
+      navigate("/doctor/dashboard");
     } else {
-      navigate("/login"); // chưa login → vào login
+      navigate("/");
     }
   };
 
@@ -58,19 +75,26 @@ const Header = () => {
               Medical services
             </Link>
 
-            {/* Booking: đổi hướng theo trạng thái đăng nhập */}
+            {/* Booking */}
             <Link
-              to={isAuth ? "/dashboard" : "/login"}
+              to={
+                !isAuth
+                  ? "/login"
+                  : isPatient
+                  ? "/patient/appointments"
+                  : "/doctor/dashboard"
+              }
               className="nav-link"
               onClick={handleBookingClick}
             >
               Booking
             </Link>
+
           </nav>
 
-          {/* Search & Auth / Account */}
+          {/* Auth / Account */}
           <div className="header-actions">
-            {/* Nếu CHƯA login: hiện Log in + Sign up như cũ */}
+            {/* CHƯA login: Log in + Sign up */}
             {!isAuth && (
               <div className="auth-buttons">
                 <Link to="/login" className="btn-login">
@@ -82,13 +106,15 @@ const Header = () => {
               </div>
             )}
 
-            {/* Nếu ĐÃ login: hiện Dashboard + menu tài khoản */}
+            {/* ĐÃ login */}
             {isAuth && (
-              <div className="header-account">
-                <Link to="/dashboard" className="btn-login">
-                  Dashboard
-                </Link>
+               <div className="header-account">
+              {/* 👉 Nút Patient Account / Doctor Dashboard với viền pastel */}
+              {/* <Link to={dashboardPath} className="patient-account-btn">
+              {isDoctor ? "Doctor Dashboard" : "Patient Account"}
+              </Link> */}
 
+                {/* Avatar + dropdown */}
                 <div className="account-menu">
                   <button
                     type="button"
@@ -102,20 +128,45 @@ const Header = () => {
 
                   {dropdownOpen && (
                     <div className="account-dropdown">
-                      <Link
-                        to="/dashboard"
+                      {/* <Link
+                        to={dashboardPath}
                         className="dropdown-item"
                         onClick={() => setDropdownOpen(false)}
                       >
-                        Dashboard
-                      </Link>
-                      <Link
-                        to="/booking"
-                        className="dropdown-item"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        Book appointment
-                      </Link>
+                        {isDoctor ? "Doctor dashboard" : "Patient dashboard"}
+                      </Link> */}
+                                            {isPatient && (
+                        <button type="button"
+                          className="dropdown-item"
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            navigate("/patient/dashboard?tab=profile");
+                          }}
+                        >
+                          View profile
+                        </button>
+                      )}
+
+                      {isPatient && (
+                        <Link
+                          to="/patient/appointments"
+                          className="dropdown-item"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Book appointment
+                        </Link>
+                      )}
+
+                      {isDoctor && (
+                        <Link
+                          to="/doctor/dashboard"
+                          className="dropdown-item"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          View schedule
+                        </Link>
+                      )}
+
                       <button
                         type="button"
                         className="dropdown-item dropdown-item--danger"

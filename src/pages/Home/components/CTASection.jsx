@@ -10,10 +10,10 @@ export default function CTASection() {
           Join thousands of satisfied patients who trust MyHealthCare for their medical needs
         </p>
         <div className="cta-buttons">
-          <Link to="/doctor/dashboard" className="btn-cta-primary">
+          <Link to="/booking" className="btn-cta-primary">
             Book Appointment
           </Link>
-          <Link to="/patient/dashboard" className="btn-cta-secondary">
+          <Link to="/medical" className="btn-cta-secondary">
             Learn More
           </Link>
         </div>

@@ -5,7 +5,7 @@ import Carousel from "./Carousel";
 import ServicesSection from "./components/ServicesSection";
 import WhyChooseSection from "./components/WhyChooseSection";
 import CTASection from "./components/CTASection";
-import "./Home.css";
+import "./home.css";
 
 const Home = () => {
   return (
