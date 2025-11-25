@@ -1,0 +1,29 @@
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+}
+
+.main-content {
+  flex: 1;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(to bottom right, #BCDFF1, #E8F4F8);
+  padding: 0;
+  width: 100%;
+}
+
+.hero-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-wrapper {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}

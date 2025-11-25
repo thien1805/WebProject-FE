@@ -1,0 +1,513 @@
+
+/* ROOT LAYOUT WITH SIDEBAR */
+.doctor-layout {
+  min-height: 100vh;
+  background: #c2f6ff; 
+}
+
+/* MAIN AREA (RIGHT SIDE) */
+
+.doctor-main {
+  flex:1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* PAGE BACKGROUND */
+.dd-page {
+  min-height: 100vh;
+  background: #c2f6ff;
+  display: flex;
+  flex-direction: column;
+  margin-left: 240px;
+}
+
+/* HEADER */
+.dd-header {
+  background: #004b4f;
+  padding: 10px 40px;
+}
+
+.dd-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dd-header-right {
+  display: flex;
+  align-items: center;
+  gap:20px;
+  color: #b0f4ff;
+  font-size: 14px;
+}
+
+.dd-header-path {
+  opacity: 0.85;
+}
+
+.dd-header-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+    padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.6);
+  border: 1px solid rgba(240, 249, 255, 0.4);
+  text-decoration: none;
+  color: #ecfeff;
+}
+
+.dd-header-account:hover {
+  background: rgba(15, 118, 110, 0.8);
+}
+
+.dd-header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #0ea5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.dd-header-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dd-header-user-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.dd-header-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.dd-header-user-role {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.dd-header-name {
+  font-weight: 500;
+}
+
+.dd-header-logout {
+  border: 1px solid #b0f4ff;
+  border-radius: 999px;
+  background: transparent;
+  color: #b0f4ff;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+/* MAIN LAYOUT */
+.dd-main {
+  padding: 24px 16px 32px;
+  flex: 1;
+}
+
+.dd-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
+  gap: 24px;
+}
+
+/* LEFT COLUMN */
+.dd-left {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* HERO CARD */
+.dd-hero-card {
+  background: #075e63;
+  border-radius: 20px;
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  color: #fcfdff;
+  box-shadow: 0 10px 24px rgba(72, 108, 193, 0.3);
+  border: 3px solid #0ea5e9;
+}
+
+.dd-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color:#0ea5e9;
+}
+
+.dd-hero-hello {
+  font-size: 18px;
+  color:#0ea5e9;
+}
+
+.dd-hero-hello span {
+  font-weight: 700;
+}
+
+.dd-hero-sub {
+  font-size: 13px;
+  opacity: 0.95;
+  color: #0ea5e9;
+}
+
+.dd-hero-quote {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.9;
+  color:#0ea5e9
+}
+
+.dd-hero-illustration {
+  border-radius: 16px;
+  background: radial-gradient(circle at top, #22c55e, #0f766e, #082f49);
+}
+
+/* STATS */
+.dd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dd-stat-card {
+  background: #f5f7fb;
+  border-radius: 16px;
+  padding: 12px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.dd-stat-label {
+  font-size: 13px;
+  color: #f8f8f8;
+}
+
+.dd-stat-value {
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #353637;
+}
+
+.dd-stat-footer {
+  margin-top: 6px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dd-stat-footer span:first-child {
+  font-weight: 600;
+}
+
+.dd-stat-footer-up span:first-child {
+  color: #16a34a;
+}
+
+.dd-stat-footer-down span:first-child {
+  color: #dc2626;
+}
+
+/* BOTTOM ROW */
+.dd-bottom-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
+  gap: 18px;
+}
+
+/* CARD HEADER */
+.dd-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.dd-card-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dd-card-header--between {
+  justify-content: space-between;
+}
+
+/* ACTIVITY CARD */
+.dd-activity-card {
+  background: #f5f7fb;
+  border-radius: 18px;
+  padding: 14px 16px 14px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.dd-activity-chart svg {
+  width: 100%;
+  height: 140px;
+}
+
+.dd-chart-line {
+  stroke: #00c29a;
+}
+
+.dd-chart-axis {
+  stroke: #d1d5db;
+  stroke-width: 0.8;
+}
+
+.dd-chart-labels {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* TRANSACTIONS */
+.dd-transactions-card {
+  background: #f5f7fb;
+  border-radius: 18px;
+  padding: 14px 16px 4px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.dd-transaction-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dd-transaction-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.dd-transaction-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  margin-right: 10px;
+}
+
+.dd-transaction-icon--card {
+  background: #facc15;
+}
+
+.dd-transaction-icon--paypal {
+  background: #60a5fa;
+}
+
+.dd-transaction-icon--user {
+  background: #f97316;
+}
+
+.dd-transaction-main {
+  flex: 1;
+}
+
+.dd-transaction-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.dd-transaction-meta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.dd-transaction-amount {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dd-transaction-amount--neg {
+  color: #dc2626;
+}
+
+.dd-transaction-amount--pos {
+  color: #16a34a;
+}
+
+/* RIGHT COLUMN */
+.dd-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dd-calendar-card,
+.dd-upcoming-card {
+  background: #f5f7fb;
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+/* CALENDAR */
+.dd-calendar-month {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.dd-calendar-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.dd-calendar-day {
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #111827;
+}
+
+.dd-calendar-day--muted {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.dd-calendar-day--active {
+  background: #0ea5e9;
+  color: #f9fafb;
+}
+
+/* .dd-calendar-day--dot {
+  position: relative;
+}
+
+.dd-calendar-day--dot::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #ef4444;
+} */
+
+/* UPCOMING */
+.dd-link-button {
+  border: none;
+  background: none;
+  font-size: 12px;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.dd-upcoming-item {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #e5f3ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dd-upcoming-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #0ea5e9;
+}
+
+.dd-upcoming-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.dd-upcoming-meta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* RESPONSIVE */
+.dd-transactions-card--mobile {
+  display: none;
+}
+
+.dd-transactions-card--desktop {
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .dd-layout {
+    grid-template-columns: minmax(0, 1fr); /**/
+  }
+
+  .dd-bottom-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dd-transactions-card--desktop {
+    display: none;
+  }
+
+  .dd-transactions-card--mobile {
+    display: block;
+  }
+
+  .dd-hero-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dd-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dd-main {
+    padding: 16px 10px 24px;
+  }
+
+  .dd-header {
+    padding: 10px 16px;
+  }
+
+  .dd-stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dd-hero-card {
+    padding: 14px 14px;
+  }
+}
+
+.dd-calendar-card--clickable {
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.dd-calendar-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+}

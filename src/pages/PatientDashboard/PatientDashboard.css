@@ -1,0 +1,351 @@
+.pd-page {
+  max-width: 1200px;
+  margin: 24px auto 40px;
+  padding: 0 16px 40px;
+  background: #f4f7fb;
+}
+
+/* HERO */
+
+.pd-hero-card {
+  background: #b8def5;
+  border-radius: 20px;
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pd-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pd-hero-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #e5f1fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pd-hero-avatar-inner {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.pd-hero-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #024c68;
+  margin: 0 0 4px;
+}
+
+.pd-hero-subtitle {
+  margin: 0;
+  color: #064663;
+}
+
+.pd-hero-right {
+  display: flex;
+  align-items: center;
+}
+
+.pd-primary-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: #ffffff;
+  color: #024c68;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* STATS */
+
+.pd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pd-stat-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.pd-stat-card--highlight {
+  border: 1px solid #34d399;
+}
+
+.pd-stat-label {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.pd-stat-value-wrapper {
+  margin-top: 8px;
+}
+
+.pd-stat-value {
+  font-size: 26px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.pd-stat-value--green {
+  color: #16a34a;
+}
+
+/* TABS */
+
+.pd-tabs-wrapper {
+  margin-bottom: 16px;
+}
+
+.pd-tabs {
+  background: #e5edf5;
+  border-radius: 999px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pd-tab {
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  padding: 8px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #374151;
+}
+
+.pd-tab--active {
+  background: #4ba8dd;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* CARDS */
+
+.pd-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.04);
+}
+
+.pd-section-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pd-section-subtitle {
+  margin: 0 0 16px;
+  color: #6b7280;
+}
+
+/* STATUS FILTER */
+
+.pd-status-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pd-status-filter-pill {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #4b5563;
+}
+
+.pd-status-filter-pill--active {
+  background: #4ba8dd;
+  color: #ffffff;
+  border-color: #4ba8dd;
+}
+
+/* APPOINTMENT LIST */
+
+.pd-appointment-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pd-appointment-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pd-avatar-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: #e5f1fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.pd-doc-name {
+  font-weight: 600;
+}
+
+.pd-doc-specialty {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.pd-location {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.pd-appointment-middle {
+  font-size: 13px;
+  color: #374151;
+}
+
+.pd-appointment-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* STATUS BADGES */
+
+.pd-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.pd-status--confirmed {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.pd-status--pending {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
+.pd-status--completed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.pd-status--cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* BUTTONS */
+
+.pd-outline-btn {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 4px 14px;
+  font-size: 13px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/* EMPTY */
+
+.pd-empty-tab {
+  margin-top: 12px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .pd-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .pd-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pd-appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pd-appointment-right {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .pd-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pd-chart-wrapper {
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 180px;
+}
+
+.pd-chart-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pd-chart-bar {
+  width: 18px;
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, #3b82f6, #93c5fd);
+}
+
+.pd-chart-label {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
