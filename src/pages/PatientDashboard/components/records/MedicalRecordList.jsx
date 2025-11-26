@@ -26,31 +26,51 @@ const defaultRecords = [
 ];
 
 export default function MedicalRecordList({ records }) {
-  const data = records || defaultRecords;
+  const data = records && records.length ? records : defaultRecords;
 
   return (
-    <div className="pd-card">
-      <h3 className="pd-section-title">Medical records</h3>
-      <p className="pd-section-subtitle">
-        Your visit history and record summaries
-      </p>
+    <div className="pd-card pd-records-card">
+      <div className="pd-records-header">
+        <div>
+          <h3 className="pd-section-title">Medical records</h3>
+          <p className="pd-section-subtitle">
+            Your visit history and record summaries
+          </p>
+        </div>
+      </div>
 
-      <div className="pd-records-list">
-        {data.map((rec) => (
-          <div key={rec.id} className="pd-record-item">
-            <div className="pd-record-main">
-              <div className="pd-record-type">{rec.type}</div>
-              <div className="pd-record-summary">{rec.summary}</div>
+      <div className="pd-records-grid">
+        {data.map((rec) => {
+          const date =
+            rec.visitDate || rec.date || rec.visit_date || "Unknown date";
+          const doctor = rec.doctorName || rec.doctor_name || "Doctor";
+          const title = rec.type || rec.diagnosis || "Visit summary";
+          const summary =
+            rec.summary ||
+            rec.treatment ||
+            rec.notes ||
+            "No additional notes available.";
+
+          return (
+            <div key={rec.id} className="pd-record-card">
+              <div className="pd-record-top">
+                <div className="pd-record-chip">{title}</div>
+                <span className="pd-record-date">{date}</span>
+              </div>
+
+              <div className="pd-record-body">
+                <p className="pd-record-text">{summary}</p>
+              </div>
+
+              <div className="pd-record-footer">
+                <div className="pd-record-doctor">{doctor}</div>
+                <button type="button" className="pd-outline-btn">
+                  View details
+                </button>
+              </div>
             </div>
-            <div className="pd-record-meta">
-              <div>📅 {rec.date}</div>
-              <div>{rec.doctorName}</div>
-              <button type="button" className="pd-outline-btn">
-                View details
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -10,9 +10,22 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo/Logo";
+import { useAuth } from "../context/AuthContext";
 import "./Footer.css";
 
 const Footer = () => {
+  const { isAuth, user } = useAuth();
+
+  const role =
+    user?.role || user?.accountType || user?.userType || "patient";
+  const isPatient = role === "patient";
+
+  const bookingPath = !isAuth
+    ? "/signup"
+    : isPatient
+    ? "/patient/appointments"
+    : "/doctor/dashboard";
+
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -45,7 +58,7 @@ const Footer = () => {
               <li><Link to="#" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Home</Link></li>
               <li><Link to="/about" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>About Us</Link></li>
               <li><Link to="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Services</Link></li>
-              <li><Link to="/signup" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Booking</Link></li>
+              <li><Link to={bookingPath} className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Booking</Link></li>
             </ul>
           </div>
 

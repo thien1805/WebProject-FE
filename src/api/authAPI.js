@@ -28,31 +28,34 @@ apiClient.interceptors.response.use(
     (response) => response, //Pass through successful responses
     async (error) => { //Handle 401 errors
         const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry){
-        originalRequest._retry = true;
-        try {
-            const refreshToken = localStorage.getItem('refresh_token');
-            const response = await axios.post(`${API_BASE_URL}/api/v1/token/refresh`, {
-                refresh: refreshToken,
-        });
-        const { access } = response.data;
-        localStorage.setItem('access_token', access);
+        if (error.response?.status === 401 && !originalRequest._retry){
+            originalRequest._retry = true;
+            try {
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (!refreshToken) {
+                    throw new Error('No refresh token found');
+                }
 
-        //Retry original request with new token
-        originalRequest.headers.Authorization = `Bearer ${access}`;
-        return apiClient(originalRequest); //send the original request again
+                const response = await axios.post(`${API_BASE_URL}/api/v1/token/refresh`, {
+                    refresh: refreshToken,
+                });
+                const { access } = response.data;
+                localStorage.setItem('access_token', access);
+
+                //Retry original request with new token
+                originalRequest.headers.Authorization = `Bearer ${access}`;
+                return apiClient(originalRequest); //send the original request again
+            }
+            catch (refreshError) {
+              //  Refresh token failed, clear storage and bubble error to UI
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('user');
+                return Promise.reject(refreshError);
+            }
         }
-        catch (refreshError) {
-          //  Refresh token failed, logout user
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-            return Promise.reject(refreshError);
-        }
+        return Promise.reject(error);
     }
-    return Promise.reject(error);
-}
 );
 
 

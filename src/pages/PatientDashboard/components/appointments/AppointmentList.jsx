@@ -14,7 +14,7 @@ export default function AppointmentList({
       : appointments.filter((a) => a.status === activeStatus);
 
   return (
-    <div className="pd-card">
+    <div className="pd-card pd-appointments-card">
       <h3 className="pd-section-title">Upcoming appointments</h3>
       <p className="pd-section-subtitle">
         Your upcoming doctor appointments
@@ -31,7 +31,11 @@ export default function AppointmentList({
           There are no appointments with this status.
         </div>
       ) : (
-        filtered.map((appt) => <AppointmentItem key={appt.id} appt={appt} />)
+        <div className="pd-appointments-list">
+          {filtered.map((appt) => (
+            <AppointmentItem key={appt.id} appt={appt} />
+          ))}
+        </div>
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import AppointmentStatusBadge from "./AppointmentStatusBadge";
 
 export default function AppointmentItem({ appt }) {
   return (
-    <div className="pd-appointment-item">
+    <div className="pd-appointment-card">
       <div className="pd-appointment-left">
         <div className="pd-avatar-circle">
           <span>{appt.doctorName.charAt(0)}</span>
@@ -15,12 +15,18 @@ export default function AppointmentItem({ appt }) {
         </div>
       </div>
 
-      <div className="pd-appointment-middle">
-        <div className="pd-appointment-date">📅 {appt.date}</div>
-        <div className="pd-appointment-time">🕒 {appt.time}</div>
+      <div className="pd-appointment-info">
+        <div className="pd-appointment-meta">
+          <span className="pd-appointment-label">Date</span>
+          <span className="pd-appointment-value">{appt.date}</span>
+        </div>
+        <div className="pd-appointment-meta">
+          <span className="pd-appointment-label">Time</span>
+          <span className="pd-appointment-value">{appt.time}</span>
+        </div>
       </div>
 
-      <div className="pd-appointment-right">
+      <div className="pd-appointment-actions">
         <AppointmentStatusBadge status={appt.status} />
         <button type="button" className="pd-outline-btn">
           Details

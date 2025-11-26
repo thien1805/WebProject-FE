@@ -1,7 +1,20 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 import "./CTASection.css";
 
 export default function CTASection() {
+  const { isAuth, user } = useAuth();
+
+  const role =
+    user?.role || user?.accountType || user?.userType || "patient";
+  const isPatient = role === "patient";
+
+  const bookingPath = !isAuth
+    ? "/signup"
+    : isPatient
+    ? "/patient/appointments"
+    : "/doctor/dashboard";
+
   return (
     <section className="cta-section">
       <div className="cta-container">
@@ -10,7 +23,7 @@ export default function CTASection() {
           Join thousands of satisfied patients who trust MyHealthCare for their medical needs
         </p>
         <div className="cta-buttons">
-          <Link to="/booking" className="btn-cta-primary">
+          <Link to={bookingPath} className="btn-cta-primary">
             Book Appointment
           </Link>
           <Link to="/medical" className="btn-cta-secondary">
@@ -21,4 +34,3 @@ export default function CTASection() {
     </section>
   );
 }
-

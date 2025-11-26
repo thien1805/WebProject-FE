@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./Carousel.css";
 
 const slides = [
@@ -22,6 +23,17 @@ const slides = [
 
 export default function Carousel() {
   const [current, setCurrent] = useState(0);
+  const { isAuth, user } = useAuth();
+
+  const role =
+    user?.role || user?.accountType || user?.userType || "patient";
+  const isPatient = role === "patient";
+
+  const bookingPath = !isAuth
+    ? "/signup"
+    : isPatient
+    ? "/patient/appointments"
+    : "/doctor/dashboard";
 
   const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
   const prevSlide = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
@@ -48,7 +60,7 @@ export default function Carousel() {
 
       {/* Fixed Button */}
       <div className="slide-button-wrapper">
-        <Link to="/signup" className="slide-button">
+        <Link to={bookingPath} className="slide-button">
           Book an Appointment
         </Link>
       </div>

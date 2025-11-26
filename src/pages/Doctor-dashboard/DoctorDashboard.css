@@ -358,7 +358,8 @@
 }
 
 .dd-calendar-card,
-.dd-upcoming-card {
+.dd-upcoming-card,
+.dd-health-card {
   background: #f5f7fb;
   border-radius: 18px;
   padding: 14px 16px;
@@ -447,6 +448,64 @@
 .dd-upcoming-meta {
   font-size: 11px;
   color: #6b7280;
+}
+
+/* HEALTH STATUS FORM */
+.dd-health-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dd-health-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.dd-health-input,
+.dd-health-textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.dd-health-textarea {
+  resize: vertical;
+}
+
+.dd-health-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dd-primary-btn {
+  border: none;
+  border-radius: 10px;
+  background: #0ea5e9;
+  color: #ffffff;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dd-primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.dd-health-success {
+  color: #15803d;
+  font-size: 13px;
+}
+
+.dd-health-error {
+  color: #b91c1c;
+  font-size: 13px;
 }
 
 /* RESPONSIVE */

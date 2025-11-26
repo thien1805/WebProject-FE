@@ -31,3 +31,13 @@ export const deleteDoctorPatient = async (patientId) => {
   const response = await apiClient.delete(`/api/v1/patients/${patientId}/`);
   return response.data;
 };
+
+// Update or add a health status note for a patient (doctor side)
+export const updatePatientHealthStatus = async (patientId, payload) => {
+  // Expected payload: { status: string, note?: string }
+  const response = await apiClient.post(
+    `/api/v1/patients/${patientId}/health-status`,
+    payload
+  );
+  return response.data;
+};

@@ -152,7 +152,7 @@
 /* CARDS */
 
 .pd-card {
-  background: #80d7ef;
+  background: #ffffff;
   border-radius: 18px;
   padding: 25px 30px;
   box-shadow: 0 4px 8px rgba(15, 23, 42, 0.04);
@@ -196,14 +196,25 @@
 
 /* APPOINTMENT LIST */
 
-.pd-appointment-item {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+.pd-appointments-card {
+  padding: 22px 24px;
+}
+
+.pd-appointments-list {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pd-appointment-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .pd-appointment-left {
@@ -238,16 +249,37 @@
   color: #9ca3af;
 }
 
-.pd-appointment-middle {
-  font-size: 13px;
-  color: #374151;
+.pd-appointment-info {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.pd-appointment-right {
+.pd-appointment-meta {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  gap: 4px;
+  min-width: 110px;
+}
+
+.pd-appointment-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.04em;
+}
+
+.pd-appointment-value {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.pd-appointment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 /* STATUS BADGES */
@@ -342,13 +374,13 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .pd-appointment-item {
-    flex-direction: column;
+  .pd-appointment-card {
+    grid-template-columns: 1fr;
     align-items: flex-start;
   }
 
-  .pd-appointment-right {
-    align-items: flex-start;
+  .pd-appointment-actions {
+    justify-content: flex-start;
   }
 }
 
@@ -544,4 +576,73 @@
 .pd-ghost-btn:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
+}
+
+/* ==========================
+   Medical Records
+   ========================== */
+
+.pd-records-card {
+  background: #ffffff;
+  padding: 22px 24px;
+}
+
+.pd-records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.pd-record-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pd-record-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pd-record-chip {
+  padding: 6px 10px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pd-record-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pd-record-body {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.pd-record-text {
+  margin: 0;
+}
+
+.pd-record-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.pd-record-doctor {
+  font-weight: 600;
 }

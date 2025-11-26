@@ -3,10 +3,23 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { useAuth } from "../../context/AuthContext";
 import "./Medical.css";
 import Dashboard from "../Doctor-dashboard/DoctorDashboard";
 
 const Services = () => {
+  const { isAuth, user } = useAuth();
+
+  const role =
+    user?.role || user?.accountType || user?.userType || "patient";
+  const isPatient = role === "patient";
+
+  const bookingPath = !isAuth
+    ? "/signup"
+    : isPatient
+    ? "/patient/appointments"
+    : "/doctor/dashboard";
+
   const services = [
     {
       image: "/homePage_images/whole-body-thumb.jpg",
@@ -166,7 +179,7 @@ const Services = () => {
                       <h3 className="service-title">{service.title}</h3>
                       <p className="service-description">{service.description}</p>
                       <p className="service-details">{service.details}</p>
-                      <Link to="/login" className="service-link">
+                      <Link to={bookingPath} className="service-link">
                         Book Appointment <ArrowRight className="link-icon" />
                       </Link>
                     </div>
@@ -218,7 +231,7 @@ const Services = () => {
                         <h3 className="service-title">{service.title}</h3>
                         <p className="service-description">{service.description}</p>
                         <p className="service-details">{service.details}</p>
-                        <Link to="/login" className="service-link">
+                        <Link to={bookingPath} className="service-link">
                           Book Appointment <ArrowRight className="link-icon" />
                         </Link>
                       </div>

@@ -9,6 +9,7 @@ import DashboardHero from "./components/DashboardHero";
 import DashboardStatsGrid from "./components/DashboardStatsGrid";
 import DashboardActivity from "./components/DashboardActivity";
 import DashboardCalendar from "./components/DashboardCalendar";
+import HealthStatusForm from "./components/HealthStatusForm";
 
 const DoctorDashboard = () => {
   const { greeting, stats, activity, calendar } = useDoctorDashboard();
@@ -29,6 +30,7 @@ const DoctorDashboard = () => {
         {/* RIGHT COLUMN */}
         <section className="dd-right">
           <DashboardCalendar calendar={calendar} />
+          <HealthStatusForm />
         </section>
       </div>
     </DoctorLayout>
