@@ -1,27 +1,41 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bell } from "lucide-react";
 import Logo from "./Logo/Logo";
 import { useAuth } from "../context/AuthContext";
 import "./Header.css";
 
 const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState(() => [
+    {
+      id: "booking-1",
+      title: "Booking confirmed",
+      message: "Your appointment has been booked successfully.",
+      unread: true,
+      time: "Today",
+    },
+    {
+      id: "reminder-1",
+      title: "Appointment reminder",
+      message: "You have an appointment tomorrow at 09:00.",
+      unread: true,
+      time: "1 day before",
+    },
+  ]);
+
   const { user, isAuth, logout } = useAuth();
   const navigate = useNavigate();
 
   const displayName = user?.fullName || user?.name || "Account";
   const initial = displayName.charAt(0).toUpperCase();
 
-  const role =
-    user?.role || user?.accountType || user?.userType || "patient";
-
+  const role = user?.role || user?.accountType || user?.userType || "patient";
   const isPatient = role === "patient";
   const isDoctor = role === "doctor";
 
-  const dashboardPath = isDoctor
-    ? "/doctor/dashboard"
-    : "/patient/dashboard";
+  const dashboardPath = isDoctor ? "/doctor/dashboard" : "/patient/dashboard";
 
   const handleLogout = async () => {
     try {
@@ -50,6 +64,17 @@ const Header = () => {
     }
   };
 
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  };
+
+  const handleToggleNotif = () => {
+    setNotifOpen((prev) => !prev);
+    setDropdownOpen(false);
+  };
+
   return (
     <header className="header">
       <div className="header-container">
@@ -62,9 +87,7 @@ const Header = () => {
             <Link
               to="/"
               className="nav-link"
-              onClick={() =>
-                window.scrollTo({ top: 0, behavior: "smooth" })
-              }
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
               Home
             </Link>
@@ -89,12 +112,10 @@ const Header = () => {
             >
               Booking
             </Link>
-
           </nav>
 
           {/* Auth / Account */}
           <div className="header-actions">
-            {/* CHƯA login: Log in + Sign up */}
             {!isAuth && (
               <div className="auth-buttons">
                 <Link to="/login" className="btn-login">
@@ -106,15 +127,57 @@ const Header = () => {
               </div>
             )}
 
-            {/* ĐÃ login */}
             {isAuth && (
-               <div className="header-account">
-              {/* 👉 Nút Patient Account / Doctor Dashboard với viền pastel */}
-              {/* <Link to={dashboardPath} className="patient-account-btn">
-              {isDoctor ? "Doctor Dashboard" : "Patient Account"}
-              </Link> */}
+              <div className="header-account">
+                {isPatient && (
+                  <div className="notif-wrapper">
+                    <button
+                      type="button"
+                      className="notif-button"
+                      onClick={handleToggleNotif}
+                    >
+                      <Bell size={20} />
+                      {unreadCount > 0 && (
+                        <span className="notif-badge">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </button>
 
-                {/* Avatar + dropdown */}
+                    {notifOpen && (
+                      <div className="notif-dropdown">
+                        <div className="notif-header">
+                          <span>Notifications</span>
+                          <button
+                            type="button"
+                            className="notif-clear"
+                            onClick={handleMarkAllRead}
+                          >
+                            Mark all read
+                          </button>
+                        </div>
+
+                        {notifications.length === 0 && (
+                          <div className="notif-empty">No notifications yet.</div>
+                        )}
+
+                        {notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={
+                              "notif-item" + (n.unread ? " notif-item--unread" : "")
+                            }
+                          >
+                            <div className="notif-title">{n.title}</div>
+                            <div className="notif-message">{n.message}</div>
+                            <div className="notif-time">{n.time}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="account-menu">
                   <button
                     type="button"
@@ -128,15 +191,9 @@ const Header = () => {
 
                   {dropdownOpen && (
                     <div className="account-dropdown">
-                      {/* <Link
-                        to={dashboardPath}
-                        className="dropdown-item"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        {isDoctor ? "Doctor dashboard" : "Patient dashboard"}
-                      </Link> */}
-                                            {isPatient && (
-                        <button type="button"
+                      {isPatient && (
+                        <button
+                          type="button"
                           className="dropdown-item"
                           onClick={() => {
                             setDropdownOpen(false);

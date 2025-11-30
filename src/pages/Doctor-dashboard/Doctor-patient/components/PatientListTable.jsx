@@ -1,6 +1,10 @@
 import React from "react";
 
-export default function PatientListTable({ patients }) {
+export default function PatientListTable({
+  patients,
+  search = "",
+  onSearchChange,
+}) {
   return (
     <div className="patient-card">
       <div className="patient-header-row">
@@ -9,22 +13,12 @@ export default function PatientListTable({ patients }) {
         <div className="patient-header-right">
           <div className="patient-search-input">
             <span className="icon">🔍</span>
-            <input placeholder="Search Patient's name" />
+            <input
+              placeholder="Search patient name"
+              value={search}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+            />
           </div>
-
-          {/* <div className="patient-filters">
-            <button className="filter-btn">Filter By</button>
-            <select>
-              <option>14 Feb 2025</option>
-            </select>
-            <select>
-              <option>Gender</option>
-            </select>
-            <select>
-              <option>ID</option>
-            </select>
-            <button className="reset-btn">Reset Filter</button>
-          </div> */}
         </div>
       </div>
 

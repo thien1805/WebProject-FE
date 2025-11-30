@@ -20,10 +20,10 @@ const SPECIALTIES = [
   { id: "internal", label: "General Internal Medicine", emoji: "🩺" },
   { id: "cardio", label: "Cardiology", emoji: "❤️" },
   { id: "derma", label: "Dermatology", emoji: "🧴" },
-  { id: "pedia", label: "Pediatrics", emoji: "👶" },
+  { id: "pedia", label: "Pediatrics", emoji: "🧸" },
   { id: "ortho", label: "Orthopedics", emoji: "🦴" },
   { id: "eye", label: "Ophthalmology", emoji: "👁️" },
-  { id: "ent", label: "ENT (Ear–Nose–Throat)", emoji: "👂" },
+  { id: "ent", label: "ENT (Ear‑Nose‑Throat)", emoji: "👂" },
   { id: "dental", label: "Dentistry", emoji: "🦷" },
 ];
 
@@ -232,7 +232,7 @@ export default function PatientAppointmentsPage() {
               disabled={stepIndex === 0}
               onClick={handleBack}
             >
-              ◀ Back
+              ← Back
             </button>
 
             <button
@@ -245,8 +245,8 @@ export default function PatientAppointmentsPage() {
               disabled={!canGoNext()}
             >
               {stepIndex === STEPS.length - 1
-                ? "Proceed to payment ➜"
-                : "Continue ➜"}
+                ? "Proceed to payment →"
+                : "Continue →"}
             </button>
           </footer>
         </div>
@@ -290,7 +290,7 @@ function StepSymptom({ form, setForm }) {
         className="booking-btn booking-btn--ai"
         onClick={handleAIDemo}
       >
-        ⚡ Get AI suggestion
+        🤖 Get AI suggestion
       </button>
     </>
   );
@@ -505,8 +505,8 @@ function StepConfirm({
           <span className="booking-confirm-label">Consultation fee:</span>
           <span className="booking-confirm-price">
             {selectedDoctor
-              ? selectedDoctor.price.toLocaleString("vi-VN") + " VND"
-              : "—"}
+              ? `${selectedDoctor.price.toLocaleString("vi-VN")} VND`
+              : "N/A"}
           </span>
         </div>
       </div>

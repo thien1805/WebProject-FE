@@ -7,12 +7,16 @@ import PatientListTable from "./components/PatientListTable";
 import { useDoctorPatientList } from "./hooks/useDoctorPatientList";
 
 export default function DoctorPatientList() {
-  const { patients } = useDoctorPatientList();
+  const { patients, search, setSearch } = useDoctorPatientList();
 
   return (
     <DoctorLayout activeMenu="patients" activeSub="patient-list">
       <div className="dd-content-card">
-        <PatientListTable patients={patients} />
+        <PatientListTable
+          patients={patients}
+          search={search}
+          onSearchChange={setSearch}
+        />
       </div>
     </DoctorLayout>
   );
