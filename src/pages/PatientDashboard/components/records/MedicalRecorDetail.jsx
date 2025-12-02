@@ -2,6 +2,22 @@
 import React, { useEffect, useState } from "react";
 import { getMedicalRecordDetail } from "../../../../api/medicalRecordAPI";
 
+/**
+ * 📌 GHI CHÚ VỀ API:
+ *
+ * 1. Hàm getMedicalRecordDetail(recordId)
+ *    - FE đang giả định trong medicalRecordAPI.js có:
+ *        GET /api/v1/medical-records/{id}/
+ *    - Nếu backend CHƯA có endpoint detail này, thì đây là API CÒN THIẾU.
+ *
+ * 2. Trường doctorNotificationNote
+ *    - FE đang giả định backend trả về 1 trong 2 field trong record detail:
+ *        - doctor_notification_note
+ *        - latest_notification: { message: "..." }
+ *    - Nếu backend CHƯA embed thông tin notification vào medical record,
+ *      thì phần "Doctor's notification" sẽ luôn rỗng (API CÒN THIẾU PHẦN NÀY).
+ */
+
 export default function MedicalRecorDetail({ record, recordId }) {
   const [data, setData] = useState(record || null);
   const [loading, setLoading] = useState(!record && !!recordId);
@@ -17,7 +33,10 @@ export default function MedicalRecorDetail({ record, recordId }) {
       try {
         setLoading(true);
         setError(null);
+
+        // 🔔 Phụ thuộc API detail: GET /api/v1/medical-records/{id}/
         const res = await getMedicalRecordDetail(recordId);
+
         if (!cancelled) {
           setData(res);
         }
@@ -44,38 +63,29 @@ export default function MedicalRecorDetail({ record, recordId }) {
     };
   }, [record, recordId]);
 
-  // Fallback demo nếu chưa có dữ liệu API
-  const fallback = {
-    id: 101,
-    date: "2025-11-01",
-    doctorName: "Dr. John Smith",
-    type: "Consultation",
-    summary: "General check-up, normal results.",
-    notes:
-      "Patient is in good general condition. Suggested to maintain current lifestyle and return for annual check-up.",
-  };
-
-  // Chuẩn hoá dữ liệu hiển thị
+  // Không dùng data fake kiểu "John Smith" nữa, chỉ để fallback text
   const display = {
-    id: data?.id ?? fallback.id,
-    date: data?.visit_date || data?.date || fallback.date,
+    id: data?.id ?? "",
+    date: data?.visit_date || data?.date || "Not provided",
     doctorName:
       data?.doctor_name ||
       data?.doctor?.full_name ||
       data?.doctor?.name ||
-      fallback.doctorName,
-    type: data?.visit_type || data?.type || fallback.type,
+      "Not provided",
+    type: data?.visit_type || data?.type || "Not provided",
     summary:
       data?.summary ||
       data?.diagnosis_summary ||
       data?.chief_complaint ||
-      fallback.summary,
+      "Not provided",
     notes:
       data?.notes ||
       data?.clinical_notes ||
       data?.extra_notes ||
-      fallback.notes,
-    // chỗ để sau này show note từ notification nếu API trả về
+      "Not provided",
+    // NOTE (API): cần backend trả về 1 trong 2:
+    //  - doctor_notification_note
+    //  - latest_notification: { message: "..." }
     doctorNotificationNote:
       data?.doctor_notification_note ||
       data?.latest_notification?.message ||

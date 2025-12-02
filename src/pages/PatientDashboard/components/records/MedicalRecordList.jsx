@@ -1,63 +1,140 @@
 // src/pages/PatientDashboard/components/records/MedicalRecordList.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getMedicalRecords } from "../../../../api/medicalRecordAPI";
+import MedicalRecorDetail from "./MedicalRecorDetail";
 
-const defaultRecords = [
-  {
-    id: 101,
-    date: "01/11/2025",
-    time: "09:00",
-    doctorName: "Dr. John Smith",
-    diagnosis: "General check-up",
-    type: "Consultation",
-    summary: "General check-up, normal results.",
-    price: 300000,
-    note: "Patient in good condition. Maintain current lifestyle.",
-  },
-  {
-    id: 102,
-    date: "05/11/2025",
-    time: "14:30",
-    doctorName: "Dr. Anna Lee",
-    diagnosis: "Mild arrhythmia",
-    type: "Cardiology",
-    summary: "Follow-up, adjusted medication dosage.",
-    price: 550000,
-    note: "Adjusted beta blocker, monitor blood pressure daily.",
-  },
-  {
-    id: 103,
-    date: "10/11/2025",
-    time: "10:15",
-    doctorName: "Dr. David Brown",
-    diagnosis: "Skin allergy",
-    type: "Dermatology",
-    summary: "Skin allergy, prescribed topical cream.",
-    price: 420000,
-    note: "Apply cream twice daily, avoid direct sunlight.",
-  },
-];
+/**
+ * 📌 GHI CHÚ VỀ API:
+ *
+ * ✅ ĐANG DÙNG:
+ *   - getMedicalRecords() trong medicalRecordAPI.js
+ *   - Tương ứng endpoint backend: GET /api/v1/medical-records/
+ *     (endpoint này bạn đã có trong bộ API gửi cho tớ – API LIST hồ sơ bệnh án).
+ *
+ * ❌ CHƯA DÙNG / CHƯA CÓ:
+ *   - Không còn dữ liệu default (John Smith, Anna Lee, ...).
+ *   - Không còn "Simulate doctor note" (demo).
+ *   - Nếu sau này muốn lấy "doctor note mới nhất" từ notification,
+ *     cần backend embed vào record detail hoặc làm Notification API riêng.
+ */
 
 export default function MedicalRecordList({ records }) {
-  const data = records && records.length ? records : defaultRecords;
-  const [selected, setSelected] = useState(data[0]);
-  const [newNoteMessage, setNewNoteMessage] = useState("");
+  const [list, setList] = useState(records || []);
+  const [selected, setSelected] = useState(
+    records && records.length ? records[0] : null
+  );
+  const [loading, setLoading] = useState(!records);
+  const [error, setError] = useState(null);
+
+  // Nếu parent không truyền records → tự gọi API GET /medical-records/
+  useEffect(() => {
+    // Nếu đã được truyền records từ ngoài, chỉ sync lại state
+    if (records && records.length) {
+      setList(records);
+      setSelected(records[0]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchRecords = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 🔔 Dùng API LIST medical records hiện có:
+        //    GET /api/v1/medical-records/
+        //    Backend có thể tự hiểu patient từ access_token,
+        //    hoặc bạn có thể chỉnh getMedicalRecords({ patientId }) nếu cần.
+        const data = await getMedicalRecords();
+        const items = data?.results || data || [];
+
+        if (!cancelled) {
+          setList(items);
+          setSelected(items[0] || null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Load medical records error:", err);
+          setError(
+            typeof err === "string"
+              ? err
+              : err?.message || "Failed to load medical records."
+          );
+          setList([]);
+          setSelected(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRecords();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [records]);
 
   const handleView = (rec) => {
     setSelected(rec);
-    setNewNoteMessage("");
   };
 
-  const handleSimulateDoctorNote = () => {
-    if (!selected) return;
-    const updated = {
-      ...selected,
-      note: `${selected.note || "No note"} (Doctor added a new note at ${
-        new Date().toLocaleTimeString("vi-VN")
-      })`,
-    };
-    setSelected(updated);
-    setNewNoteMessage("New doctor note received.");
-  };
+  if (loading) {
+    return (
+      <div className="pd-card pd-records-card">
+        <div className="pd-records-header">
+          <div>
+            <h3 className="pd-section-title">Medical records</h3>
+            <p className="pd-section-subtitle">
+              Your visit history and record summaries
+            </p>
+          </div>
+        </div>
+        <div className="pd-empty-tab">Loading your medical records...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pd-card pd-records-card">
+        <div className="pd-records-header">
+          <div>
+            <h3 className="pd-section-title">Medical records</h3>
+            <p className="pd-section-subtitle">
+              Your visit history and record summaries
+            </p>
+          </div>
+        </div>
+        <div className="pd-empty-tab" style={{ color: "red" }}>
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!list.length) {
+    return (
+      <div className="pd-card pd-records-card">
+        <div className="pd-records-header">
+          <div>
+            <h3 className="pd-section-title">Medical records</h3>
+            <p className="pd-section-subtitle">
+              Your visit history and record summaries
+            </p>
+          </div>
+        </div>
+        <div className="pd-empty-tab">
+          You don&apos;t have any medical records yet.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pd-card pd-records-card">
@@ -71,10 +148,14 @@ export default function MedicalRecordList({ records }) {
       </div>
 
       <div className="pd-records-grid">
-        {data.map((rec) => {
+        {list.map((rec) => {
           const date =
             rec.visitDate || rec.date || rec.visit_date || "Unknown date";
-          const doctor = rec.doctorName || rec.doctor_name || "Doctor";
+          const doctor =
+            rec.doctorName ||
+            rec.doctor_name ||
+            rec.doctor?.full_name ||
+            "Doctor";
           const title = rec.type || rec.diagnosis || "Visit summary";
           const summary =
             rec.summary ||
@@ -95,7 +176,11 @@ export default function MedicalRecordList({ records }) {
 
               <div className="pd-record-footer">
                 <div className="pd-record-doctor">{doctor}</div>
-                <button type="button" className="pd-outline-btn">
+                <button
+                  type="button"
+                  className="pd-outline-btn"
+                  onClick={() => handleView(rec)}
+                >
                   View details
                 </button>
               </div>
@@ -105,48 +190,7 @@ export default function MedicalRecordList({ records }) {
       </div>
 
       {selected && (
-        <div className="pd-card" style={{ marginTop: "16px" }}>
-          <div className="pd-record-detail-header">
-            <div>
-              <h3 className="pd-section-title">Appointment details</h3>
-              <p className="pd-section-subtitle">
-                {selected.date} at {selected.time} — {selected.type}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="pd-outline-btn"
-              onClick={handleSimulateDoctorNote}
-            >
-              Simulate doctor note
-            </button>
-          </div>
-
-          {newNoteMessage && (
-            <div className="pd-note-alert">{newNoteMessage}</div>
-          )}
-
-          <div className="pd-record-detail">
-            <p>
-              <strong>Doctor:</strong> {selected.doctorName}
-            </p>
-            <p>
-              <strong>Diagnosis:</strong> {selected.diagnosis || selected.type}
-            </p>
-            <p>
-              <strong>Summary:</strong> {selected.summary}
-            </p>
-            <p>
-              <strong>Price:</strong>{" "}
-              {selected.price
-                ? `${selected.price.toLocaleString("vi-VN")} VND`
-                : "N/A"}
-            </p>
-            <p>
-              <strong>Doctor note:</strong> {selected.note || "No note yet."}
-            </p>
-          </div>
-        </div>
+        <MedicalRecorDetail record={selected} />
       )}
     </div>
   );

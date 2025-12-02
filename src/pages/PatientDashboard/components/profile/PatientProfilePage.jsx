@@ -10,11 +10,11 @@ export default function PatientProfilePage() {
   const { user, loading } = useAuth();
 
   const initialProfile = {
-    name: user?.fullName || user?.name,
-    email: user?.email,
-    phone: user?.phone,
-    city: user?.city,
-    country: user?.country,
+    name: user?.fullName || user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    city: user?.city || "",
+    country: user?.country || "",
   };
 
   return (
@@ -26,16 +26,23 @@ export default function PatientProfilePage() {
             Edit profile
           </h1>
           <p className="pd-hero-subtitle">
-            Update your name, email, phone, location, and change password in one place.
+            Update your name, phone number, and location. Your email address
+            cannot be changed here.
           </p>
         </section>
 
-        {!loading && (
+        {loading && (
+          <section className="pd-card pd-empty-tab">Loading profile...</section>
+        )}
+
+        {!loading && user && (
           <PatientProfileCard initialProfile={initialProfile} startEditing />
         )}
 
-        {loading && (
-          <section className="pd-card pd-empty-tab">Loading profile...</section>
+        {!loading && !user && (
+          <section className="pd-card pd-empty-tab">
+            You need to sign in to view your profile.
+          </section>
         )}
       </main>
       <Footer />
