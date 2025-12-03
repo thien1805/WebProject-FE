@@ -1,160 +1,151 @@
 // src/api/authAPI.js
 import axios from "axios";
-import API_BASE_URL from "./config";
+
+const RAW_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = RAW_BASE_URL.replace(/\\/api\\/v1\\/?$/, "");
+const API_PREFIX = "/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
-// ===== Request interceptor: gắn access token =====
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// ===== Response interceptor: tự refresh token khi 401 =====
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem("refresh_token");
-        if (!refreshToken) {
-          throw new Error("No refresh token found");
-        }
-
-        // GỌI ĐÚNG ENDPOINT: POST /api/v1/token/refresh/
-        const response = await axios.post(
-          `${API_BASE_URL}/api/v1/token/refresh/`,
-          { refresh: refreshToken },
-          {
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-
-        const { access } = response.data;
-        localStorage.setItem("access_token", access);
-
-        // Retry original request với token mới
-        originalRequest.headers.Authorization = `Bearer ${access}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        // Refresh fail → clear storage
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
+apiClient.interceptors.request.use((config) => {
+  const access = localStorage.getItem("access_token");
+  if (access) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${access}`;
   }
-);
+  return config;
+});
 
-// ================= AUTH APIs =================
-
-export const register = async (userData) => {
-  try {
-    const response = await apiClient.post("/api/v1/auth/register/", userData);
-    return response.data || {};
-  } catch (error) {
-    console.error("Register API error:", error);
-
-    if (error.response && error.response.data) {
-      throw error.response.data;
-    }
-    throw {
-      general: error.message || "Register failed. Please try again.",
-    };
+// ---- Helpers ----
+function saveAuthToStorage({ user, tokens }) {
+  if (tokens?.access) {
+    localStorage.setItem("access_token", tokens.access);
   }
-};
-
-export const login = async (credentials) => {
-  try {
-    // Login là public, interceptor vẫn attach token nếu có nhưng không sao
-    const response = await apiClient.post("/api/v1/auth/login/", credentials);
-
-    if (response.data && response.data.tokens) {
-      localStorage.setItem("access_token", response.data.tokens.access);
-      localStorage.setItem("refresh_token", response.data.tokens.refresh);
-      if (response.data.user) {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-      }
-    }
-    return response.data || {};
-  } catch (error) {
-    console.error("Login API error:", error);
-
-    if (error.response && error.response.data) {
-      throw error.response.data;
-    }
-    throw { message: error.message || "Login failed. Please try again." };
+  if (tokens?.refresh) {
+    localStorage.setItem("refresh_token", tokens.refresh);
   }
-};
+  if (user) {
+    localStorage.setItem("user", JSON.stringify(user));
+  }
+}
 
-export const logout = async () => {
+export function getCurrrentUser() {
+  // 👈 tên hàm này cố tình sai chính tả để khớp import của bạn
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
   try {
-    const refreshToken = localStorage.getItem("refresh_token");
-    if (refreshToken) {
-      // Đúng endpoint: POST /api/v1/auth/logout/
-      await apiClient.post("/api/v1/auth/logout/", { refresh: refreshToken });
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function isAuthenticated() {
+  const access = localStorage.getItem("access_token");
+  return !!access;
+}
+
+// ---- LOGIN ----
+export async function login({ email, password }) {
+  const res = await fetch(`${API_BASE_URL}${API_PREFIX}/auth/login/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data?.success) {
+    // backend trả: { success: False, message: "Invalid email or password" }
+    const message = data?.message || "Login failed";
+    throw new Error(message);
+  }
+
+  // data = { success, message, user, tokens: { refresh, access } }
+  saveAuthToStorage({ user: data.user, tokens: data.tokens });
+
+  return data; // cho AuthContext dùng
+}
+
+// ---- LOGOUT ----
+export async function logout() {
+  const refresh = localStorage.getItem("refresh_token");
+
+  try {
+    if (refresh) {
+      await fetch(`${API_BASE_URL}${API_PREFIX}/auth/logout/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+        },
+        body: JSON.stringify({ refresh }),
+      });
     }
-  } catch (error) {
-    console.error("Logout error:", error);
+  } catch (err) {
+    console.error("Logout API error:", err);
+    // vẫn clear localStorage dù API fail
   } finally {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
-    window.location.href = "/login";
   }
-};
+}
 
-// GET profile theo doc: GET /api/v1/user/profile/
-export const getProfile = async () => {
-  try {
-    const response = await apiClient.get("/api/v1/user/profile/");
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
+// ---- GET PROFILE (từ backend) ----
+export async function fetchProfile() {
+  const access = localStorage.getItem("access_token");
+  if (!access) throw new Error("No access token");
+
+  const res = await fetch(`${API_BASE_URL}${API_PREFIX}/user/profile/`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = data?.detail || data?.message || "Failed to fetch profile";
+    throw new Error(msg);
   }
-};
 
-// UPDATE profile: PUT /api/v1/user/profile/
-export const updateProfile = async (profileData) => {
-  try {
-    const response = await apiClient.put(
-      "/api/v1/user/profile/",
-      profileData
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
+  // data = UserSerializer (có patient_profile / doctor_profile tuỳ role)
+  localStorage.setItem("user", JSON.stringify(data));
+  return data;
+}
+
+// ---- UPDATE PROFILE (PATCH) ----
+export async function updateProfile(profilePayload) {
+  const access = localStorage.getItem("access_token");
+  if (!access) throw new Error("No access token");
+
+  const res = await fetch(`${API_BASE_URL}${API_PREFIX}/user/profile/`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(profilePayload),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    // lỗi validate sẽ trả { field: ["msg"] }
+    throw data || { message: "Failed to update profile" };
   }
-};
 
-// Check if user is authenticated
-export const isAuthenticated = () => {
-  const token = localStorage.getItem("access_token");
-  const user = localStorage.getItem("user");
-  return !!(token && user);
-};
+  // Backend đã trả lại User đầy đủ sau khi update
+  localStorage.setItem("user", JSON.stringify(data));
+  return data;
+}
 
-export const getCurrentUser = () => {
-  const user = localStorage.getItem("user");
-  return user ? JSON.parse(user) : null;
-};
-export const getCurrrentUser = getCurrentUser;
 export default apiClient;

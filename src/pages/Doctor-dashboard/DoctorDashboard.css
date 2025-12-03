@@ -2,7 +2,7 @@
 /* ROOT LAYOUT WITH SIDEBAR */
 .doctor-layout {
   min-height: 100vh;
-  background: #c2f6ff; 
+  background: #d9f6ff; /* nhẹ hơn để logo nổi bật */
 }
 
 /* MAIN AREA (RIGHT SIDE) */
@@ -16,7 +16,7 @@
 /* PAGE BACKGROUND */
 .dd-page {
   min-height: 100vh;
-  background: #c2f6ff;
+  background: #d9f6ff; /* đồng bộ nền nhạt hơn */
   display: flex;
   flex-direction: column;
   margin-left: 240px;
@@ -25,15 +25,15 @@
 /* HEADER */
 .dd-header {
   background: #004b4f;
-  padding: 10px 40px;
+  padding: 12px 22px;
 }
 
 .dd-header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .dd-header-right {
@@ -114,16 +114,15 @@
 }
 /* MAIN LAYOUT */
 .dd-main {
-  padding: 24px 16px 32px;
+  padding: 24px 24px 32px;
   flex: 1;
 }
 
 .dd-layout {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.1fr);
+  gap: 20px;
 }
 
 /* LEFT COLUMN */
@@ -569,4 +568,8 @@
 .dd-calendar-card--clickable:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+}
+.dd-header-left--logo {
+  display: flex;
+  align-items: center;
 }

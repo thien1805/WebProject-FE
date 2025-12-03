@@ -18,8 +18,10 @@ export default function DashboardHeader() {
     <header className="dd-header">
       <div className="dd-header-inner">
         {/* Left: logo */}
-        <div className="dd-header-left">
-          <Logo />
+        <div className="dd-header-left dd-header-left--logo">
+          <Link to="/doctor/dashboard" style={{ display: "inline-flex" }}>
+            <Logo clickable={false} />
+          </Link>
         </div>
 
         {/* Right: path + user info */}
