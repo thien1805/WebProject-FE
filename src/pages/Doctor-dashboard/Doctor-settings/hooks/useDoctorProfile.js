@@ -7,9 +7,16 @@ export function useDoctorProfile() {
     currentPassword: "***************",
     newPassword: "",
     dob: "25 January 1990",
-    role: "Admin",
+    role: "Doctor",
     country: "Egypt",
     city: "Alexandria",
+    about: "",
+    full_name: "",
+    phone: "",
+    specialization: "",
+    experience_years: "",
+    clinic_name: "",
+    address: "",
   });
 
   const handleChange = (field, value) => {

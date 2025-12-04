@@ -1,29 +1,43 @@
-import React, { useState } from "react";
+// src/components/Header.jsx
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown, Bell } from "lucide-react";
 import Logo from "./Logo/Logo";
 import { useAuth } from "../context/AuthContext";
 import "./Header.css";
 
+// ⚠️ TODO: Khi bạn tạo API thật, bỏ comment dòng dưới và tạo file:
+// src/api/notificationAPI.js
+// với các hàm: getPatientNotifications, markAllNotificationsRead
+// import { getPatientNotifications, markAllNotificationsRead } from "../api/notificationAPI";
+
+// 🔔 Demo notifications – tạm dùng cho tới khi nối API
+const DUMMY_NOTIFICATIONS = [
+  {
+    id: "booking-1",
+    title: "Booking confirmed",
+    message: "Your appointment has been booked successfully.",
+    unread: true,
+    time: "Today",
+  },
+  {
+    id: "reminder-1",
+    title: "Appointment reminder",
+    message: "You have an appointment tomorrow at 09:00.",
+    unread: true,
+    time: "1 day before",
+  },
+];
+
 const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState(() => [
-    {
-      id: "booking-1",
-      title: "Booking confirmed",
-      message: "Your appointment has been booked successfully.",
-      unread: true,
-      time: "Today",
-    },
-    {
-      id: "reminder-1",
-      title: "Appointment reminder",
-      message: "You have an appointment tomorrow at 09:00.",
-      unread: true,
-      time: "1 day before",
-    },
-  ]);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+
+  // 🔔 State cho notifications (sau này sẽ nhận data từ API)
+  const [notifications, setNotifications] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [notifError, setNotifError] = useState(null);
 
   const { user, isAuth, logout } = useAuth();
   const navigate = useNavigate();
@@ -37,14 +51,20 @@ const Header = () => {
 
   const dashboardPath = isDoctor ? "/doctor/dashboard" : "/patient/dashboard";
 
-  const handleLogout = async () => {
+  const handleLogoutConfirm = async () => {
     try {
       await logout();
       setDropdownOpen(false);
+      setConfirmLogoutOpen(false);
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
     }
+  };
+
+  const handleOpenLogoutConfirm = () => {
+    setConfirmLogoutOpen(true);
+    setDropdownOpen(false);
   };
 
   const handleBookingClick = (e) => {
@@ -64,10 +84,75 @@ const Header = () => {
     }
   };
 
+  // ================== 🔔 Notifications: CHỖ GỌI API ==================
+  useEffect(() => {
+    if (!isAuth || !isPatient) {
+      setNotifications([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchNotifications = async () => {
+      try {
+        setNotifLoading(true);
+        setNotifError(null);
+
+        // ⚠️ TODO: Sau này dùng API thật:
+        //
+        // try {
+        //   const res = await getPatientNotifications();
+        //   // Gợi ý structure:
+        //   //  - Nếu backend trả dạng { results: [...] }:
+        //   //      const data = res.results;
+        //   //  - Nếu trả luôn array:
+        //   //      const data = res;
+        //   const data = res?.results || res || [];
+        //   if (!cancelled) {
+        //     setNotifications(data);
+        //   }
+        // } catch (apiErr) {
+        //   ...
+        // }
+        //
+        // TẠM THỜI: dùng data demo cho khỏi lỗi
+        const data = DUMMY_NOTIFICATIONS;
+
+        if (!cancelled) {
+          setNotifications(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Load notifications error:", err);
+          setNotifError("Failed to load notifications.");
+        }
+      } finally {
+        if (!cancelled) {
+          setNotifLoading(false);
+        }
+      }
+    };
+
+    fetchNotifications();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuth, isPatient]);
+  // =====================================================
+
   const unreadCount = notifications.filter((n) => n.unread).length;
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
+    // Cập nhật UI ngay
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+
+    // ⚠️ TODO: Khi có API thật, gọi thêm để sync backend:
+    //
+    // try {
+    //   await markAllNotificationsRead();
+    // } catch (err) {
+    //   console.error("Mark all notifications read error:", err);
+    // }
   };
 
   const handleToggleNotif = () => {
@@ -148,31 +233,50 @@ const Header = () => {
                       <div className="notif-dropdown">
                         <div className="notif-header">
                           <span>Notifications</span>
-                          <button
-                            type="button"
-                            className="notif-clear"
-                            onClick={handleMarkAllRead}
-                          >
-                            Mark all read
-                          </button>
+                          {!notifLoading && notifications.length > 0 && (
+                            <button
+                              type="button"
+                              className="notif-clear"
+                              onClick={handleMarkAllRead}
+                            >
+                              Mark all read
+                            </button>
+                          )}
                         </div>
 
-                        {notifications.length === 0 && (
-                          <div className="notif-empty">No notifications yet.</div>
+                        {notifLoading && (
+                          <div className="notif-empty">Loading...</div>
                         )}
 
-                        {notifications.map((n) => (
-                          <div
-                            key={n.id}
-                            className={
-                              "notif-item" + (n.unread ? " notif-item--unread" : "")
-                            }
-                          >
-                            <div className="notif-title">{n.title}</div>
-                            <div className="notif-message">{n.message}</div>
-                            <div className="notif-time">{n.time}</div>
+                        {notifError && !notifLoading && (
+                          <div className="notif-empty notif-error">
+                            {notifError}
                           </div>
-                        ))}
+                        )}
+
+                        {!notifLoading &&
+                          !notifError &&
+                          notifications.length === 0 && (
+                            <div className="notif-empty">
+                              No notifications yet.
+                            </div>
+                          )}
+
+                        {!notifLoading &&
+                          !notifError &&
+                          notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className={
+                                "notif-item" +
+                                (n.unread ? " notif-item--unread" : "")
+                              }
+                            >
+                              <div className="notif-title">{n.title}</div>
+                              <div className="notif-message">{n.message}</div>
+                              <div className="notif-time">{n.time}</div>
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
@@ -227,7 +331,7 @@ const Header = () => {
                       <button
                         type="button"
                         className="dropdown-item dropdown-item--danger"
-                        onClick={handleLogout}
+                        onClick={handleOpenLogoutConfirm}
                       >
                         Log out
                       </button>
@@ -239,6 +343,38 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {confirmLogoutOpen && (
+        <div className="header-modal-backdrop" onClick={() => setConfirmLogoutOpen(false)}>
+          <div
+            className="header-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-modal-title"
+          >
+            <div className="header-modal-title" id="logout-modal-title">
+              Are you sure to log out?
+            </div>
+            <div className="header-modal-actions">
+              <button
+                type="button"
+                className="header-modal-btn header-modal-btn--secondary"
+                onClick={() => setConfirmLogoutOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="header-modal-btn header-modal-btn--danger"
+                onClick={handleLogoutConfirm}
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

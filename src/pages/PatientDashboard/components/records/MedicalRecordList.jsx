@@ -1,196 +1,163 @@
 // src/pages/PatientDashboard/components/records/MedicalRecordList.jsx
-import React, { useEffect, useState } from "react";
-import { getMedicalRecords } from "../../../../api/medicalRecordAPI";
-import MedicalRecorDetail from "./MedicalRecorDetail";
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-/**
- * 📌 GHI CHÚ VỀ API:
- *
- * ✅ ĐANG DÙNG:
- *   - getMedicalRecords() trong medicalRecordAPI.js
- *   - Tương ứng endpoint backend: GET /api/v1/medical-records/
- *     (endpoint này bạn đã có trong bộ API gửi cho tớ – API LIST hồ sơ bệnh án).
- *
- * ❌ CHƯA DÙNG / CHƯA CÓ:
- *   - Không còn dữ liệu default (John Smith, Anna Lee, ...).
- *   - Không còn "Simulate doctor note" (demo).
- *   - Nếu sau này muốn lấy "doctor note mới nhất" từ notification,
- *     cần backend embed vào record detail hoặc làm Notification API riêng.
- */
+export default function MedicalRecordList({
+  appointments = [],
+  records = [],
+}) {
+  // Lọc các lịch đã khám xong (hoặc history)
+  const historyAppointments = useMemo(() => {
+    if (!Array.isArray(appointments)) return [];
+    // Nếu bạn muốn lấy tất cả appointments thì bỏ filter status
+    return appointments.filter((a) => a.status === "completed");
+  }, [appointments]);
 
-export default function MedicalRecordList({ records }) {
-  const [list, setList] = useState(records || []);
-  const [selected, setSelected] = useState(
-    records && records.length ? records[0] : null
-  );
-  const [loading, setLoading] = useState(!records);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  // Nếu parent không truyền records → tự gọi API GET /medical-records/
+  const [selectedId, setSelectedId] = useState(null);
+
+  // Auto chọn appointment đầu tiên khi có dữ liệu
   useEffect(() => {
-    // Nếu đã được truyền records từ ngoài, chỉ sync lại state
-    if (records && records.length) {
-      setList(records);
-      setSelected(records[0]);
-      setLoading(false);
-      setError(null);
-      return;
+    if (historyAppointments.length > 0 && !selectedId) {
+      setSelectedId(historyAppointments[0].id);
+    }
+  }, [historyAppointments, selectedId]);
+
+  const selectedAppt = historyAppointments.find(
+    (a) => a.id === selectedId
+  );
+
+  // Nếu backend sau này trả records riêng, có thể map theo appointmentId
+  const findRecordForAppointment = (appt) => {
+    if (!appt) return null;
+
+    // 1. Nếu appointment có sẵn medicalRecord (demo)
+    if (appt.medicalRecord) return appt.medicalRecord;
+
+    // 2. Nếu records là mảng có field appointmentId
+    if (Array.isArray(records) && records.length > 0) {
+      return records.find((r) => r.appointmentId === appt.id) || null;
     }
 
-    let cancelled = false;
-
-    const fetchRecords = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 🔔 Dùng API LIST medical records hiện có:
-        //    GET /api/v1/medical-records/
-        //    Backend có thể tự hiểu patient từ access_token,
-        //    hoặc bạn có thể chỉnh getMedicalRecords({ patientId }) nếu cần.
-        const data = await getMedicalRecords();
-        const items = data?.results || data || [];
-
-        if (!cancelled) {
-          setList(items);
-          setSelected(items[0] || null);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error("Load medical records error:", err);
-          setError(
-            typeof err === "string"
-              ? err
-              : err?.message || "Failed to load medical records."
-          );
-          setList([]);
-          setSelected(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchRecords();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [records]);
-
-  const handleView = (rec) => {
-    setSelected(rec);
+    return null;
   };
 
-  if (loading) {
-    return (
-      <div className="pd-card pd-records-card">
-        <div className="pd-records-header">
-          <div>
-            <h3 className="pd-section-title">Medical records</h3>
-            <p className="pd-section-subtitle">
-              Your visit history and record summaries
-            </p>
-          </div>
-        </div>
-        <div className="pd-empty-tab">Loading your medical records...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="pd-card pd-records-card">
-        <div className="pd-records-header">
-          <div>
-            <h3 className="pd-section-title">Medical records</h3>
-            <p className="pd-section-subtitle">
-              Your visit history and record summaries
-            </p>
-          </div>
-        </div>
-        <div className="pd-empty-tab" style={{ color: "red" }}>
-          {error}
-        </div>
-      </div>
-    );
-  }
-
-  if (!list.length) {
-    return (
-      <div className="pd-card pd-records-card">
-        <div className="pd-records-header">
-          <div>
-            <h3 className="pd-section-title">Medical records</h3>
-            <p className="pd-section-subtitle">
-              Your visit history and record summaries
-            </p>
-          </div>
-        </div>
-        <div className="pd-empty-tab">
-          You don&apos;t have any medical records yet.
-        </div>
-      </div>
-    );
-  }
+  const selectedRecord = findRecordForAppointment(selectedAppt);
 
   return (
-    <div className="pd-card pd-records-card">
-      <div className="pd-records-header">
-        <div>
-          <h3 className="pd-section-title">Medical records</h3>
-          <p className="pd-section-subtitle">
-            Your visit history and record summaries
-          </p>
+    <div className="pd-card">
+      <h3 className="pd-section-title">My appointments</h3>
+      <p className="pd-section-subtitle">
+        View your past visits and their medical records.
+      </p>
+
+      {historyAppointments.length === 0 ? (
+        <div className="pd-empty-tab">
+          You don&apos;t have any completed appointments yet.
         </div>
-      </div>
+      ) : (
+        <div className="pd-history-layout">
+          {/* Danh sách appointment bên trái */}
+          <div className="pd-history-list">
+            {historyAppointments.map((appt) => (
+              <button
+                key={appt.id}
+                type="button"
+                className={
+                  "pd-history-item" +
+                  (appt.id === selectedId ? " pd-history-item--active" : "")
+                }
+                onClick={() => setSelectedId(appt.id)}
+              >
+                <div className="pd-history-item-main">
+                  <div className="pd-history-doctor">
+                    {appt.doctorName}
+                  </div>
+                  <div className="pd-history-specialty">
+                    {appt.specialty}
+                  </div>
+                </div>
+                <div className="pd-history-item-meta">
+                  <span>{appt.date}</span>
+                  <span>{appt.time}</span>
+                </div>
+              </button>
+            ))}
+          </div>
 
-      <div className="pd-records-grid">
-        {list.map((rec) => {
-          const date =
-            rec.visitDate || rec.date || rec.visit_date || "Unknown date";
-          const doctor =
-            rec.doctorName ||
-            rec.doctor_name ||
-            rec.doctor?.full_name ||
-            "Doctor";
-          const title = rec.type || rec.diagnosis || "Visit summary";
-          const summary =
-            rec.summary ||
-            rec.treatment ||
-            rec.notes ||
-            "No additional notes available.";
+          {/* Medical record của appointment đã chọn */}
+          <div className="pd-history-detail">
+            {selectedAppt ? (
+              <>
+                <h4 className="pd-history-detail-title">
+                  Medical record
+                </h4>
+                <div className="pd-history-detail-info">
+                  <div>
+                    <span className="pd-profile-label">Doctor</span>
+                    <div className="pd-profile-value">
+                      {selectedAppt.doctorName}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="pd-profile-label">Specialty</span>
+                    <div className="pd-profile-value">
+                      {selectedAppt.specialty}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="pd-profile-label">Date</span>
+                    <div className="pd-profile-value">
+                      {selectedAppt.date} {selectedAppt.time}
+                    </div>
+                  </div>
+                  {selectedAppt.location && (
+                    <div>
+                      <span className="pd-profile-label">Location</span>
+                      <div className="pd-profile-value">
+                        {selectedAppt.location}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-          return (
-            <div key={rec.id} className="pd-record-card">
-              <div className="pd-record-top">
-                <div className="pd-record-chip">{title}</div>
-                <span className="pd-record-date">{date}</span>
-              </div>
+                <div className="pd-history-detail-record">
+                  <span className="pd-profile-label">Diagnosis</span>
+                  <div className="pd-profile-value">
+                    {selectedRecord?.diagnosis ||
+                      "No diagnosis recorded yet."}
+                  </div>
 
-              <div className="pd-record-body">
-                <p className="pd-record-text">{summary}</p>
-              </div>
+                  <span className="pd-profile-label" style={{ marginTop: 12 }}>
+                    Notes / Prescription
+                  </span>
+                  <div className="pd-profile-value">
+                    {selectedRecord?.notes ||
+                      "No additional notes recorded."}
+                  </div>
+                </div>
 
-              <div className="pd-record-footer">
-                <div className="pd-record-doctor">{doctor}</div>
                 <button
                   type="button"
                   className="pd-outline-btn"
-                  onClick={() => handleView(rec)}
+                  style={{ alignSelf: "flex-start", marginTop: 8 }}
+                  onClick={() =>
+                    selectedRecord?.id &&
+                    navigate(`/patient/medical-record/${selectedRecord.id}`)
+                  }
+                  disabled={!selectedRecord?.id}
                 >
-                  View details
+                  View detail
                 </button>
+              </>
+            ) : (
+              <div className="pd-empty-tab">
+                Select an appointment on the left to view its record.
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {selected && (
-        <MedicalRecorDetail record={selected} />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

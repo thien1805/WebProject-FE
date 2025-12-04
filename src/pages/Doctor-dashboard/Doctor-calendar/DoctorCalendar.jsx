@@ -3,7 +3,6 @@ import React from "react";
 import "./DoctorCalendar.css";
 
 import DoctorLayout from "../DoctorLayout";
-import CalendarSidebar from "./components/CalendarSidebar";
 import CalendarMonthView from "./components/CalendarMonthView";
 import { useDoctorCalendar } from "./hooks/useDoctorCalendar";
 
@@ -23,7 +22,6 @@ export default function DoctorCalendar() {
   return (
     <DoctorLayout activeMenu="calendar">
       <div className="cal-layout">
-        <CalendarSidebar selectedDate={selectedDate} />
         <CalendarMonthView
           monthLabel={monthLabel}
           days={days}

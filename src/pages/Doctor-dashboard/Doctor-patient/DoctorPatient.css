@@ -105,6 +105,32 @@
   gap: 4px;
 }
 
+.patient-record-cell {
+  max-width: 220px;
+}
+
+.patient-record-scroll {
+  max-height: 120px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px 8px;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.patient-record-item {
+  font-size: 12px;
+  color: #111827;
+}
+
+.patient-record-empty {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
 .patient-footer {
   margin-top: 8px;
   display: flex;

@@ -4,6 +4,7 @@ import AppointmentStatusFilter from "./AppointmentStatusFilter";
 
 export default function AppointmentList({
   appointments,
+  records = [],
   statusOptions,
   activeStatus,
   onStatusChange,
@@ -11,14 +12,12 @@ export default function AppointmentList({
   const filtered =
     activeStatus === "all"
       ? appointments
-      : appointments.filter((a) => a.status === activeStatus);
+      : (appointments || []).filter((a) => a.status === activeStatus);
 
   return (
     <div className="pd-card pd-appointments-card">
-      <h3 className="pd-section-title">Upcoming appointments</h3>
-      <p className="pd-section-subtitle">
-        Your upcoming doctor appointments
-      </p>
+      <h3 className="pd-section-title">Appointments</h3>
+      <p className="pd-section-subtitle">Your appointments by status</p>
 
       <AppointmentStatusFilter
         statusOptions={statusOptions}
@@ -28,13 +27,21 @@ export default function AppointmentList({
 
       {filtered.length === 0 ? (
         <div className="pd-empty-tab">
-          There are no appointments with this status.
+          You don&apos;t have any completed appointments yet.
         </div>
       ) : (
         <div className="pd-appointments-list">
-          {filtered.map((appt) => (
-            <AppointmentItem key={appt.id} appt={appt} />
-          ))}
+          {filtered.map((appt) => {
+            const recordForAppt =
+              records.find((r) => r.appointmentId === appt.id) || null;
+            return (
+              <AppointmentItem
+                key={appt.id}
+                appt={appt}
+                recordId={recordForAppt?.id}
+              />
+            );
+          })}
         </div>
       )}
     </div>

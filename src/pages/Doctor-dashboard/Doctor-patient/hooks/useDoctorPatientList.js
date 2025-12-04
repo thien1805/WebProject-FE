@@ -21,8 +21,20 @@ export function useDoctorPatientList() {
         //  - Hoặc object có results: { results: [...], count: ... }
         const rawList = Array.isArray(data) ? data : data.results || [];
 
+        // Chỉ giữ bệnh nhân có appointment đã completed
+        const confirmedPatients = rawList.filter((item) => {
+          const appts =
+            item.appointments ||
+            item.appointment_list ||
+            item.appointment_history ||
+            [];
+          return appts.some(
+            (a) => (a.status || "").toLowerCase() === "completed"
+          );
+        });
+
         // Map dữ liệu API → dữ liệu UI (dựa trên ERD Users + Patient)
-        const mapped = rawList.map((item, index) => ({
+        const mapped = confirmedPatients.map((item, index) => ({
           id: item.patient_id || item.id || index,
           name:
             item.full_name ||
@@ -33,6 +45,7 @@ export function useDoctorPatientList() {
           age: item.age || item.age_years || "-", // nếu backend có tuổi
           email: item.email || "-",
           avatarColor: "#4ba8dd",
+          medicalRecords: item.medical_records || [],
         }));
 
         setPatients(mapped);

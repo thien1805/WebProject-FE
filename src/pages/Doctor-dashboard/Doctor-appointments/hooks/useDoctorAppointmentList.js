@@ -4,11 +4,10 @@ import { useMemo, useState } from "react";
 // Trùng với STATUS_CHOICES bên backend (value)
 // label dùng để hiển thị trên UI
 const STATUS_CHOICES = [
-  { value: "booked", label: "Booked" },
+  { value: "pending", label: "Pending" },
   { value: "confirmed", label: "Confirmed" },
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
-  { value: "no_show", label: "No show" },
 ];
 
 // DEMO DATA – sau này thay bằng dữ liệu từ API
@@ -16,7 +15,7 @@ const INITIAL_APPOINTMENTS = [
   {
     id: 1,
     patient: "Nguyen Van A",
-    status: "booked",
+    status: "pending",
     notes: "General checkup",
     date: "2025-11-15",
     time: "09:00",
@@ -53,8 +52,48 @@ export function useDoctorAppointmentList() {
   const [dateFilter, setDateFilter] = useState("");         // 'YYYY-MM-DD'
   const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
 
+  const hasConflict = (id, date, time) => {
+    if (!date || !time) return false;
+    const target = new Date(`${date}T${time}`);
+    if (!Number.isFinite(target.getTime())) return false;
+    const windowMs = 30 * 60 * 1000; // 30 phút
+
+    return appointments.some((appt) => {
+      if (appt.id === id) return false;
+      if (appt.status === "cancelled") return false;
+      if (appt.date !== date) return false;
+      const other = new Date(`${appt.date}T${appt.time}`);
+      if (!Number.isFinite(other.getTime())) return false;
+      return Math.abs(other.getTime() - target.getTime()) < windowMs;
+    });
+  };
+
+  const isFutureSlot = (date, time) => {
+    if (!date || !time) return false;
+    const dt = new Date(`${date}T${time}`);
+    return Number.isFinite(dt.getTime()) && dt.getTime() > Date.now();
+  };
+
   // đổi trạng thái 1 lịch hẹn (hiện tại chỉ cập nhật local state)
   const updateStatus = (id, newStatus) => {
+    if (newStatus === "confirmed") {
+      const current = appointments.find((a) => a.id === id);
+      if (current && hasConflict(id, current.date, current.time)) {
+        alert("Lịch trình của bạn không khả dụng");
+        return;
+      }
+    }
+
+    if (newStatus === "completed") {
+      const current = appointments.find((a) => a.id === id);
+      if (current && isFutureSlot(current.date, current.time)) {
+        alert(
+          "Chưa tới thời gian trên lịch khám, không thể nhấn complete appointment này"
+        );
+        return;
+      }
+    }
+
     setAppointments((prev) =>
       prev.map((appt) =>
         appt.id === id ? { ...appt, status: newStatus } : appt

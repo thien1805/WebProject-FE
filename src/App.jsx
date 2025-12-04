@@ -15,6 +15,7 @@ import Medical from "./pages/Medical/Medical";
 import PatientDashboard from "./pages/PatientDashboard/PatientDashboard";
 import PatientProfilePage from "./pages/PatientDashboard/components/profile/PatientProfilePage";
 import PatientAppointmentsPage from "./pages/PatientDashboard/components/appointments/PatientAppointmentsPage";
+import PatientMedicalRecordDetailPage from "./pages/PatientDashboard/components/records/PatientMedicalRecordDetailPage";
 // ==== DOCTOR SIDE ====
 import DoctorDashboard from "./pages/Doctor-dashboard/DoctorDashboard";
 import DoctorPatientList from "./pages/Doctor-dashboard/Doctor-patient/DoctorPatientList";
@@ -48,6 +49,10 @@ const App = () => {
             path="/patient/appointments"
             element={<PatientAppointmentsPage />}
               />
+          <Route
+            path="/patient/medical-record/:recordId"
+            element={<PatientMedicalRecordDetailPage />}
+          />
           {/* ===== DOCTOR SIDE ===== */}
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
           <Route path="/doctor/patients" element={<DoctorPatientList />} />

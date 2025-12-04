@@ -6,11 +6,12 @@ import {
   getMyMedicalRecords,
   getMyHealthTracking,
 } from "../../../api/patientAPI";
+import { cancelAppointment } from "../../../api/appointmentAPI";
 import { useAuth } from "../../../context/AuthContext";
 
 function buildStats(appointments = [], records = [], healthStatus = "Good") {
   const upcomingCount = appointments.filter((a) =>
-    ["booked", "confirmed"].includes(a.status)
+    ["pending", "confirmed"].includes(a.status)
   ).length;
   const completedCount = appointments.filter(
     (a) => a.status === "completed"
@@ -62,15 +63,20 @@ export function usePatientDashboard() {
 
   const statusOptions = [
     { id: "all", label: "All" },
-    { id: "booked", label: "Booked" },
+    { id: "pending", label: "Pending" },
     { id: "confirmed", label: "Confirmed" },
     { id: "completed", label: "Completed" },
     { id: "cancelled", label: "Cancelled" },
-    { id: "no_show", label: "No show" },
   ];
 
   useEffect(() => {
     let cancelled = false;
+
+    const isPastAppointment = (appt) => {
+      if (!appt?.date || !appt?.time) return false;
+      const dt = new Date(`${appt.date}T${appt.time}`);
+      return Number.isFinite(dt.getTime()) && dt.getTime() < Date.now();
+    };
 
     async function loadDashboard() {
       try {
@@ -99,18 +105,45 @@ export function usePatientDashboard() {
         };
         setUser(patientProfile);
 
-        const mappedAppointments = (appointmentsRes || []).map((item) => ({
-          id: item.appointment_id,
-          date: item.appointment_date,
-          time: item.appointment_time,
-          status: item.status,
-          notes: item.notes,
-          doctorId: item.doctor_id,
-          doctorName: item.doctor?.full_name || "Unknown doctor",
-          specialty: item.doctor?.specialization || "",
-          location: item.doctor?.clinic_address || "MyHealthCare clinic",
-        }));
-        setAppointments(mappedAppointments);
+        const mappedAppointments = (appointmentsRes || []).map((item) => {
+          const rawStatus = (item.status || "").toLowerCase();
+          const normalizedStatus = rawStatus === "booked" ? "pending" : rawStatus;
+          return {
+            id: item.appointment_id,
+            date: item.appointment_date,
+            time: item.appointment_time,
+            status: normalizedStatus,
+            notes: item.notes,
+            doctorId: item.doctor_id,
+            doctorName: item.doctor?.full_name || "Unknown doctor",
+            specialty: item.doctor?.specialization || "",
+            location: item.doctor?.clinic_address || "MyHealthCare clinic",
+          };
+        });
+
+        // Auto-cancel past appointments that are still pending/confirmed
+        const expiredIds = [];
+        const normalizedAppointments = mappedAppointments.map((appt) => {
+          const shouldCancel =
+            isPastAppointment(appt) &&
+            ["pending", "confirmed"].includes(appt.status);
+          if (shouldCancel) {
+            expiredIds.push(appt.id);
+            return { ...appt, status: "cancelled" };
+          }
+          return appt;
+        });
+
+        if (expiredIds.length > 0) {
+          // Best effort update backend; ignore errors per item
+          Promise.allSettled(
+            expiredIds.map((id) =>
+              cancelAppointment(id, "Auto-cancelled: appointment time passed.")
+            )
+          ).catch(() => {});
+        }
+
+        setAppointments(normalizedAppointments);
 
         const mappedRecords = (recordsRes || []).map((rec) => ({
           id: rec.record_id,
@@ -148,7 +181,7 @@ export function usePatientDashboard() {
           "Good";
 
         setStats(
-          buildStats(mappedAppointments, mappedRecords, latestHealthStatus)
+          buildStats(normalizedAppointments, mappedRecords, latestHealthStatus)
         );
       } catch (err) {
         console.error("Failed to load patient dashboard:", err);
@@ -196,7 +229,7 @@ export function usePatientDashboard() {
   }, [authUser]);
 
   const tabs = [
-    { id: "appointments", label: "Appointments" },
+    { id: "appointments", label: "Appointments" }, // now history
     { id: "records", label: "Medical records" },
     { id: "profile", label: "Profile" },
   ];

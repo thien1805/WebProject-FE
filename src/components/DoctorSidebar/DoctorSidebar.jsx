@@ -1,5 +1,5 @@
 // src/components/DoctorSidebar/DoctorSidebar.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./DoctorSidebar.css";
 import Logo from "../Logo/Logo";
@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function DoctorSidebar({ activeMenu, activeSub }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
 
   const getItemClass = (menuId) =>
     "nav-item" + (activeMenu === menuId ? " nav-item--active" : "");
@@ -15,9 +16,10 @@ export default function DoctorSidebar({ activeMenu, activeSub }) {
   const getSubItemClass = (subId) =>
     "nav-sub-item" + (activeSub === subId ? " nav-sub-item--active" : "");
 
-  const handleLogout = async () => {
+  const handleLogoutConfirm = async () => {
     try {
       await logout();
+      setConfirmLogoutOpen(false);
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -109,11 +111,50 @@ export default function DoctorSidebar({ activeMenu, activeSub }) {
           <span>Settings</span>
         </Link>
 
-        <button type="button" className="nav-item" onClick={handleLogout}>
+        <button
+          type="button"
+          className="nav-item"
+          onClick={() => setConfirmLogoutOpen(true)}
+        >
           <span className="nav-icon">🚪</span>
           <span>Logout</span>
         </button>
       </div>
+
+      {confirmLogoutOpen && (
+        <div
+          className="header-modal-backdrop"
+          onClick={() => setConfirmLogoutOpen(false)}
+        >
+          <div
+            className="header-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-modal-title"
+          >
+            <div className="header-modal-title" id="logout-modal-title">
+              Are you sure to log out?
+            </div>
+            <div className="header-modal-actions">
+              <button
+                type="button"
+                className="header-modal-btn header-modal-btn--secondary"
+                onClick={() => setConfirmLogoutOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="header-modal-btn header-modal-btn--danger"
+                onClick={handleLogoutConfirm}
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

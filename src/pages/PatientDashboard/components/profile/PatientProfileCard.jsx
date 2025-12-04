@@ -151,7 +151,9 @@ export default function PatientProfileCard({ initialProfile, startEditing }) {
             <div>
               <h3 className="pd-profile-name">Profile</h3>
               <p className="pd-profile-email" style={{ color: "red" }}>
-                {error}
+                {typeof error === "string" && error.includes("<")
+                  ? "Failed to load profile."
+                  : error}
               </p>
             </div>
           </div>
@@ -193,6 +195,10 @@ export default function PatientProfileCard({ initialProfile, startEditing }) {
             <span className="pd-profile-value">
               {profile.phone || "Not provided"}
             </span>
+          </div>
+          <div className="pd-profile-info-item">
+            <span className="pd-profile-label">Role</span>
+            <span className="pd-profile-value">Patient</span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">City</span>
@@ -299,6 +305,10 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
             value={profileForm.country}
             onChange={handleProfileChange}
           />
+        </div>
+        <div className="pd-profile-form-field">
+          <label>Role</label>
+          <input type="text" value="Patient" disabled readOnly />
         </div>
       </div>
 

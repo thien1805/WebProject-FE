@@ -203,7 +203,21 @@ export default function PatientAppointmentsPage() {
           throw new Error(res?.message || "Booking failed");
         }
 
-        alert("Appointment booked successfully!");
+        exportBookingTicket({
+          patientName: user?.fullName || user?.name || "Patient",
+          symptoms: form.symptoms,
+          specialty: selectedSpecialty?.label,
+          doctor: selectedDoctor?.name,
+          date: form.date,
+          time: form.timeSlot,
+          price: selectedDoctor
+            ? `${selectedDoctor.price.toLocaleString("vi-VN")} VND`
+            : "N/A",
+        });
+
+        alert(
+          "Appointment booked successfully! A booking ticket PDF will download now."
+        );
         navigate("/patient/dashboard?tab=appointments");
       } catch (err) {
         console.error("Book appointment error:", err);
@@ -344,7 +358,7 @@ export default function PatientAppointmentsPage() {
               {stepIndex === STEPS.length - 1
                 ? bookingLoading
                   ? "Booking..."
-                  : "Proceed to payment →"
+                  : "Confirm & download ticket"
                 : "Continue →"}
             </button>
           </footer>
@@ -361,6 +375,7 @@ function StepSymptom({ form, setForm }) {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, symptoms: e.target.value }));
@@ -392,6 +407,12 @@ function StepSymptom({ form, setForm }) {
   };
 
   const handleAISuggest = async () => {
+    // Lần bấm đầu chỉ mở danh sách gợi ý
+    if (!showSuggestions) {
+      setShowSuggestions(true);
+      return;
+    }
+
     if (!selectedSymptoms.length && !form.symptoms.trim()) {
       alert("Please select or type at least one symptom.");
       return;
@@ -446,24 +467,26 @@ function StepSymptom({ form, setForm }) {
       </p>
 
       {/* Symptom chips */}
-      <div className="booking-symptom-chip-grid">
-        {SYMPTOM_OPTIONS.map((opt) => {
-          const active = selectedSymptoms.includes(opt.id);
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              className={
-                "booking-symptom-chip" +
-                (active ? " booking-symptom-chip--active" : "")
-              }
-              onClick={() => toggleSymptom(opt.id)}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+      {showSuggestions && (
+        <div className="booking-symptom-chip-grid">
+          {SYMPTOM_OPTIONS.map((opt) => {
+            const active = selectedSymptoms.includes(opt.id);
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                className={
+                  "booking-symptom-chip" +
+                  (active ? " booking-symptom-chip--active" : "")
+                }
+                onClick={() => toggleSymptom(opt.id)}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <label className="booking-field-label">Your symptoms</label>
       <textarea
@@ -480,7 +503,11 @@ function StepSymptom({ form, setForm }) {
         onClick={handleAISuggest}
         disabled={loading}
       >
-        {loading ? "Thinking..." : "🤖 Get AI suggestion"}
+        {loading
+          ? "Thinking..."
+          : showSuggestions
+          ? "🤖 Get AI suggestion"
+          : "🤖 Show AI suggestions"}
       </button>
 
       {aiMessage && <p className="booking-ai-hint">{aiMessage}</p>}
@@ -669,7 +696,7 @@ function StepConfirm({
     <>
       <h2 className="booking-section-title">Review your details</h2>
       <p className="booking-section-subtitle">
-        Please check the information before proceeding to payment.
+        Please check the information before confirming your booking.
       </p>
 
       <div className="booking-confirm-card">
@@ -724,7 +751,81 @@ function StepConfirm({
               : "N/A"}
           </span>
         </div>
+
+        <div className="booking-confirm-note">
+          <em>Please bring this booking ticket when going to the appointment.</em>
+        </div>
       </div>
     </>
   );
+}
+
+function exportBookingTicket({
+  patientName,
+  symptoms,
+  specialty,
+  doctor,
+  date,
+  time,
+  price,
+}) {
+  const note =
+    "Please bring this booking ticket when going to the appointment.";
+  const html = `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Booking Ticket</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 24px; color: #0f172a; }
+      .card { border: 1px solid #dbeafe; border-radius: 12px; padding: 20px; background: #f8fbff; max-width: 600px; margin: 0 auto; }
+      .title { font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #0f172a; text-align: center; }
+      .row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+      .label { color: #475569; font-weight: 600; }
+      .value { color: #0f172a; font-weight: 600; }
+      .price { color: #059669; font-weight: 700; }
+      .note { margin-top: 16px; padding: 10px 12px; background: #fff7e6; border: 1px solid #facc15; border-radius: 8px; color: #b45309; font-weight: 600; font-style: italic; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="title">Appointment Booking Ticket</div>
+      <div class="row"><span class="label">Patient:</span><span class="value">${patientName || "-"}</span></div>
+      <div class="row"><span class="label">Symptoms:</span><span class="value">${symptoms || "Not provided"}</span></div>
+      <div class="row"><span class="label">Specialty:</span><span class="value">${specialty || "N/A"}</span></div>
+      <div class="row"><span class="label">Doctor:</span><span class="value">${doctor || "N/A"}</span></div>
+      <div class="row"><span class="label">Date:</span><span class="value">${date || "N/A"}</span></div>
+      <div class="row"><span class="label">Time:</span><span class="value">${time || "N/A"}</span></div>
+      <div class="row"><span class="label">Consultation fee:</span><span class="price">${price || "N/A"}</span></div>
+      <div class="note">${note}</div>
+    </div>
+  </body>
+</html>
+`;
+
+  // Prefer direct download via Blob (avoids popup blockers)
+  try {
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "booking-ticket.html";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error("Download booking ticket failed, fallback to print:", e);
+    const newWin = window.open("", "_blank");
+    if (!newWin) {
+      alert("Please allow popups to download your booking ticket.");
+      return;
+    }
+    newWin.document.write(html);
+    newWin.document.close();
+    newWin.focus();
+    newWin.print();
+    newWin.close();
+  }
 }
