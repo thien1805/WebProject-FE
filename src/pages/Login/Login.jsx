@@ -1,4 +1,4 @@
-import './Login.css';
+import './login.css';
 import { useLogin } from './hooks/useLogin';
 import AnimatedBackground from './components/AnimatedBackground';
 import LoginHeader from './components/LoginHeader';
