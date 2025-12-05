@@ -4,6 +4,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import "./App.css";
 
+// ==== PROTECTED ROUTE ====
+import ProtectedRoute from "./components/ProtectedRoute";
+
 // ==== PUBLIC PAGES ====
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
@@ -23,51 +26,103 @@ import DoctorCalendar from "./pages/Doctor-dashboard/Doctor-calendar/DoctorCalen
 import DoctorProfile from "./pages/Doctor-dashboard/Doctor-settings/DoctorProfile";
 import DoctorSettings from "./pages/Doctor-dashboard/Doctor-settings/DoctorSettings";
 
-// Auth context
-import { AuthProvider } from "./context/AuthContext";
-
 const App = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* ===== PUBLIC / PATIENT ===== */}
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/medical" element={<Medical />} />
+    <Router>
+      <Routes>
+        {/* ===== PUBLIC PAGES ===== */}
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/medical" element={<Medical />} />
 
-          {/* Patient side */}
-          {/* đường test nhanh vẫn giữ được */}
-          <Route path="/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/profile" element={<PatientProfilePage />} />
-          <Route
-            path="/patient/appointments"
-            element={<PatientAppointmentsPage />}
-              />
-          {/* ===== DOCTOR SIDE ===== */}
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-          <Route path="/doctor/patients" element={<DoctorPatientList />} />
-          <Route
-            path="/doctor/appointments"
-            element={<DoctorAppointmentLog />}
-          />
-          <Route path="/doctor/calendar" element={<DoctorCalendar />} />
-          <Route
-            path="/doctor/settings/profile"
-            element={<DoctorProfile />}
-          />
-          <Route
-            path="/doctor/settings/preferences"
-            element={<DoctorSettings />}
-          />
-        </Routes>
-      </Router>
-    </AuthProvider>
+        {/* ===== PROTECTED: PATIENT SIDE ===== */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/dashboard"
+          element={
+            <ProtectedRoute>
+              <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/profile"
+          element={
+            <ProtectedRoute>
+              <PatientProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/appointments"
+          element={
+            <ProtectedRoute>
+              <PatientAppointmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* ===== PROTECTED: DOCTOR SIDE ===== */}
+        <Route
+          path="/doctor/dashboard"
+          element={
+            <ProtectedRoute>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/patients"
+          element={
+            <ProtectedRoute>
+              <DoctorPatientList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/appointments"
+          element={
+            <ProtectedRoute>
+              <DoctorAppointmentLog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/calendar"
+          element={
+            <ProtectedRoute>
+              <DoctorCalendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/settings/profile"
+          element={
+            <ProtectedRoute>
+              <DoctorProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/settings/preferences"
+          element={
+            <ProtectedRoute>
+              <DoctorSettings />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </Router>
   );
 };
-
-export default App;
+  
+  export default App;

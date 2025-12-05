@@ -7,31 +7,48 @@ const EMPTY_PROFILE = {
   name: "",
   email: "",
   phone: "",
-  city: "",
-  country: "",
+  date_of_birth: "",
+  gender: "",
+  address: "",
+  insurance_id: "",
+  emergency_contact: "",
+  emergency_contact_phone: "",
 };
 
-export default function PatientProfileCard({ initialProfile, startEditing }) {
-  const { user, updateUser } = useAuth();
+export default function PatientProfileCard({ user, initialProfile, startEditing }) {
+  const { updateUser } = useAuth();
 
   const [profile, setProfile] = useState(initialProfile || EMPTY_PROFILE);
   const [originalProfile, setOriginalProfile] = useState(
     initialProfile || EMPTY_PROFILE
   );
   const [isEditing, setIsEditing] = useState(!!startEditing);
-  const [loading, setLoading] = useState(!initialProfile);
+  const [loading, setLoading] = useState(!initialProfile && !user);
   const [error, setError] = useState(null);
 
   const normalizeProfile = (data) => ({
-    name: data?.full_name || data?.name || "",
+    name: data?.full_name || "",
     email: data?.email || "",
-    phone: data?.phone || "",
-    city: data?.city || "",
-    country: data?.country || "",
+    phone: data?.phone_num || "",
+    date_of_birth: data?.patient_profile?.date_of_birth || "",
+    gender: data?.patient_profile?.gender || "",
+    address: data?.patient_profile?.address || "",
+    insurance_id: data?.patient_profile?.insurance_id || "",
+    emergency_contact: data?.patient_profile?.emergency_contact || "",
+    emergency_contact_phone: data?.patient_profile?.emergency_contact_phone || "",
   });
 
-  // Luôn gọi API lấy đúng patient thật từ backend
+  // Nếu nhận được user từ props, sử dụng luôn
   useEffect(() => {
+    if (user) {
+      const norm = normalizeProfile(user);
+      setProfile(norm);
+      setOriginalProfile(norm);
+      setLoading(false);
+      return;
+    }
+
+    // Nếu không có user từ props, gọi API
     let cancelled = false;
 
     const fetchProfile = async () => {
@@ -88,14 +105,12 @@ export default function PatientProfileCard({ initialProfile, startEditing }) {
     setIsEditing(false);
   };
 
-  // 👉 chỉ gọi updateProfile, không đụng đến mật khẩu nữa
   const handleSaveProfile = async (updatedProfile) => {
     try {
       const payload = {
         full_name: updatedProfile.name,
-        phone: updatedProfile.phone,
-        city: updatedProfile.city,
-        country: updatedProfile.country,
+        email: updatedProfile.email,
+        phone_num: updatedProfile.phone,
       };
 
       const res = await updateProfile(payload);
@@ -161,7 +176,7 @@ export default function PatientProfileCard({ initialProfile, startEditing }) {
   }
 
   return (
-    <section className="pd-card pd-profile-card">
+    <section className="pd-card pd-profile-card" style={{ minHeight: "auto", width: "100%" }}>
       <div className="pd-profile-header">
         <div className="pd-profile-main">
           <div className="pd-profile-avatar">
@@ -187,7 +202,19 @@ export default function PatientProfileCard({ initialProfile, startEditing }) {
       </div>
 
       {!isEditing && (
-        <div className="pd-profile-info-grid">
+        <div className="pd-profile-info-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "30px" }}>
+          <div className="pd-profile-info-item">
+            <span className="pd-profile-label">Full Name</span>
+            <span className="pd-profile-value">
+              {profile.name || "Not provided"}
+            </span>
+          </div>
+          <div className="pd-profile-info-item">
+            <span className="pd-profile-label">Email</span>
+            <span className="pd-profile-value">
+              {profile.email || "Not provided"}
+            </span>
+          </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Phone</span>
             <span className="pd-profile-value">
@@ -195,21 +222,39 @@ export default function PatientProfileCard({ initialProfile, startEditing }) {
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">City</span>
+            <span className="pd-profile-label">Date of Birth</span>
             <span className="pd-profile-value">
-              {profile.city || "Not provided"}
+              {profile.date_of_birth || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Country</span>
-            <span className="pd-profile-value">
-              {profile.country || "Not provided"}
+            <span className="pd-profile-label">Gender</span>
+            <span className="pd-profile-value" style={{ textTransform: "capitalize" }}>
+              {profile.gender || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Email</span>
+            <span className="pd-profile-label">Insurance ID</span>
             <span className="pd-profile-value">
-              {profile.email || "Not provided"}
+              {profile.insurance_id || "Not provided"}
+            </span>
+          </div>
+          <div className="pd-profile-info-item" style={{ gridColumn: "1 / -1" }}>
+            <span className="pd-profile-label">Address</span>
+            <span className="pd-profile-value">
+              {profile.address || "Not provided"}
+            </span>
+          </div>
+          <div className="pd-profile-info-item">
+            <span className="pd-profile-label">Emergency Contact</span>
+            <span className="pd-profile-value">
+              {profile.emergency_contact || "Not provided"}
+            </span>
+          </div>
+          <div className="pd-profile-info-item">
+            <span className="pd-profile-label">Emergency Contact Phone</span>
+            <span className="pd-profile-value">
+              {profile.emergency_contact_phone || "Not provided"}
             </span>
           </div>
         </div>
@@ -230,48 +275,76 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
   const [profileForm, setProfileForm] = useState(
     initialProfile || EMPTY_PROFILE
   );
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setProfileForm(initialProfile || EMPTY_PROFILE);
+    setErrors({});
   }, [initialProfile]);
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfileForm((prev) => ({ ...prev, [name]: value }));
+    
+    // Validate email in real-time
+    if (name === "email" && value && !validateEmail(value)) {
+      setErrors((prev) => ({ ...prev, email: "Invalid email format" }));
+    } else {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate email before submit
+    if (profileForm.email && !validateEmail(profileForm.email)) {
+      setErrors((prev) => ({ ...prev, email: "Invalid email format" }));
+      return;
+    }
+    
     onSave(profileForm);
   };
 
   return (
     <form className="pd-profile-form" onSubmit={handleSubmit}>
-      <div className="pd-profile-form-row">
+      <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Full name</label>
+          <label>Full Name *</label>
           <input
             type="text"
             name="name"
             value={profileForm.name}
             onChange={handleProfileChange}
+            required
           />
         </div>
         <div className="pd-profile-form-field">
-          <label>Email</label>
+          <label>Email *</label>
           <input
             type="email"
             name="email"
             value={profileForm.email}
-            disabled
-            readOnly
+            onChange={handleProfileChange}
+            required
+            style={{ borderColor: errors.email ? "red" : "inherit" }}
           />
+          {errors.email && <span style={{ color: "red", fontSize: "12px" }}>{errors.email}</span>}
         </div>
       </div>
 
-      <div className="pd-profile-form-row">
+      <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Phone</label>
+          <label>Phone Number</label>
           <input
             type="text"
             name="phone"
@@ -280,23 +353,70 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           />
         </div>
         <div className="pd-profile-form-field">
-          <label>City</label>
+          <label>Date of Birth</label>
           <input
-            type="text"
-            name="city"
-            value={profileForm.city}
+            type="date"
+            name="date_of_birth"
+            value={profileForm.date_of_birth}
             onChange={handleProfileChange}
           />
         </div>
       </div>
 
-      <div className="pd-profile-form-row">
+      <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Country</label>
+          <label>Gender</label>
+          <select
+            name="gender"
+            value={profileForm.gender}
+            onChange={handleProfileChange}
+          >
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div className="pd-profile-form-field">
+          <label>Insurance ID</label>
           <input
             type="text"
-            name="country"
-            value={profileForm.country}
+            name="insurance_id"
+            value={profileForm.insurance_id}
+            onChange={handleProfileChange}
+          />
+        </div>
+      </div>
+
+      <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
+        <div className="pd-profile-form-field">
+          <label>Address</label>
+          <textarea
+            name="address"
+            value={profileForm.address}
+            onChange={handleProfileChange}
+            rows="3"
+            style={{ resize: "vertical" }}
+          />
+        </div>
+      </div>
+
+      <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+        <div className="pd-profile-form-field">
+          <label>Emergency Contact Name</label>
+          <input
+            type="text"
+            name="emergency_contact"
+            value={profileForm.emergency_contact}
+            onChange={handleProfileChange}
+          />
+        </div>
+        <div className="pd-profile-form-field">
+          <label>Emergency Contact Phone</label>
+          <input
+            type="text"
+            name="emergency_contact_phone"
+            value={profileForm.emergency_contact_phone}
             onChange={handleProfileChange}
           />
         </div>

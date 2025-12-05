@@ -188,9 +188,6 @@ export const suggestAppointmentAI = async ({
   patientId,
 }) => {
   try {
-    // TODO: Khi backend xong, bỏ comment đoạn dưới và xóa phần fakeReturn
-
-    /*
     const response = await apiClient.post(
       "/api/v1/ai/suggest-appointment/",
       {
@@ -201,9 +198,9 @@ export const suggestAppointmentAI = async ({
       }
     );
     return response.data;
-    */
 
-    // ===== TẠM THỜI: FAKE RETURN ĐỂ FRONTEND DÙNG DEMO =====
+    // ===== BACKUP: Nếu backend chưa implement, sử dụng fake data =====
+    /*
     console.warn(
       "[suggestAppointmentAI] Backend API chưa implement. Trả về dữ liệu fake."
     );
@@ -236,6 +233,7 @@ export const suggestAppointmentAI = async ({
         ],
       },
     };
+    */
   } catch (error) {
     throw error.response?.data || error.message;
   }

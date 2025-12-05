@@ -4,7 +4,6 @@ import apiClient from "./authAPI"; // dùng chung axios instance + interceptor
 // Lấy profile bệnh nhân hiện tại (từ user đang login)
 export async function getMyProfile() {
   const res = await apiClient.get("/api/v1/user/me"); 
-  // hoặc /api/v1/patients/me tùy backend
   return res.data;
 }
 

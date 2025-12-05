@@ -1,13 +1,10 @@
 // src/api/authAPI.js
 import axios from "axios";
 
-const RAW_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
-const API_BASE_URL = RAW_BASE_URL.replace(/\\/api\\/v1\\/?$/, "");
-const API_PREFIX = "/api/v1";
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://myhealthcare-api-h3amhrevg2feeab9.southeastasia-01.azurewebsites.net/";
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: RAW_BASE_URL,
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -50,7 +47,7 @@ export function isAuthenticated() {
 
 // ---- LOGIN ----
 export async function login({ email, password }) {
-  const res = await fetch(`${API_BASE_URL}${API_PREFIX}/auth/login/`, {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/auth/login/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -78,7 +75,7 @@ export async function logout() {
 
   try {
     if (refresh) {
-      await fetch(`${API_BASE_URL}${API_PREFIX}/auth/logout/`, {
+      await fetch(`${RAW_BASE_URL}api/v1/auth/logout/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,12 +94,35 @@ export async function logout() {
   }
 }
 
+// ---- REGISTER ----
+export async function register(payload) {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/auth/register/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data?.success) {
+    const message = data?.message || "Registration failed";
+    throw new Error(message);
+  }
+
+  // data = { success, message, user, tokens: { refresh, access } }
+  saveAuthToStorage({ user: data.user, tokens: data.tokens });
+
+  return data;
+}
+
 // ---- GET PROFILE (từ backend) ----
 export async function fetchProfile() {
   const access = localStorage.getItem("access_token");
   if (!access) throw new Error("No access token");
 
-  const res = await fetch(`${API_BASE_URL}${API_PREFIX}/user/profile/`, {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/user/profile/`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${access}`,
@@ -122,12 +142,15 @@ export async function fetchProfile() {
   return data;
 }
 
+// ---- ALIAS: getProfile ----
+export const getProfile = fetchProfile;
+
 // ---- UPDATE PROFILE (PATCH) ----
 export async function updateProfile(profilePayload) {
   const access = localStorage.getItem("access_token");
   if (!access) throw new Error("No access token");
 
-  const res = await fetch(`${API_BASE_URL}${API_PREFIX}/user/profile/`, {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/user/profile/`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${access}`,
@@ -145,6 +168,29 @@ export async function updateProfile(profilePayload) {
 
   // Backend đã trả lại User đầy đủ sau khi update
   localStorage.setItem("user", JSON.stringify(data));
+  return data;
+}
+
+// ---- GET ME (CURRENT USER INFO) ----
+export async function getMe() {
+  const access = localStorage.getItem("access_token");
+  if (!access) throw new Error("No access token");
+
+  const res = await fetch(`${RAW_BASE_URL}api/v1/user/me/`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${access}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = data?.detail || data?.message || "Failed to fetch user info";
+    throw new Error(msg);
+  }
+
   return data;
 }
 

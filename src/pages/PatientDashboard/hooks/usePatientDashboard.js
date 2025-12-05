@@ -6,6 +6,7 @@ import {
   getMyMedicalRecords,
   getMyHealthTracking,
 } from "../../../api/patientAPI";
+import { getMe } from "../../../api/authAPI";
 import { useAuth } from "../../../context/AuthContext";
 
 function buildStats(appointments = [], records = [], healthStatus = "Good") {
@@ -77,8 +78,9 @@ export function usePatientDashboard() {
         setLoading(true);
         setError(null);
 
-        const [profileRes, appointmentsRes, recordsRes, metricsRes] =
+        const [meRes, , appointmentsRes, recordsRes, metricsRes] =
           await Promise.all([
+            getMe(),
             getMyProfile(),
             getMyAppointments(),
             getMyMedicalRecords(),
@@ -87,15 +89,23 @@ export function usePatientDashboard() {
 
         if (cancelled) return;
 
+        // Merge user data from /user/me with patient profile
         const patientProfile = {
-          id: profileRes.patient_id,
-          userId: profileRes.user_id,
-          name: profileRes.full_name,
-          email: profileRes.email,
-          phone: profileRes.phone_num,
-          birthDate: profileRes.date_of_birth,
-          address: profileRes.address,
-          gender: profileRes.gender,
+          // From /user/me response
+          id: meRes.id,
+          email: meRes.email,
+          full_name: meRes.full_name,
+          phone_num: meRes.phone_num,
+          role: meRes.role,
+          is_active: meRes.is_active,
+          created_at: meRes.created_at,
+          updated_at: meRes.updated_at,
+          patient_profile: meRes.patient_profile,
+          doctor_profile: meRes.doctor_profile,
+          // Legacy fields for compatibility
+          name: meRes.full_name,
+          phone: meRes.phone_num,
+          ...meRes, // include all fields from /user/me
         };
         setUser(patientProfile);
 

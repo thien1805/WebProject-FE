@@ -31,7 +31,6 @@ export default function PatientDashboard() {
     tabs,
     appointments,
     records,
-    metrics,
     statusOptions,
     activeTab,
     setActiveTab,
@@ -139,7 +138,9 @@ export default function PatientDashboard() {
 
         {activeTab === "records" && <MedicalRecordList records={records} />}
 
-        {activeTab === "profile" && <PatientProfileCard user={user} />}
+        {activeTab === "profile" && (
+          <PatientProfileCard user={user} />
+        )}
       </main>
 
       <Footer />

@@ -399,11 +399,11 @@
   flex-direction: column;
   background: #ffffff;            /* 🔹 card màu trắng */
   /* gap: 16px; */
-  max-width: 720px;
-  margin: 50px auto;
-  padding: 10px 16px;
+  width: 100%;
+  margin: 24px 0;
+  padding: 25px 30px;
   border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.04);
 }
 
 /* Header: avatar + name + Edit button */
