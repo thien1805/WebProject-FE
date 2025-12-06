@@ -1,5 +1,5 @@
 // src/api/medicalRecordAPI.js
-import apiClient from "./authAPI";
+import apiClient, { API_PREFIX } from "./authAPI";
 
 // Lấy danh sách medical records (patient hoặc doctor)
 export const getMedicalRecords = async ({
@@ -11,7 +11,7 @@ export const getMedicalRecords = async ({
   pageSize,
 } = {}) => {
   try {
-    const res = await apiClient.get("/api/v1/medical-records/", {
+    const res = await apiClient.get(`${API_PREFIX}/medical-records/`, {
       params: {
         patient_id: patientId,
         doctor_id: doctorId,
@@ -31,7 +31,7 @@ export const getMedicalRecords = async ({
 export const getMedicalRecordDetail = async (id) => {
   if (!id) throw new Error("Record id is required");
   try {
-    const res = await apiClient.get(`/api/v1/medical-records/${id}/`);
+    const res = await apiClient.get(`${API_PREFIX}/medical-records/${id}/`);
     return res.data; // 1 object record
   } catch (error) {
     throw error.response?.data || error.message;

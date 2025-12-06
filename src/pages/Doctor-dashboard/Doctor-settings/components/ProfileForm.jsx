@@ -7,6 +7,8 @@ export default function ProfileForm({
   onSave,
   isEditing,
   onStartEdit,
+  editableFields,
+  roleValue = "Doctor",
 }) {
   const handleChangeField = (field) => (e) => {
     if (!onChange) return;
@@ -19,6 +21,9 @@ export default function ProfileForm({
       onSave();
     }
   };
+
+  const canEdit = (field) =>
+    isEditing && (!Array.isArray(editableFields) || editableFields.includes(field));
 
   return (
     <form className="settings-card" onSubmit={handleSubmit}>
@@ -35,7 +40,7 @@ export default function ProfileForm({
             type="text"
             value={formData.full_name || formData.fullName || ""}
             onChange={handleChangeField("full_name")}
-            disabled={!isEditing}
+            disabled={!canEdit("full_name")}
           />
         </div>
 
@@ -46,7 +51,7 @@ export default function ProfileForm({
             type="email"
             value={formData.email || ""}
             onChange={handleChangeField("email")}
-            disabled={!isEditing}
+            disabled={!canEdit("email")}
           />
         </div>
 
@@ -57,7 +62,7 @@ export default function ProfileForm({
             type="tel"
             value={formData.phone || formData.phone_number || ""}
             onChange={handleChangeField("phone")}
-            disabled={!isEditing}
+            disabled={!canEdit("phone")}
           />
         </div>
 
@@ -68,7 +73,7 @@ export default function ProfileForm({
             type="text"
             value={formData.specialization || ""}
             onChange={handleChangeField("specialization")}
-            disabled={!isEditing}
+            disabled={!canEdit("specialization")}
           />
         </div>
 
@@ -80,7 +85,7 @@ export default function ProfileForm({
             min="0"
             value={formData.experience_years || ""}
             onChange={handleChangeField("experience_years")}
-            disabled={!isEditing}
+            disabled={!canEdit("experience_years")}
           />
         </div>
 
@@ -91,7 +96,7 @@ export default function ProfileForm({
             type="text"
             value={formData.clinic_name || ""}
             onChange={handleChangeField("clinic_name")}
-            disabled={!isEditing}
+            disabled={!canEdit("clinic_name")}
           />
         </div>
 
@@ -102,7 +107,7 @@ export default function ProfileForm({
             type="text"
             value={formData.address || ""}
             onChange={handleChangeField("address")}
-            disabled={!isEditing}
+            disabled={!canEdit("address")}
           />
         </div>
 
@@ -113,7 +118,7 @@ export default function ProfileForm({
             rows={3}
             value={formData.about || ""}
             onChange={handleChangeField("about")}
-            disabled={!isEditing}
+            disabled={!canEdit("about")}
           />
         </div>
 
@@ -121,7 +126,7 @@ export default function ProfileForm({
           <label>Role</label>
           <input
             type="text"
-            value={formData.role || "Doctor"}
+            value={roleValue}
             disabled={true}  
           />
         </div>

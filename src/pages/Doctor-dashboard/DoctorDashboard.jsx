@@ -9,7 +9,6 @@ import DashboardHero from "./components/DashboardHero";
 import DashboardStatsGrid from "./components/DashboardStatsGrid";
 import DashboardActivity from "./components/DashboardActivity";
 import DashboardCalendar from "./components/DashboardCalendar";
-import HealthStatusForm from "./components/HealthStatusForm";
 
 const DoctorDashboard = () => {
   const { greeting, stats, activity, calendar } = useDoctorDashboard();
@@ -20,17 +19,15 @@ const DoctorDashboard = () => {
         {/* LEFT COLUMN */}
         <section className="dd-left">
           <DashboardHero greeting={greeting} />
-          <DashboardStatsGrid stats={stats} />
-
           <div className="dd-bottom-row">
             <DashboardActivity activity={activity} />
+            <DashboardStatsGrid stats={stats} />
           </div>
         </section>
 
         {/* RIGHT COLUMN */}
         <section className="dd-right">
           <DashboardCalendar calendar={calendar} />
-          <HealthStatusForm />
         </section>
       </div>
     </DoctorLayout>

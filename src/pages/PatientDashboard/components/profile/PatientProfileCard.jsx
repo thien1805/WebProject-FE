@@ -166,7 +166,9 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
             <div>
               <h3 className="pd-profile-name">Profile</h3>
               <p className="pd-profile-email" style={{ color: "red" }}>
-                {error}
+                {typeof error === "string" && error.includes("<")
+                  ? "Failed to load profile."
+                  : error}
               </p>
             </div>
           </div>
@@ -419,6 +421,10 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
             value={profileForm.emergency_contact_phone}
             onChange={handleProfileChange}
           />
+        </div>
+        <div className="pd-profile-form-field">
+          <label>Role</label>
+          <input type="text" value="Patient" disabled readOnly />
         </div>
       </div>
 

@@ -1,7 +1,8 @@
 // src/api/appointmentAPI.js
-// All appointment-related APIs (patient side + future AI helper)
+// All appointment-related APIs (patient side + doctor side + future AI helper)
 
-import apiClient from "./authAPI";
+import apiClient, { API_PREFIX } from "./authAPI";
+
 
 // Helper build query string từ object
 const buildQueryString = (params = {}) => {
@@ -17,30 +18,31 @@ const buildQueryString = (params = {}) => {
 
 /**
  * 1. Get available time slots
- *    GET /api/v1/appointments/available-slots/
+ *    GET /api/v1/available-slots/?doctor_id=&date=&department_id=
  *
  * @param {Object} options
  * @param {number|string} options.doctorId
  * @param {string} options.date         // "YYYY-MM-DD"
- * @param {number|string} [options.serviceId]
+ * @param {number|string} [options.departmentId]
  */
-export const getAvailableSlots = async ({ doctorId, date, serviceId }) => {
+export const getAvailableSlots = async ({ doctorId, date, departmentId }) => {
   try {
     const query = buildQueryString({
       doctor_id: doctorId,
       date,
-      service_id: serviceId,
+      department_id: departmentId,
     });
 
     const response = await apiClient.get(
-      `/api/v1/appointments/available-slots/${query}`
+      `${API_PREFIX}/available-slots/${query}`
     );
 
-    // Doc trả:
+    // Backend trả:
     // {
-    //   "date": "...",
-    //   "doctor": {...},
-    //   "available_slots": [{ time, available, room }, ...]
+    //   date: "2024-01-15",
+    //   doctor: { id, full_name, specialization },
+    //   department?: { id, name, icon },
+    //   available_slots: [{ time, available, room }, ...]
     // }
     return response.data;
   } catch (error) {
@@ -49,23 +51,33 @@ export const getAvailableSlots = async ({ doctorId, date, serviceId }) => {
 };
 
 /**
- * 2. Book appointment
+ * 2. Book appointment (patient tạo lịch)
  *    POST /api/v1/appointments/
  *
- * Body theo doc:
+ * Body theo AppointmentCreateSerializer:
  * {
  *   doctor_id,
- *   service_id,
+ *   department_id,
  *   appointment_date: "YYYY-MM-DD",
- *   appointment_time: "HH:MM",
+ *   appointment_time: "HH:MM" hoặc "HH:MM:SS",
+ *   symptoms,
  *   reason,
  *   notes
+ * }
+ *
+ * Trả về:
+ * {
+ *   success: true,
+ *   message: "...",
+ *   appointment: { ...full Appointment... }
  * }
  */
 export const bookAppointment = async (payload) => {
   try {
-    const response = await apiClient.post("/api/v1/appointments/", payload);
-    // Thành công: { success, message, appointment: { ... } }
+    const response = await apiClient.post(
+      `${API_PREFIX}/appointments/`,
+      payload
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -73,15 +85,16 @@ export const bookAppointment = async (payload) => {
 };
 
 /**
- * 3. Get my appointments (patient dashboard)
+ * 3. My appointments (dùng custom action trong AppointmentViewSet)
  *    GET /api/v1/appointments/my-appointments/
+ *    Tự động trả về:
+ *    - nếu user là patient → appointment của patient
+ *    - nếu doctor → appointment của doctor
+ *    - nếu admin → tất cả
  *
- * @param {Object} options
- * @param {string} [options.status]      // booked|confirmed|completed|cancelled|no_show
- * @param {string} [options.dateFrom]    // "YYYY-MM-DD"
- * @param {string} [options.dateTo]      // "YYYY-MM-DD"
- * @param {number} [options.page=1]
- * @param {number} [options.pageSize]    // theo Implementation Notes: page_size
+ * Query:
+ *   ?status=&date_from=&date_to=&page=
+ * (page_size không dùng trong action này, nhưng truyền cũng không sao)
  */
 export const getMyAppointments = async ({
   status,
@@ -100,9 +113,9 @@ export const getMyAppointments = async ({
     });
 
     const response = await apiClient.get(
-      `/api/v1/appointments/my-appointments/${query}`
+      `${API_PREFIX}/appointments/my-appointments/${query}`
     );
-    // Doc trả: { count, next, previous, results: [ ... ] }
+    // my-appointments hiện tại KHÔNG paginate: trả về [ ...appointments ]
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -110,19 +123,102 @@ export const getMyAppointments = async ({
 };
 
 /**
- * 4. Cancel appointment
+ * 3b. Patient appointments riêng (PatientAppointmentViewSet)
+ *     GET /api/v1/patient/appointments/
+ *     Có pagination (PageNumberPagination)
+ */
+export const getPatientAppointments = async ({
+  status,
+  dateFrom,
+  dateTo,
+  page = 1,
+  pageSize,
+} = {}) => {
+  try {
+    const query = buildQueryString({
+      status,
+      date_from: dateFrom,
+      date_to: dateTo,
+      page,
+      page_size: pageSize,
+    });
+
+    const response = await apiClient.get(
+      `${API_PREFIX}/patient/appointments/${query}`
+    );
+    // Trả về dạng pagination: { count, next, previous, results: [...] }
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * 3c. Doctor appointments riêng (DoctorAppointmentViewSet)
+ *     GET /api/v1/doctor/appointments/
+ */
+export const getDoctorAppointments = async ({
+  status,
+  dateFrom,
+  dateTo,
+  patientId,
+  page = 1,
+  pageSize,
+} = {}) => {
+  try {
+    const query = buildQueryString({
+      status,
+      date_from: dateFrom,
+      date_to: dateTo,
+      patient_id: patientId,
+      page,
+      page_size: pageSize,
+    });
+
+    const response = await apiClient.get(
+      `${API_PREFIX}/doctor/appointments/${query}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * 4. Get appointment detail (bao gồm medical_record nếu có)
+ *    GET /api/v1/appointments/{id}/
+ */
+export const getAppointmentDetail = async (appointmentId) => {
+  try {
+    const response = await apiClient.get(
+      `${API_PREFIX}/appointments/${appointmentId}/`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * 5. Cancel appointment
  *    POST /api/v1/appointments/{id}/cancel/
  *
  * Body:
  * { reason: "..." }
+ *
+ * Trả về:
+ * {
+ *   success: true/false,
+ *   message|error: "...",
+ *   appointment?: { ... }
+ * }
  */
 export const cancelAppointment = async (appointmentId, reason) => {
   try {
     const response = await apiClient.post(
-      `/api/v1/appointments/${appointmentId}/cancel/`,
+      `${API_PREFIX}/appointments/${appointmentId}/cancel/`,
       { reason }
     );
-    // { success, message, appointment: { ... } }
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -130,14 +226,15 @@ export const cancelAppointment = async (appointmentId, reason) => {
 };
 
 /**
- * 5. Reschedule appointment
+ * 6. Reschedule appointment
  *    PUT /api/v1/appointments/{id}/reschedule/
+ *    (methods=['put'] trong backend → phải dùng PUT)
  *
  * Body:
  * {
  *   new_date: "YYYY-MM-DD",
- *   new_time: "HH:MM",
- *   reason: "..."
+ *   new_time: "HH:MM" hoặc "HH:MM:SS",
+ *   reason: "...",
  * }
  */
 export const rescheduleAppointment = async (
@@ -146,10 +243,9 @@ export const rescheduleAppointment = async (
 ) => {
   try {
     const response = await apiClient.put(
-      `/api/v1/appointments/${appointmentId}/reschedule/`,
+      `${API_PREFIX}/appointments/${appointmentId}/reschedule/`,
       { new_date, new_time, reason }
     );
-    // { success, message, appointment: { ... } }
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -157,29 +253,10 @@ export const rescheduleAppointment = async (
 };
 
 /**
- * 6. (Future) AI suggestion for appointment
+ * 7. (Future) AI suggestion for appointment
  *    POST /api/v1/ai/suggest-appointment/
  *
- * !!! HIỆN TẠI: backend CHƯA có endpoint này.
- * Khi bạn implement xong ở Django, chỉ cần sửa TODO bên trong.
- *
- * @param {Object} payload
- * @param {string} payload.symptoms
- * @param {string[]} [payload.selectedSymptoms]
- * @param {string} [payload.preferredDate]  // "YYYY-MM-DD"
- * @param {number} [payload.patientId]
- *
- * Expected response (gợi ý):
- * {
- *   success: true,
- *   message: "...",
- *   data: {
- *     specialty: { id, name },
- *     doctor: { id, full_name, ... },
- *     service: { id, name },
- *     suggested_slots: [{ date, time, room, available }, ...]
- *   }
- * }
+ * Hiện tại backend chưa có endpoint này → vẫn giữ fake demo.
  */
 export const suggestAppointmentAI = async ({
   symptoms,
@@ -189,7 +266,7 @@ export const suggestAppointmentAI = async ({
 }) => {
   try {
     const response = await apiClient.post(
-      "/api/v1/ai/suggest-appointment/",
+      `${API_PREFIX}/ai/suggest-appointment/`,
       {
         symptoms,
         selected_symptoms: selectedSymptoms,

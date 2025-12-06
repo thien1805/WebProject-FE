@@ -58,10 +58,11 @@ export function useDoctorDashboard() {
       return { x: Number(x.toFixed(2)), y: Number(normalizedY.toFixed(2)) };
     });
 
-    return { points, labels: buckets.map((b) => b.label) };
+    return { points, labels: buckets.map((b) => b.label), buckets };
   };
 
-  const activity = buildMonthlyActivity(demoAppointments, 6);
+  const activityData = buildMonthlyActivity(demoAppointments, 6);
+  const activity = { points: activityData.points, labels: activityData.labels };
 
   const formatNumber = (n) =>
     Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -84,49 +85,29 @@ export function useDoctorDashboard() {
   const uniquePatients = Array.from(
     new Set(demoAppointments.map((a) => a.patient))
   ).length;
-  const completedThisMonth = buildMonthlyActivity(demoAppointments, 1).points[0]
-    ? buildMonthlyActivity(demoAppointments, 1).points[0].count
-    : 0;
-  const completedLastMonth = buildMonthlyActivity(demoAppointments, 2).points[0]
-    ? buildMonthlyActivity(demoAppointments, 2).points[0].count
-    : 0;
+  const monthBuckets = buildMonthlyActivity(demoAppointments, 2).buckets;
+  const completedThisMonth =
+    monthBuckets.length > 0 ? monthBuckets[monthBuckets.length - 1].count : 0;
+  const completedLastMonth =
+    monthBuckets.length > 1 ? monthBuckets[monthBuckets.length - 2].count : 0;
   const monthTrendDelta =
     completedLastMonth === 0
       ? 100
       : ((completedThisMonth - completedLastMonth) / completedLastMonth) * 100;
 
+  const currentMonthLabel = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
   const stats = [
     {
-      id: "totalPatients",
-      label: "Total Patients",
-      value: formatNumber(uniquePatients),
-      trend: `${monthTrendDelta >= 0 ? "+" : ""}${monthTrendDelta.toFixed(1)}%`,
-      trendDirection: monthTrendDelta >= 0 ? "up" : "down",
-      trendText: "vs last month",
-    },
-    {
-      id: "newPatients",
-      label: "New Patients (30d)",
-      value: formatNumber(countLastNDays(demoAppointments, 30)),
-      trend: "—",
-      trendDirection: "up",
-      trendText: "Last 30 days",
-    },
-    {
-      id: "earnings",
-      label: "Earnings",
-      value: `${formatNumber(completedThisMonth * 500000)} VND`,
-      trend: "est.",
-      trendDirection: "up",
-      trendText: "Based on completed visits",
-    },
-    {
       id: "appointments",
-      label: "Appointments (month)",
+      label: `Appointments in ${currentMonthLabel}`,
       value: formatNumber(completedThisMonth),
-      trend: `${monthTrendDelta >= 0 ? "+" : ""}${monthTrendDelta.toFixed(1)}%`,
-      trendDirection: monthTrendDelta >= 0 ? "up" : "down",
-      trendText: "vs last month",
+      trend: null,
+      trendDirection: null,
+      trendText: null,
     },
   ];
 

@@ -1,7 +1,26 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 
-export default function AppointmentItem({ appt }) {
+const STATUS_LABELS = {
+  booked: "Pending", // map booked -> Pending
+  pending: "Pending",
+  confirmed: "Confirmed",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+export default function AppointmentItem({ appt, recordId }) {
+  const navigate = useNavigate();
+
+  const handleViewRecord = () => {
+    if (!recordId) return;
+    navigate(`/patient/medical-record/${recordId}`);
+  };
+
+  const statusLabel =
+    STATUS_LABELS[appt.status?.toLowerCase?.()] || appt.status || "Unknown";
+
   return (
     <div className="pd-appointment-card">
       <div className="pd-appointment-left">
@@ -27,9 +46,22 @@ export default function AppointmentItem({ appt }) {
       </div>
 
       <div className="pd-appointment-actions">
-        <AppointmentStatusBadge status={appt.status} />
-        <button type="button" className="pd-outline-btn">
-          Details
+        <button
+          type="button"
+          className="pd-status-chip"
+          disabled
+          aria-label={`Status: ${statusLabel}`}
+        >
+          {statusLabel}
+        </button>
+        <button
+          type="button"
+          className="pd-outline-btn"
+          onClick={handleViewRecord}
+          disabled={!recordId}
+          title={recordId ? "View medical record" : "No record available"}
+        >
+          View detail
         </button>
       </div>
     </div>

@@ -31,7 +31,7 @@ export default function PatientListTable({
               <th>Number</th>
               <th>Age</th>
               <th>Email address</th>
-              <th>Action</th>
+              <th>Medical record</th>
             </tr>
           </thead>
           <tbody>
@@ -62,9 +62,18 @@ export default function PatientListTable({
                 <td>{p.age}</td>
                 <td>{p.email}</td>
                 <td>
-                  <div className="patient-actions">
-                    <button className="icon-btn small">✏️</button>
-                    <button className="icon-btn small">🗑️</button>
+                  <div className="patient-record-cell">
+                    {p.medicalRecords && p.medicalRecords.length > 0 ? (
+                      <div className="patient-record-scroll">
+                        {p.medicalRecords.map((rec, idx) => (
+                          <div key={idx} className="patient-record-item">
+                            {rec.title || rec.diagnosis || `Record #${idx + 1}`}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="patient-record-empty">No record</span>
+                    )}
                   </div>
                 </td>
               </tr>

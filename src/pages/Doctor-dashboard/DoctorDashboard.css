@@ -77,6 +77,30 @@
   overflow: hidden;
 }
 
+.dd-header-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  min-width: 180px;
+  padding: 6px 0;
+  z-index: 10;
+}
+
+.dd-header-dropdown-item {
+  display: block;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #1f2937;
+  text-decoration: none;
+}
+
+.dd-header-dropdown-item:hover {
+  background: #f3f4f6;
+}
 .dd-header-avatar img {
   width: 100%;
   height: 100%;
@@ -116,6 +140,14 @@
 .dd-main {
   padding: 24px 24px 32px;
   flex: 1;
+}
+
+.dd-content-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 22px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  overflow-x: auto;
 }
 
 .dd-layout {
@@ -182,18 +214,23 @@
 /* STATS */
 .dd-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
+  height: 100%;
 }
 
 .dd-stat-card {
   background: #f5f7fb;
   border-radius: 16px;
-  padding: 12px 12px 10px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  height: 100%;
+  min-height: 160px;
+  text-align: center;
+  align-items: center;
 }
 
 .dd-stat-label {
@@ -202,10 +239,10 @@
 }
 
 .dd-stat-value {
-  margin-top: 4px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #353637;
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0b1021;
 }
 
 .dd-stat-footer {
@@ -213,6 +250,7 @@
   font-size: 11px;
   display: flex;
   flex-direction: column;
+  color: #6b7280;
 }
 
 .dd-stat-footer span:first-child {
@@ -232,6 +270,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
   gap: 18px;
+  align-items: stretch;
 }
 
 /* CARD HEADER */

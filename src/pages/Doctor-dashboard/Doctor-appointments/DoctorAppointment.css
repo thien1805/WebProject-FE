@@ -120,6 +120,7 @@
 /* ===== Table ===== */
 .appt-table-wrapper {
   margin-top: 8px;
+  overflow-x: auto;
 }
 
 .appt-table {
@@ -133,6 +134,82 @@
   padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.appt-record-btn {
+  border: 1px solid #d1d5db;
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.appt-record-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Quick add medical record */
+.appt-record-card {
+  margin-top: 18px;
+  padding: 18px 22px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.appt-record-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appt-record-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.appt-record-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.appt-record-field input,
+.appt-record-field textarea {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: #f9fafb;
+}
+
+.appt-record-field textarea {
+  resize: vertical;
+}
+
+.appt-record-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.appt-record-send-btn {
+  border: none;
+  border-radius: 999px;
+  background: #0ea5e9;
+  color: #ffffff;
+  padding: 8px 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.appt-record-send-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .appt-table thead {
@@ -181,7 +258,8 @@
 }
 
 /* booked */
-.appt-status-select--booked {
+.appt-status-select--booked,
+.appt-status-select--pending {
   background: #fef9c3;
   border-color: #facc15;
   color: #92400e;
@@ -206,13 +284,6 @@
   background: #fee2e2;
   border-color: #f97373;
   color: #b91c1c;
-}
-
-/* no_show */
-.appt-status-select--no_show {
-  background: #e5e7eb;
-  border-color: #9ca3af;
-  color: #374151;
 }
 
 /* ===== Responsive ===== */

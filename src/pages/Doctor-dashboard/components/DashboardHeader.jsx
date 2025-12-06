@@ -1,11 +1,12 @@
 // src/pages/Doctor-dashboard/components/DashboardHeader.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../../../components/Logo/Logo";
 import { useAuth } from "../../../context/AuthContext";
 
 export default function DashboardHeader() {
   const { user } = useAuth();
+  const [open, setOpen] = useState(false);
 
   // Lấy tên hiển thị từ user
   const displayName = user?.fullName || user?.name || "Doctor";
@@ -19,19 +20,17 @@ export default function DashboardHeader() {
       <div className="dd-header-inner">
         {/* Left: logo */}
         <div className="dd-header-left dd-header-left--logo">
-          <Link to="/doctor/dashboard" style={{ display: "inline-flex" }}>
-            <Logo clickable={false} />
-          </Link>
+          <Logo to="/doctor/dashboard" />
         </div>
 
         {/* Right: path + user info */}
         <div className="dd-header-right">
           <span className="dd-header-path">/ Dashboard</span>
 
-          {/* Click vào avatar + tên → sang trang profile settings */}
-          <Link
-            to="/doctor/settings/profile"
+          <button
+            type="button"
             className="dd-header-account"
+            onClick={() => setOpen((prev) => !prev)}
           >
             <div className="dd-header-avatar">
               {avatarUrl ? (
@@ -44,7 +43,26 @@ export default function DashboardHeader() {
               <span className="dd-header-user-name">{displayName}</span>
               <span className="dd-header-user-role">Doctor</span>
             </div>
-          </Link>
+          </button>
+
+          {open && (
+            <div className="dd-header-dropdown">
+              <Link
+                to="/doctor/appointments"
+                className="dd-header-dropdown-item"
+                onClick={() => setOpen(false)}
+              >
+                View appointments
+              </Link>
+              <Link
+                to="/doctor/settings/profile"
+                className="dd-header-dropdown-item"
+                onClick={() => setOpen(false)}
+              >
+                View profile
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./Logo.css";
 
-const Logo = ({ clickable = true, className = "" }) => {
+const Logo = ({ clickable = true, className = "", to = "/" }) => {
   const logoContent = (
     <h1 className={`logo ${className}`}>
       <span className="logo-my">My</span>
@@ -13,7 +13,7 @@ const Logo = ({ clickable = true, className = "" }) => {
   );
 
   return clickable ? (
-    <Link to="/" className="logo-container">
+    <Link to={to} className="logo-container">
       {logoContent}
     </Link>
   ) : (

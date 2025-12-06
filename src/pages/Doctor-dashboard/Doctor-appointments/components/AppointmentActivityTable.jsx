@@ -11,6 +11,7 @@ export default function AppointmentActivityTable({
   setDateFilter,
   statusChoices,
   updateStatus,
+  onAddRecord,
 }) {
   const renderStatusLabel = (value) => {
     const found = statusChoices.find((s) => s.value === value);
@@ -107,12 +108,13 @@ export default function AppointmentActivityTable({
               <th>Notes</th>
               <th>Time</th>
               <th>Date</th>
+              <th style={{ textAlign: "right" }}>Medical record</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="appt-empty">
+                <td colSpan={6} className="appt-empty">
                   No appointments found.
                 </td>
               </tr>
@@ -152,6 +154,24 @@ export default function AppointmentActivityTable({
                     month: "2-digit",
                     year: "numeric",
                   })}
+                </td>
+                <td style={{ textAlign: "right" }}>
+                  <button
+                    type="button"
+                  className={
+                    "appt-record-btn" +
+                    (row.status === "completed"
+                      ? ""
+                      : " appt-record-btn--disabled")
+                  }
+                  disabled={row.status !== "completed"}
+                  onClick={() => {
+                    if (row.status !== "completed") return;
+                    onAddRecord?.(row);
+                  }}
+                >
+                  Add medical record
+                </button>
                 </td>
               </tr>
             ))}

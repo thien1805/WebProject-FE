@@ -21,6 +21,7 @@ import VerifyResetToken from "./pages/ResetPassword/VerifyResetToken";
 import PatientDashboard from "./pages/PatientDashboard/PatientDashboard";
 import PatientProfilePage from "./pages/PatientDashboard/components/profile/PatientProfilePage";
 import PatientAppointmentsPage from "./pages/PatientDashboard/components/appointments/PatientAppointmentsPage";
+import PatientMedicalRecordDetailPage from "./pages/PatientDashboard/components/records/PatientMedicalRecordDetailPage";
 // ==== DOCTOR SIDE ====
 import DoctorDashboard from "./pages/Doctor-dashboard/DoctorDashboard";
 import DoctorPatientList from "./pages/Doctor-dashboard/Doctor-patient/DoctorPatientList";

@@ -130,13 +130,16 @@ export default function PatientDashboard() {
         {activeTab === "appointments" && (
           <AppointmentList
             appointments={appointments}
+            records={records}
             statusOptions={statusOptions}
             activeStatus={activeStatus}
             onStatusChange={setActiveStatus}
           />
         )}
 
-        {activeTab === "records" && <MedicalRecordList records={records} />}
+        {activeTab === "records" && <MedicalRecordList 
+        records={records}
+        appointments={appointments} />}
 
         {activeTab === "profile" && (
           <PatientProfileCard user={user} />
