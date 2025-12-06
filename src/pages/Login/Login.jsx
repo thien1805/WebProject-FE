@@ -19,7 +19,7 @@ export default function LoginPage() {
   } = useLogin();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-blue-100 flex items-center justify-center p-4 relative overflow-hidden">
       <AnimatedBackground />
 
       <div className="w-full max-w-md relative z-10">

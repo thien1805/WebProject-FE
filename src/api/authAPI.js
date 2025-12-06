@@ -91,6 +91,7 @@ export async function logout() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
+    window.location.href = "/home";
   }
 }
 
@@ -107,18 +108,82 @@ export async function register(payload) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok || !data?.success) {
-    const message = data?.message || "Registration failed";
-    throw new Error(message);
+    // Ném nguyên payload lỗi để UI hiển thị đúng từng field
+    throw data || { message: "Registration failed" };
   }
 
-  // data = { success, message, user, tokens: { refresh, access } }
+  // Lưu token + user xuống localStorage để auto đăng nhập sau đăng ký
   saveAuthToStorage({ user: data.user, tokens: data.tokens });
+  return data;
+}
+
+// ---- FORGOT PASSWORD (request email) ----
+export async function requestPasswordReset({ email }) {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/auth/forgot-password/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data?.success) {
+    const msg = data?.message || data?.detail || "Failed to send password reset email";
+    throw new Error(msg);
+  }
 
   return data;
 }
 
-// ---- GET PROFILE (từ backend) ----
-export async function fetchProfile() {
+// ---- VERIFY RESET TOKEN (optional) ----
+export async function verifyResetToken({ uid, token }) {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/auth/verify-reset-token/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ uid, token }),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data?.success) {
+    const msg = data?.message || data?.detail || "Token is invalid or has expired";
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+// ---- RESET PASSWORD ----
+export async function resetPassword({ uid, token, newPassword, confirmPassword }) {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/auth/reset-password/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      uid,
+      token,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    }),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data?.success) {
+    const msg = data?.message || data?.detail || "Reset password failed";
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+// ---- GET PROFILE ----
+export async function getProfile() {
   const access = localStorage.getItem("access_token");
   if (!access) throw new Error("No access token");
 
@@ -137,13 +202,10 @@ export async function fetchProfile() {
     throw new Error(msg);
   }
 
-  // data = UserSerializer (có patient_profile / doctor_profile tuỳ role)
+  // Lưu user profile vào localStorage
   localStorage.setItem("user", JSON.stringify(data));
   return data;
 }
-
-// ---- ALIAS: getProfile ----
-export const getProfile = fetchProfile;
 
 // ---- UPDATE PROFILE (PATCH) ----
 export async function updateProfile(profilePayload) {

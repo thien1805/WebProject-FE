@@ -13,6 +13,9 @@ import Login from "./pages/Login/Login";
 import Signup from "./pages/Signup/Signup";
 import AboutUs from "./pages/AboutUs/AboutUs";
 import Medical from "./pages/Medical/Medical";
+import ResetPassword from "./pages/ResetPassword/ResetPassword";
+import ForgotPassword from "./pages/ResetPassword/ForgotPassword";
+import VerifyResetToken from "./pages/ResetPassword/VerifyResetToken";
 
 // ==== PATIENT SIDE ====
 import PatientDashboard from "./pages/PatientDashboard/PatientDashboard";
@@ -37,6 +40,9 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/medical" element={<Medical />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-reset-token/:uid/:token" element={<VerifyResetToken />} />
+        <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
 
         {/* ===== PROTECTED: PATIENT SIDE ===== */}
         <Route

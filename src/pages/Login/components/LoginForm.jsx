@@ -10,7 +10,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
     <div className="space-y-6">
       {/* Email Field with Icon & Animation */}
       <div className="transform transition-all duration-300 hover:scale-[1.02]">
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
           <Mail className="w-4 h-4 text-blue-600" />
           Email Address
         </label>
@@ -40,7 +40,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
 
       {/* Password Field with Icon & Animation */}
       <div className="transform transition-all duration-300 hover:scale-[1.02]">
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
           <Lock className="w-4 h-4 text-blue-600" />
           Password
         </label>
@@ -79,16 +79,19 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
           />
           <span className="text-gray-600 group-hover:text-gray-900 transition-colors">Remember me</span>
         </label>
-        <button className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-all">
+        <Link
+          to="/forgot-password"
+          className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-all"
+        >
           Forgot password?
-        </button>
+        </Link>
       </div>
 
       {/* Submit Button with Gradient & Animation */}
       <button
         onClick={onSubmit}
         disabled={loading}
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95"
+        className="w-full bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95"
       >
         {loading ? (
           <>

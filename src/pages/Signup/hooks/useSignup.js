@@ -48,15 +48,18 @@ export function useSignup() {
       return;
     }
 
-    const dataWithRole = { 
-      ...formData, 
-      role: "patient" 
-    };
-
+    // Chuẩn hóa payload theo API
     const {
-      termsAccepted, 
-      ...dataToSend
-    } = dataWithRole;
+      termsAccepted,
+      password_confirm,
+      ...rest
+    } = formData;
+
+    const dataToSend = {
+      ...rest,
+      role: "patient",
+      confirm_password: password_confirm,
+    };
 
     setLoading(true);
     setErrors({});
@@ -79,9 +82,6 @@ export function useSignup() {
       
     } catch (error) {
       console.error("❌ Register error - có exception:", error);
-      console.error("Error type:", typeof error);
-      console.error("Error value:", error);
-      console.error("Error keys:", error && typeof error === 'object' && !Array.isArray(error) ? Object.keys(error) : 'no keys');
 
       const backendData = error;
       const backendErrors = {};
@@ -92,12 +92,13 @@ export function useSignup() {
         setErrors({ general: backendData[0] || 'Register failed. Please try again.' });
       } else if (typeof backendData === 'object') {
         Object.keys(backendData).forEach((key) => {
-          if (Array.isArray(backendData[key])) {
-            backendErrors[key] = backendData[key][0]; 
-          } else if (typeof backendData[key] === 'string') {
-            backendErrors[key] = backendData[key];
-          } else if (backendData[key] !== null && backendData[key] !== undefined) {
-            backendErrors[key] = JSON.stringify(backendData[key]);
+          const value = backendData[key];
+          if (Array.isArray(value)) {
+            backendErrors[key] = value[0];
+          } else if (typeof value === 'string') {
+            backendErrors[key] = value;
+          } else if (value !== null && value !== undefined) {
+            backendErrors[key] = JSON.stringify(value);
           }
         });
 
