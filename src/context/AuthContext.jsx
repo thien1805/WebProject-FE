@@ -4,7 +4,6 @@ import {
   logout as logoutAPI,
   getCurrrentUser as getCurrentUser, // giữ alias như bạn đang dùng
   isAuthenticated,
-  refreshToken,
 } from "../api/authAPI";
 
 const AuthContext = createContext(null);
@@ -24,25 +23,10 @@ export const AuthProvider = ({ children }) => {
       if (savedUser && authenticated) {
         setUser(savedUser);
         setIsAuth(true);
-        return;
+      } else {
+        setUser(null);
+        setIsAuth(false);
       }
-
-      // Nếu hết access nhưng còn refresh -> thử refresh (áp dụng cho cả patient/doctor)
-      const hasRefresh = !!localStorage.getItem("refresh_token");
-      if (hasRefresh) {
-        try {
-          await refreshToken();
-          const refreshedUser = getCurrentUser() || savedUser;
-          setUser(refreshedUser);
-          setIsAuth(true);
-          return;
-        } catch (refreshErr) {
-          console.error("Refresh token failed:", refreshErr);
-        }
-      }
-
-      setUser(null);
-      setIsAuth(false);
     } catch (error) {
       console.error("Error loading user:", error);
       setUser(null);
@@ -70,24 +54,7 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // ---- refresh token when tab is about to hide/close (best effort) ----
-  useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.hidden) {
-        const hasRefresh = !!localStorage.getItem("refresh_token");
-        if (!hasRefresh) return;
-        try {
-          await refreshToken();
-        } catch (err) {
-          console.warn("Passive refresh on hide failed:", err);
-        }
-      }
-    };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, []);
 
   // ---- LOGIN ----
   const login = async (credentials) => {

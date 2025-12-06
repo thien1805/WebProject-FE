@@ -2,6 +2,7 @@
 import axios from "axios";
 
 const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://myhealthcare-api-h3amhrevg2feeab9.southeastasia-01.azurewebsites.net/";
+export const API_PREFIX = "/api/v1";
 
 const apiClient = axios.create({
   baseURL: RAW_BASE_URL,
