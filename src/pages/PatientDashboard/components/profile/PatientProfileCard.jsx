@@ -1,12 +1,12 @@
 // src/pages/PatientDashboard/components/profile/PatientProfileCard.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
-import { getProfile, updateProfile } from "../../../../api/authAPI";
+import { getMe, updateProfile } from "../../../../api/authAPI";
 
 const EMPTY_PROFILE = {
-  name: "",
+  full_name: "",
   email: "",
-  phone: "",
+  phone_num: "",
   date_of_birth: "",
   gender: "",
   address: "",
@@ -17,6 +17,9 @@ const EMPTY_PROFILE = {
 
 export default function PatientProfileCard({ user, initialProfile, startEditing }) {
   const { updateUser } = useAuth();
+  
+  console.log("🔍 [PatientProfileCard] Received props - user:", user);
+  console.log("🔍 [PatientProfileCard] Received props - initialProfile:", initialProfile);
 
   const [profile, setProfile] = useState(initialProfile || EMPTY_PROFILE);
   const [originalProfile, setOriginalProfile] = useState(
@@ -26,17 +29,28 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
   const [loading, setLoading] = useState(!initialProfile && !user);
   const [error, setError] = useState(null);
 
-  const normalizeProfile = (data) => ({
-    name: data?.full_name || "",
-    email: data?.email || "",
-    phone: data?.phone_num || "",
-    date_of_birth: data?.patient_profile?.date_of_birth || "",
-    gender: data?.patient_profile?.gender || "",
-    address: data?.patient_profile?.address || "",
-    insurance_id: data?.patient_profile?.insurance_id || "",
-    emergency_contact: data?.patient_profile?.emergency_contact || "",
-    emergency_contact_phone: data?.patient_profile?.emergency_contact_phone || "",
-  });
+  const normalizeProfile = (data) => {
+    // Handle both API response format and user object from props
+    console.log("🔍 [PatientProfileCard] normalizeProfile input:", data);
+    console.log("🔍 [PatientProfileCard] patient_profile:", data?.patient_profile);
+    
+    const patientData = data?.patient_profile || data || {};
+    
+    const result = {
+      full_name: data?.full_name || "",
+      email: data?.email || "",
+      phone_num: data?.phone_num || data?.phone || "",
+      date_of_birth: patientData?.date_of_birth || "",
+      gender: patientData?.gender || "",
+      address: patientData?.address || "",
+      insurance_id: patientData?.insurance_id || "",
+      emergency_contact: patientData?.emergency_contact || "",
+      emergency_contact_phone: patientData?.emergency_contact_phone || "",
+    };
+    
+    console.log("🔍 [PatientProfileCard] normalizeProfile output:", result);
+    return result;
+  };
 
   // Nếu nhận được user từ props, sử dụng luôn
   useEffect(() => {
@@ -56,7 +70,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
         setLoading(true);
         setError(null);
 
-        const data = await getProfile();
+        const data = await getMe();
         if (cancelled) return;
 
         const norm = normalizeProfile(data);
@@ -66,8 +80,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
         // Cập nhật AuthContext cho header/avatar
         updateUser?.({
           ...(user || {}),
-          name: norm.name,
-          fullName: norm.name,
+          full_name: norm.full_name,
           email: norm.email,
         });
       } catch (err) {
@@ -96,8 +109,8 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
   }, [initialProfile]);
 
   const initialLetter =
-    profile?.name?.charAt(0)?.toUpperCase() ||
-    user?.name?.charAt(0)?.toUpperCase() ||
+    profile?.full_name?.charAt(0)?.toUpperCase() ||
+    user?.full_name?.charAt(0)?.toUpperCase() ||
     "?";
 
   const handleCancelEdit = () => {
@@ -108,21 +121,34 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
   const handleSaveProfile = async (updatedProfile) => {
     try {
       const payload = {
-        full_name: updatedProfile.name,
-        email: updatedProfile.email,
-        phone_num: updatedProfile.phone,
+        full_name: updatedProfile.full_name,
+        phone_num: updatedProfile.phone_num,
+        patient_profile: {
+          date_of_birth: updatedProfile.date_of_birth,
+          gender: updatedProfile.gender,
+          address: updatedProfile.address,
+          insurance_id: updatedProfile.insurance_id,
+          emergency_contact: updatedProfile.emergency_contact,
+          emergency_contact_phone: updatedProfile.emergency_contact_phone,
+        },
       };
 
       const res = await updateProfile(payload);
-      const norm = normalizeProfile(res || updatedProfile);
+      
+      // Merge response với dữ liệu hiện tại để giữ lại các trường không được update
+      const mergedProfile = {
+        ...updatedProfile,  // Giữ lại tất cả dữ liệu form
+        ...(res || {}),     // Override với response từ API
+      };
+      
+      const norm = normalizeProfile(mergedProfile);
 
       setProfile(norm);
       setOriginalProfile(norm);
 
       updateUser?.({
         ...(user || {}),
-        name: norm.name,
-        fullName: norm.name,
+        full_name: norm.full_name,
         email: norm.email,
       });
 
@@ -185,7 +211,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
             <span>{initialLetter}</span>
           </div>
           <div>
-            <h3 className="pd-profile-name">{profile?.name || "No name"}</h3>
+            <h3 className="pd-profile-name">{profile?.full_name || "No name"}</h3>
             <p className="pd-profile-email">
               {profile?.email || "No email provided"}
             </p>
@@ -208,55 +234,55 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Full Name</span>
             <span className="pd-profile-value">
-              {profile.name || "Not provided"}
+              {profile.full_name?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Email</span>
             <span className="pd-profile-value">
-              {profile.email || "Not provided"}
+              {profile.email?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Phone</span>
             <span className="pd-profile-value">
-              {profile.phone || "Not provided"}
+              {profile.phone_num?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Date of Birth</span>
             <span className="pd-profile-value">
-              {profile.date_of_birth || "Not provided"}
+              {profile.date_of_birth?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Gender</span>
             <span className="pd-profile-value" style={{ textTransform: "capitalize" }}>
-              {profile.gender || "Not provided"}
+              {profile.gender?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Insurance ID</span>
             <span className="pd-profile-value">
-              {profile.insurance_id || "Not provided"}
+              {profile.insurance_id?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item" style={{ gridColumn: "1 / -1" }}>
             <span className="pd-profile-label">Address</span>
             <span className="pd-profile-value">
-              {profile.address || "Not provided"}
+              {profile.address?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Emergency Contact</span>
             <span className="pd-profile-value">
-              {profile.emergency_contact || "Not provided"}
+              {profile.emergency_contact?.trim() || "Not provided"}
             </span>
           </div>
           <div className="pd-profile-info-item">
             <span className="pd-profile-label">Emergency Contact Phone</span>
             <span className="pd-profile-value">
-              {profile.emergency_contact_phone || "Not provided"}
+              {profile.emergency_contact_phone?.trim() || "Not provided"}
             </span>
           </div>
         </div>
@@ -324,8 +350,8 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           <label>Full Name *</label>
           <input
             type="text"
-            name="name"
-            value={profileForm.name}
+            name="full_name"
+            value={profileForm.full_name}
             onChange={handleProfileChange}
             required
           />
@@ -336,11 +362,10 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
             type="email"
             name="email"
             value={profileForm.email}
-            onChange={handleProfileChange}
-            required
-            style={{ borderColor: errors.email ? "red" : "inherit" }}
+            disabled
+            style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
           />
-          {errors.email && <span style={{ color: "red", fontSize: "12px" }}>{errors.email}</span>}
+          <small style={{ color: "#999", fontSize: "12px" }}>Email cannot be changed</small>
         </div>
       </div>
 
@@ -349,8 +374,8 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           <label>Phone Number</label>
           <input
             type="text"
-            name="phone"
-            value={profileForm.phone}
+            name="phone_num"
+            value={profileForm.phone_num}
             onChange={handleProfileChange}
           />
         </div>
@@ -393,7 +418,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
       <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
           <label>Address</label>
-          <textarea
+          <input
             name="address"
             value={profileForm.address}
             onChange={handleProfileChange}

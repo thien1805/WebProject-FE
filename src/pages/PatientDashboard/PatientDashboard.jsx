@@ -36,9 +36,18 @@ export default function PatientDashboard() {
     setActiveTab,
     activeStatus,
     setActiveStatus,
+    appointmentPage,
+    appointmentPageSize,
+    appointmentTotal,
+    setAppointmentPage,
     loading,
     error,
   } = usePatientDashboard();
+  
+  console.log("🔍 [PatientDashboard] user object:", user);
+  console.log("🔍 [PatientDashboard] user.full_name:", user?.full_name);
+  console.log("🔍 [PatientDashboard] user.name:", user?.name);
+  console.log("🔍 [PatientDashboard] user.email:", user?.email);
 
   // 🔹 sync tab với ?tab=profile / appointments / ...
   React.useEffect(() => {
@@ -91,7 +100,9 @@ export default function PatientDashboard() {
               <div className="pd-hero-avatar-inner">{initialLetter}</div>
             </div>
             <div>
-              <h1 className="pd-hero-title">Hello, {user?.full_name || user?.name || user?.email?.split('@')[0] || "Patient"}!</h1>
+              <h1 className="pd-hero-title">
+                Hello, {user?.full_name?.trim() || user?.name?.trim() || user?.email?.split('@')[0] || "Patient"}!
+              </h1>
               <p className="pd-hero-subtitle">
                 Welcome to the MyHealthCare patient portal.
               </p>
@@ -134,6 +145,10 @@ export default function PatientDashboard() {
             statusOptions={statusOptions}
             activeStatus={activeStatus}
             onStatusChange={setActiveStatus}
+            page={appointmentPage}
+            pageSize={appointmentPageSize}
+            total={appointmentTotal}
+            onPageChange={setAppointmentPage}
           />
         )}
 
@@ -142,7 +157,7 @@ export default function PatientDashboard() {
         appointments={appointments} />}
 
         {activeTab === "profile" && (
-          <PatientProfileCard user={user} />
+          <PatientProfileCard />
         )}
       </main>
 

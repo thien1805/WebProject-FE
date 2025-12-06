@@ -54,12 +54,28 @@ export function usePatientDashboard() {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [appointmentTotal, setAppointmentTotal] = useState(0);
+  const [appointmentPage, setAppointmentPage] = useState(1);
+  const [appointmentPageSize] = useState(5);
   const [records, setRecords] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [activeStatus, setActiveStatus] = useState("all");
+
+  // Khởi tạo user từ localStorage trước
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+      } catch (e) {
+        console.error("Failed to parse stored user:", e);
+      }
+    }
+  }, []);
 
   const statusOptions = [
     { id: "all", label: "All" },
@@ -87,7 +103,10 @@ export function usePatientDashboard() {
           await Promise.all([
             getMe(),
             getMyProfile(),
-            getMyAppointments(),
+            getMyAppointments({
+              page: appointmentPage,
+              page_size: appointmentPageSize,
+            }),
             getMyMedicalRecords(),
             getMyHealthTracking(),
           ]);
@@ -107,9 +126,6 @@ export function usePatientDashboard() {
           updated_at: meRes.updated_at,
           patient_profile: meRes.patient_profile,
           doctor_profile: meRes.doctor_profile,
-          // Legacy fields for compatibility
-          name: meRes.full_name,
-          phone: meRes.phone_num,
           ...meRes, // include all fields from /user/me
         };
         
@@ -117,9 +133,39 @@ export function usePatientDashboard() {
         console.log("🔍 Full Name:", patientProfile.full_name);
         console.log("🔍 Email:", patientProfile.email);
         
+        // Nếu full_name rỗng, thử lấy từ localStorage
+        if (!patientProfile.full_name?.trim()) {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const parsed = JSON.parse(storedUser);
+              if (parsed.full_name) {
+                patientProfile.full_name = parsed.full_name;
+                patientProfile.name = parsed.full_name;
+                console.log("🔍 Using full_name from localStorage:", parsed.full_name);
+              }
+            } catch (e) {
+              console.error("Failed to parse stored user:", e);
+            }
+          }
+        }
+        
         setUser(patientProfile);
 
-        const mappedAppointments = (appointmentsRes || []).map((item) => {
+        const appointmentItems =
+          appointmentsRes?.results ||
+          appointmentsRes?.items ||
+          appointmentsRes?.data ||
+          appointmentsRes ||
+          [];
+
+        const totalAppointments =
+          appointmentsRes?.count ??
+          appointmentsRes?.total ??
+          appointmentsRes?.pagination?.total ??
+          appointmentItems.length;
+
+        const mappedAppointments = appointmentItems.map((item) => {
           const rawStatus = (item.status || "").toLowerCase();
           const normalizedStatus = rawStatus === "booked" ? "pending" : rawStatus;
           return {
@@ -158,6 +204,7 @@ export function usePatientDashboard() {
         }
 
         setAppointments(normalizedAppointments);
+        setAppointmentTotal(totalAppointments || normalizedAppointments.length);
 
         const mappedRecords = (recordsRes || []).map((rec) => ({
           id: rec.record_id,
@@ -211,20 +258,24 @@ export function usePatientDashboard() {
         setError(message);
 
         if (!cancelled) {
-          const fallbackUser = authUser
-            ? {
-                id: authUser.id || authUser.userId,
-                userId: authUser.userId || authUser.id,
-                name:
-                  authUser.fullName ||
-                  authUser.name ||
-                  authUser.username ||
-                  "Patient",
-                email: authUser.email,
-              }
-            : null;
+          const existingUser = user;
 
-          setUser(fallbackUser);
+          const fallbackUser = existingUser || (authUser
+            ? {
+                id: authUser.id,
+                email: authUser.email,
+                full_name: authUser.full_name,
+                phone_num: authUser.phone_num,
+                role: authUser.role,
+                is_active: authUser.is_active,
+                created_at: authUser.created_at,
+                updated_at: authUser.updated_at,
+            }
+            : null
+          );
+          if (!existingUser || !existingUser.full_name){
+            setUser(fallbackUser);
+          }
           setAppointments([]);
           setRecords([]);
           setMetrics(null);
@@ -240,7 +291,7 @@ export function usePatientDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [authUser]);
+  }, [authUser, appointmentPage, appointmentPageSize]);
 
   const tabs = [
     { id: "appointments", label: "Appointments" }, // now history
@@ -259,6 +310,10 @@ export function usePatientDashboard() {
     tabs,
     appointments: filteredAppointments,
     rawAppointments: appointments,
+    appointmentPage,
+    appointmentTotal,
+    appointmentPageSize,
+    setAppointmentPage,
     records,
     metrics,
     activeTab,

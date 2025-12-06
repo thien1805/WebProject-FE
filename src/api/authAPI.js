@@ -16,7 +16,6 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
-
 // ---- Helpers ----
 function saveAuthToStorage({ user, tokens }) {
   if (tokens?.access) {
@@ -29,6 +28,60 @@ function saveAuthToStorage({ user, tokens }) {
     localStorage.setItem("user", JSON.stringify(user));
   }
 }
+
+let refreshPromise = null;
+
+async function refreshAccessToken() {
+  console.log("Refreshing access token...");
+  const refresh = localStorage.getItem("refresh_token");
+  console.log("Refresh token:", refresh ? "Exists" : "Not found");
+  if (!refresh) throw new Error("No refresh token");
+
+  const res = await fetch (`${RAW_BASE_URL}api/v1/token/refresh/`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ refresh }),
+    });
+    console.log("Refresh response status:", res.status);
+    const data = await res.json().catch(() => null); // tránh lỗi JSON parse nếu response không phải JSON
+    
+    if (!res.ok || !data?.access) {
+      throw new Error("Failed to refresh access token");
+    }
+    localStorage.setItem("access_token", data.access);
+    return data;
+  }
+
+//Axios respone interceptor to handle 401 errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error?.response?.status;
+    const originalRequest = error.config || {};
+
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        if (!refreshPromise){
+          refreshPromise = refreshAccessToken().finally(() => {
+            refreshPromise = null;
+          });
+        } 
+        const tokens = await refreshPromise;
+        originalRequest.headers.Authorization = `Bearer ${tokens.access}`;
+        return apiClient(originalRequest);
+      } catch (refreshErr){
+        // Refresh token failed, logout user
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return Promise.reject(refreshErr);
+      }
+    }
+    return Promise.reject(error?.response?.data || error?.message || error);
+  }
+);
 
 export function getCurrrentUser() {
   // 👈 tên hàm này cố tình sai chính tả để khớp import của bạn
@@ -188,7 +241,7 @@ export async function getProfile() {
   const access = localStorage.getItem("access_token");
   if (!access) throw new Error("No access token");
 
-  const res = await fetch(`${RAW_BASE_URL}api/v1/user/profile/`, {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/user/me/`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${access}`,
@@ -213,7 +266,7 @@ export async function updateProfile(profilePayload) {
   const access = localStorage.getItem("access_token");
   if (!access) throw new Error("No access token");
 
-  const res = await fetch(`${RAW_BASE_URL}api/v1/user/profile/`, {
+  const res = await fetch(`${RAW_BASE_URL}api/v1/user/me/`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${access}`,
@@ -254,6 +307,8 @@ export async function getMe() {
     throw new Error(msg);
   }
 
+  // Lưu user info vào localStorage
+  localStorage.setItem("user", JSON.stringify(data));
   return data;
 }
 

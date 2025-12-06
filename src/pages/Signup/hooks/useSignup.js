@@ -32,8 +32,15 @@ export function useSignup() {
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 8)
       newErrors.password = "Password must be at least 8 characters";
-    if (formData.password !== formData.password_confirm)
+    
+    // Check password_confirm
+    if (!formData.password_confirm) {
+      newErrors.password_confirm = "This field is required";
+    } else if (formData.password !== formData.password_confirm) {
       newErrors.password_confirm = "Passwords do not match";
+    }
+
+    
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
     return newErrors;
@@ -51,14 +58,12 @@ export function useSignup() {
     // Chuẩn hóa payload theo API
     const {
       termsAccepted,
-      password_confirm,
       ...rest
     } = formData;
 
     const dataToSend = {
       ...rest,
       role: "patient",
-      confirm_password: password_confirm,
     };
 
     setLoading(true);

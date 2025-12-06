@@ -10,11 +10,9 @@ export default function PatientProfilePage() {
   const { user, loading } = useAuth();
 
   const initialProfile = {
-    name: user?.fullName || user?.name || "",
+    name: user?.full_name || user?.name || "",
     email: user?.email || "",
-    phone: user?.phone || "",
-    city: user?.city || "",
-    country: user?.country || "",
+    phone: user?._num || "",
   };
 
   return (
