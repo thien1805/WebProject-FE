@@ -73,7 +73,7 @@ export default function PatientDashboard() {
     );
   }
 
-  const initialLetter = user?.name?.charAt(0)?.toUpperCase() ?? "?";
+  const initialLetter = user?.full_name?.charAt(0)?.toUpperCase() ?? "?";
 
   const handleHeroBookClick = () => {
     navigate("/patient/appointments");
@@ -91,7 +91,7 @@ export default function PatientDashboard() {
               <div className="pd-hero-avatar-inner">{initialLetter}</div>
             </div>
             <div>
-              <h1 className="pd-hero-title">Hello, {user.name}!</h1>
+              <h1 className="pd-hero-title">Hello, {user?.full_name || user?.name || user?.email?.split('@')[0] || "Patient"}!</h1>
               <p className="pd-hero-subtitle">
                 Welcome to the MyHealthCare patient portal.
               </p>

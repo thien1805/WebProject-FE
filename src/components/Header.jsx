@@ -42,7 +42,7 @@ const Header = () => {
   const { user, isAuth, logout } = useAuth();
   const navigate = useNavigate();
 
-  const displayName = user?.fullName || user?.name || "Account";
+  const displayName = user?.full_name || "Null User";
   const initial = displayName.charAt(0).toUpperCase();
 
   const role = user?.role || user?.accountType || user?.userType || "patient";

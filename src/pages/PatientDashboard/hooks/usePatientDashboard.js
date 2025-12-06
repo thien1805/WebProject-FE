@@ -112,6 +112,11 @@ export function usePatientDashboard() {
           phone: meRes.phone_num,
           ...meRes, // include all fields from /user/me
         };
+        
+        console.log("🔍 Patient Profile:", patientProfile);
+        console.log("🔍 Full Name:", patientProfile.full_name);
+        console.log("🔍 Email:", patientProfile.email);
+        
         setUser(patientProfile);
 
         const mappedAppointments = (appointmentsRes || []).map((item) => {
@@ -165,7 +170,7 @@ export function usePatientDashboard() {
           visitDate: rec.visit_date,
           healthStatus: rec.health_status || rec.healthStatus,
         }));
-        setRecords(mappedRecords);
+        setRecords(mappedRecords);                                                                                                                                                                                                                                                                                                                                                                                                                            
 
         const metricsObj = {};
         (metricsRes || []).forEach((m) => {

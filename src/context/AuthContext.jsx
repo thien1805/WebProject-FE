@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   login as loginAPI,
   logout as logoutAPI,
-  getCurrrentUser as getCurrentUser, // giữ alias như bạn đang dùng
+  getCurrrentUser as getCurrentUser, 
   isAuthenticated,
 } from "../api/authAPI";
 

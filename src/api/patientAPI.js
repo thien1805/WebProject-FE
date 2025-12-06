@@ -11,7 +11,6 @@ export async function getMyProfile() {
 export async function getMyAppointments(params = {}) {
   const tryPaths = [
     `${API_PREFIX}/appointments/my-appointments`,
-    `${API_PREFIX}/patient/appointments/`,
     `${API_PREFIX}/appointments/`,
   ];
 
