@@ -4,6 +4,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "../../hooks/useTranslation";
 
 import "./PatientDashboard.css";
 import { usePatientDashboard } from "./hooks/usePatientDashboard";
@@ -27,6 +28,7 @@ export default function PatientDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
   const { ToastContainer } = toast;
+  const { t } = useTranslation();
 
   const {
     user,
@@ -125,7 +127,7 @@ export default function PatientDashboard() {
       <>
         <Header />
         <main className="pd-page">
-          <div className="pd-card pd-empty-tab">Loading dashboard…</div>
+          <div className="pd-card pd-empty-tab">{t("patient.loading")}</div>
         </main>
       </>
     );
@@ -137,7 +139,7 @@ export default function PatientDashboard() {
         <Header />
         <main className="pd-page">
           <div className="pd-card pd-empty-tab">
-            {error || "Cannot load patient dashboard."}
+            {error || t("patient.error")}
           </div>
         </main>
       </>
@@ -164,10 +166,10 @@ export default function PatientDashboard() {
             </div>
             <div>
               <h1 className="pd-hero-title">
-                Hello, {user?.full_name?.trim() || user?.name?.trim() || user?.email?.split('@')[0] || "Patient"}!
+                {t("patient.hello")}, {user?.full_name?.trim() || user?.name?.trim() || user?.email?.split('@')[0] || "Patient"}!
               </h1>
               <p className="pd-hero-subtitle">
-                Welcome to the MyHealthCare patient portal.
+                {t("patient.welcomePortal")}
               </p>
             </div>
           </div>
@@ -178,7 +180,7 @@ export default function PatientDashboard() {
               className="pd-primary-btn"
               onClick={handleHeroBookClick}
             >
-              📅 Book a new appointment
+              📅 {t("patient.bookNewAppointment")}
             </button>
           </div>
         </section>

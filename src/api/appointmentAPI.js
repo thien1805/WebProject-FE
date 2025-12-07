@@ -51,6 +51,32 @@ export const getAvailableSlots = async ({ doctorId, date, departmentId }) => {
 };
 
 /**
+ * 1.5. Get doctors by department (for booking form)
+ *    GET /api/v1/appointments/doctors-by-department/?department_id=
+ *
+ * Trả về:
+ * {
+ *   department: { id, name, icon },
+ *   doctors: [ { id, user_id, full_name, ... } ],
+ *   count: number
+ * }
+ * 
+ * QUAN TRỌNG: Dùng user_id (không phải id) khi gọi API tạo appointment
+ * vì AppointmentCreateSerializer cần User.id, không phải Doctor profile.id
+ */
+export const getDoctorsByDepartment = async (departmentId) => {
+  try {
+    const response = await apiClient.get(
+      `${API_PREFIX}/appointments/doctors-by-department/?department_id=${departmentId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Get doctors by department error:", error);
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
  * 2. Book appointment (patient tạo lịch)
  *    POST /api/v1/appointments/
  *

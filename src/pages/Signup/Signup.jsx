@@ -1,5 +1,6 @@
 import "./signup.css";
 import { useSignup } from "./hooks/useSignup";
+import { useTranslation } from "../../hooks/useTranslation";
 import SignupLeft from "./components/SignupLeft";
 import SignupHeader from "./components/SignupHeader";
 import SignupMessages from "./components/SignupMessages";
@@ -17,6 +18,7 @@ export default function Signup() {
     handleChange,
     handleSubmit,
   } = useSignup();
+  const { t } = useTranslation();
 
   if (submitted) {
     return <SignupSuccess onBack={() => setSubmitted(false)} />;
@@ -30,8 +32,8 @@ export default function Signup() {
         <div className="signup-right">
           <SignupHeader />
 
-          <h2>Create Account</h2>
-          <p>Join us to start your healthcare journey</p>
+          <h2>{t('auth.signupTitle')}</h2>
+          <p>{t('auth.signupSubtitle')}</p>
 
           <SignupMessages errors={errors} />
 

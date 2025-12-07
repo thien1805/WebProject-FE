@@ -1,37 +1,40 @@
 import { Stethoscope, Calendar, User, Clock } from "lucide-react";
+import { useTranslation } from "../../../hooks/useTranslation";
 import "./ServicesSection.css";
 
-const services = [
-  {
-    icon: Stethoscope,
-    title: "General Consultation",
-    description: "Comprehensive health check-ups and medical consultations with our experienced doctors.",
-  },
-  {
-    icon: Calendar,
-    title: "Easy Appointment Booking",
-    description: "Book your appointments online with just a few clicks. Choose your preferred time and doctor.",
-  },
-  {
-    icon: User,
-    title: "Patient Portal",
-    description: "Access your medical records, test results, and prescriptions anytime, anywhere.",
-  },
-  {
-    icon: Clock,
-    title: "24/7 Support",
-    description: "Round-the-clock emergency support and medical assistance whenever you need it.",
-  },
-];
-
 export default function ServicesSection() {
+  const { t } = useTranslation();
+
+  const services = [
+    {
+      icon: Stethoscope,
+      title: t('home.generalConsultation'),
+      description: t('home.generalConsultationDesc'),
+    },
+    {
+      icon: Calendar,
+      title: t('home.easyBooking'),
+      description: t('home.easyBookingDesc'),
+    },
+    {
+      icon: User,
+      title: t('home.patientPortal'),
+      description: t('home.patientPortalDesc'),
+    },
+    {
+      icon: Clock,
+      title: t('home.support247'),
+      description: t('home.support247Desc'),
+    },
+  ];
+
   return (
     <section id="services" className="services-section">
       <div className="section-container">
         <div className="section-header">
-          <h2 className="section-title">Our Services</h2>
+          <h2 className="section-title">{t('home.ourServices')}</h2>
           <p className="section-subtitle">
-            Experience comprehensive healthcare services designed with your well-being in mind
+            {t('home.ourServicesSubtitle')}
           </p>
         </div>
 

@@ -1,28 +1,31 @@
 import { CheckCircle2 } from "lucide-react";
+import { useTranslation } from "../../../hooks/useTranslation";
 import "./WhyChooseSection.css";
 
-const whyChoose = [
-  {
-    title: "Expert Medical Team",
-    description: "Highly qualified and experienced medical professionals dedicated to your health.",
-  },
-  {
-    title: "Modern Facilities",
-    description: "State-of-the-art medical equipment and comfortable facilities for the best patient experience.",
-  },
-  {
-    title: "Patient-Centered Care",
-    description: "We prioritize your comfort and well-being with personalized care and attention.",
-  },
-];
-
 export default function WhyChooseSection() {
+  const { t } = useTranslation();
+
+  const whyChoose = [
+    {
+      title: t('home.expertTeam'),
+      description: t('home.expertTeamDesc'),
+    },
+    {
+      title: t('home.modernFacilities'),
+      description: t('home.modernFacilitiesDesc'),
+    },
+    {
+      title: t('home.patientCare'),
+      description: t('home.patientCareDesc'),
+    },
+  ];
+
   return (
     <section className="why-choose-section">
       <div className="section-container">
         <div className="why-choose-content">
           <div className="why-choose-text">
-            <h2 className="section-title">Why Choose MyHealthCare?</h2>
+            <h2 className="section-title">{t('home.whyChooseUs')}</h2>
             <div className="why-choose-list">
               {whyChoose.map((item, index) => (
                 <div key={index} className="why-choose-item">

@@ -1,11 +1,14 @@
 // src/pages/PatientDashboard/components/records/MedicalRecordList.jsx
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "../../../../hooks/useTranslation";
 
 export default function MedicalRecordList({
   appointments = [],
   records = [],
 }) {
+  const { t } = useTranslation();
+  
   // Lọc các lịch đã khám xong (hoặc history)
   const historyAppointments = useMemo(() => {
     if (!Array.isArray(appointments)) return [];
@@ -47,14 +50,14 @@ export default function MedicalRecordList({
 
   return (
     <div className="pd-card">
-      <h3 className="pd-section-title">My appointments</h3>
+      <h3 className="pd-section-title">{t("patient.myAppointments")}</h3>
       <p className="pd-section-subtitle">
-        View your past visits and their medical records.
+        {t("patient.viewPastVisits")}
       </p>
 
       {historyAppointments.length === 0 ? (
         <div className="pd-empty-tab">
-          You don&apos;t have any completed appointments yet.
+          {t("patient.noCompletedVisits")}
         </div>
       ) : (
         <div className="pd-history-layout">
@@ -91,30 +94,30 @@ export default function MedicalRecordList({
             {selectedAppt ? (
               <>
                 <h4 className="pd-history-detail-title">
-                  Medical record
+                  {t("patient.medicalRecords")}
                 </h4>
                 <div className="pd-history-detail-info">
                   <div>
-                    <span className="pd-profile-label">Doctor</span>
+                    <span className="pd-profile-label">{t("patient.doctor")}</span>
                     <div className="pd-profile-value">
                       {selectedAppt.doctorName}
                     </div>
                   </div>
                   <div>
-                    <span className="pd-profile-label">Specialty</span>
+                    <span className="pd-profile-label">{t("patient.specialty")}</span>
                     <div className="pd-profile-value">
                       {selectedAppt.specialty}
                     </div>
                   </div>
                   <div>
-                    <span className="pd-profile-label">Date</span>
+                    <span className="pd-profile-label">{t("patient.date")}</span>
                     <div className="pd-profile-value">
                       {selectedAppt.date} {selectedAppt.time}
                     </div>
                   </div>
                   {selectedAppt.location && (
                     <div>
-                      <span className="pd-profile-label">Location</span>
+                      <span className="pd-profile-label">{t("patient.location")}</span>
                       <div className="pd-profile-value">
                         {selectedAppt.location}
                       </div>
@@ -123,18 +126,18 @@ export default function MedicalRecordList({
                 </div>
 
                 <div className="pd-history-detail-record">
-                  <span className="pd-profile-label">Diagnosis</span>
+                  <span className="pd-profile-label">{t("patient.diagnosis")}</span>
                   <div className="pd-profile-value">
                     {selectedRecord?.diagnosis ||
-                      "No diagnosis recorded yet."}
+                      t("patient.noDiagnosis")}
                   </div>
 
                   <span className="pd-profile-label" style={{ marginTop: 12 }}>
-                    Notes / Prescription
+                    {t("patient.notesPrescription")}
                   </span>
                   <div className="pd-profile-value">
                     {selectedRecord?.notes ||
-                      "No additional notes recorded."}
+                      t("patient.noNotes")}
                   </div>
                 </div>
 
@@ -148,12 +151,12 @@ export default function MedicalRecordList({
                   }
                   disabled={!selectedRecord?.id}
                 >
-                  View detail
+                  {t("patient.viewDetail")}
                 </button>
               </>
             ) : (
               <div className="pd-empty-tab">
-                Select an appointment on the left to view its record.
+                {t("patient.selectAppointmentToView")}
               </div>
             )}
           </div>

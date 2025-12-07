@@ -11,10 +11,12 @@ import {
 import { Link } from "react-router-dom";
 import Logo from "./Logo/Logo";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "../hooks/useTranslation";
 import "./Footer.css";
 
 const Footer = () => {
   const { isAuth, user } = useAuth();
+  const { t } = useTranslation();
 
   const role =
     user?.role || user?.accountType || user?.userType || "patient";
@@ -34,7 +36,7 @@ const Footer = () => {
           <div className="footer-section">
             <Logo clickable={false} className="footer-logo-custom" />
             <p className="footer-description">
-              Your trusted partner in health and wellness.
+              {t('footer.trustedPartner')}
             </p>
             <div className="social-links">
               <a href="#" className="social-link">
@@ -53,32 +55,32 @@ const Footer = () => {
           </div>
 
           <div className="footer-section">
-            <h4 className="footer-title">Quick Links</h4>
+            <h4 className="footer-title">{t('footer.quickLinks')}</h4>
             <ul className="footer-list">
-              <li><Link to="#" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Home</Link></li>
-              <li><Link to="/about" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>About Us</Link></li>
-              <li><Link to="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Services</Link></li>
-              <li><Link to={bookingPath} className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Booking</Link></li>
+              <li><Link to="#" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('common.home')}</Link></li>
+              <li><Link to="/about" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('common.aboutUs')}</Link></li>
+              <li><Link to="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('footer.services')}</Link></li>
+              <li><Link to={bookingPath} className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('common.booking')}</Link></li>
             </ul>
           </div>
 
           {/* Services */}
           <div className="footer-section">
-            <h4 className="footer-title">Services</h4>
+            <h4 className="footer-title">{t('footer.services')}</h4>
             <ul className="footer-list">
-              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>General Health Check</a></li>
-              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Diagnostic Services</a></li>
-              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Bone & Joint Care</a></li>
-              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Pediatrics</a></li>
-              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Obstetrics & Gynecology</a></li>
-              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Audiology</a></li>
+              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('medical.generalCheckup')}</a></li>
+              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('departments.internalMedicine')}</a></li>
+              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('departments.orthopedics')}</a></li>
+              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('departments.pediatrics')}</a></li>
+              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('departments.gynecology')}</a></li>
+              <li><a href="/medical" className="footer-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>{t('departments.ent')}</a></li>
 
             </ul>
           </div>
 
           {/* Contact Info */}
           <div className="footer-section">
-            <h4 className="footer-title">Contact Us</h4>
+            <h4 className="footer-title">{t('footer.contact')}</h4>
             <ul className="contact-list">
               <li className="contact-item">
                 <Phone className="contact-icon" />
@@ -100,12 +102,11 @@ const Footer = () => {
         <div className="footer-bottom">
           <div className="footer-bottom-content">
             <p className="copyright">
-              © 2025 MyHealthCare. All rights reserved.
+              {t('footer.copyright')}
             </p>
             <div className="footer-links">
-              <a href="#" className="footer-bottom-link">Privacy Policy</a>
-              <a href="#" className="footer-bottom-link">Terms of Service</a>
-              <a href="#" className="footer-bottom-link">Cookie Policy</a>
+              <a href="#" className="footer-bottom-link">{t('footer.privacyPolicy')}</a>
+              <a href="#" className="footer-bottom-link">{t('footer.termsOfService')}</a>
             </div>
           </div>
         </div>

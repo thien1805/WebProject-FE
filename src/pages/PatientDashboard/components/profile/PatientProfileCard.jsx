@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
 import { useToast } from "../../../../hooks/useToast";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { getMe, updateProfile } from "../../../../api/authAPI";
 
 const EMPTY_PROFILE = {
@@ -19,6 +20,7 @@ const EMPTY_PROFILE = {
 export default function PatientProfileCard({ user, initialProfile, startEditing }) {
   const { updateUser } = useAuth();
   const { success: showSuccess, error: showError } = useToast();
+  const { t } = useTranslation();
   
   console.log("🔍 [PatientProfileCard] Received props - user:", user);
   console.log("🔍 [PatientProfileCard] Received props - initialProfile:", initialProfile);
@@ -175,7 +177,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
               <span>…</span>
             </div>
             <div>
-              <h3 className="pd-profile-name">Loading profile...</h3>
+              <h3 className="pd-profile-name">{t("patient.loading")}</h3>
             </div>
           </div>
         </div>
@@ -192,10 +194,10 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
               <span>!</span>
             </div>
             <div>
-              <h3 className="pd-profile-name">Profile</h3>
+              <h3 className="pd-profile-name">{t("patient.profile")}</h3>
               <p className="pd-profile-email" style={{ color: "red" }}>
                 {typeof error === "string" && error.includes("<")
-                  ? "Failed to load profile."
+                  ? t("patient.error")
                   : error}
               </p>
             </div>
@@ -213,9 +215,9 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
             <span>{initialLetter}</span>
           </div>
           <div>
-            <h3 className="pd-profile-name">{profile?.full_name || "No name"}</h3>
+            <h3 className="pd-profile-name">{profile?.full_name || t("patient.noName")}</h3>
             <p className="pd-profile-email">
-              {profile?.email || "No email provided"}
+              {profile?.email || t("patient.noEmail")}
             </p>
           </div>
         </div>
@@ -226,7 +228,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
             className="pd-outline-btn"
             onClick={() => setIsEditing(true)}
           >
-            Edit profile
+            {t("patient.editProfile")}
           </button>
         )}
       </div>
@@ -234,57 +236,57 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
       {!isEditing && (
         <div className="pd-profile-info-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "30px" }}>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Full Name</span>
+            <span className="pd-profile-label">{t("patient.fullName")}</span>
             <span className="pd-profile-value">
-              {profile.full_name?.trim() || "Not provided"}
+              {profile.full_name?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Email</span>
+            <span className="pd-profile-label">{t("patient.email")}</span>
             <span className="pd-profile-value">
-              {profile.email?.trim() || "Not provided"}
+              {profile.email?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Phone</span>
+            <span className="pd-profile-label">{t("patient.phone")}</span>
             <span className="pd-profile-value">
-              {profile.phone_num?.trim() || "Not provided"}
+              {profile.phone_num?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Date of Birth</span>
+            <span className="pd-profile-label">{t("patient.dateOfBirth")}</span>
             <span className="pd-profile-value">
-              {profile.date_of_birth?.trim() || "Not provided"}
+              {profile.date_of_birth?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Gender</span>
+            <span className="pd-profile-label">{t("patient.gender")}</span>
             <span className="pd-profile-value" style={{ textTransform: "capitalize" }}>
-              {profile.gender?.trim() || "Not provided"}
+              {profile.gender?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Insurance ID</span>
+            <span className="pd-profile-label">{t("patient.insuranceId")}</span>
             <span className="pd-profile-value">
-              {profile.insurance_id?.trim() || "Not provided"}
+              {profile.insurance_id?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item" style={{ gridColumn: "1 / -1" }}>
-            <span className="pd-profile-label">Address</span>
+            <span className="pd-profile-label">{t("patient.address")}</span>
             <span className="pd-profile-value">
-              {profile.address?.trim() || "Not provided"}
+              {profile.address?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Emergency Contact</span>
+            <span className="pd-profile-label">{t("patient.emergencyContact")}</span>
             <span className="pd-profile-value">
-              {profile.emergency_contact?.trim() || "Not provided"}
+              {profile.emergency_contact?.trim() || t("patient.notProvided")}
             </span>
           </div>
           <div className="pd-profile-info-item">
-            <span className="pd-profile-label">Emergency Contact Phone</span>
+            <span className="pd-profile-label">{t("patient.emergencyContactPhone")}</span>
             <span className="pd-profile-value">
-              {profile.emergency_contact_phone?.trim() || "Not provided"}
+              {profile.emergency_contact_phone?.trim() || t("patient.notProvided")}
             </span>
           </div>
         </div>
@@ -302,6 +304,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
 }
 
 function PatientProfileForm({ initialProfile, onSave, onCancel }) {
+  const { t } = useTranslation();
   const [profileForm, setProfileForm] = useState(
     initialProfile || EMPTY_PROFILE
   );
@@ -349,7 +352,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
     <form className="pd-profile-form" onSubmit={handleSubmit}>
       <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Full Name *</label>
+          <label>{t("patient.fullName")} *</label>
           <input
             type="text"
             name="full_name"
@@ -359,7 +362,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           />
         </div>
         <div className="pd-profile-form-field">
-          <label>Email *</label>
+          <label>{t("patient.email")} *</label>
           <input
             type="email"
             name="email"
@@ -367,13 +370,13 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
             disabled
             style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
           />
-          <small style={{ color: "#999", fontSize: "12px" }}>Email cannot be changed</small>
+          <small style={{ color: "#999", fontSize: "12px" }}>{t("patient.emailCannotChange")}</small>
         </div>
       </div>
 
       <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Phone Number</label>
+          <label>{t("patient.phone")}</label>
           <input
             type="text"
             name="phone_num"
@@ -382,7 +385,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           />
         </div>
         <div className="pd-profile-form-field">
-          <label>Date of Birth</label>
+          <label>{t("patient.dateOfBirth")}</label>
           <input
             type="date"
             name="date_of_birth"
@@ -394,20 +397,20 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
 
       <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Gender</label>
+          <label>{t("patient.gender")}</label>
           <select
             name="gender"
             value={profileForm.gender}
             onChange={handleProfileChange}
           >
-            <option value="">Select gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
+            <option value="">{t("patient.selectGender")}</option>
+            <option value="male">{t("patient.male")}</option>
+            <option value="female">{t("patient.female")}</option>
+            <option value="other">{t("patient.other")}</option>
           </select>
         </div>
         <div className="pd-profile-form-field">
-          <label>Insurance ID</label>
+          <label>{t("patient.insuranceId")}</label>
           <input
             type="text"
             name="insurance_id"
@@ -419,7 +422,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
 
       <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Address</label>
+          <label>{t("patient.address")}</label>
           <input
             name="address"
             value={profileForm.address}
@@ -432,7 +435,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
 
       <div className="pd-profile-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div className="pd-profile-form-field">
-          <label>Emergency Contact Name</label>
+          <label>{t("patient.emergencyContact")}</label>
           <input
             type="text"
             name="emergency_contact"
@@ -441,7 +444,7 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           />
         </div>
         <div className="pd-profile-form-field">
-          <label>Emergency Contact Phone</label>
+          <label>{t("patient.emergencyContactPhone")}</label>
           <input
             type="text"
             name="emergency_contact_phone"
@@ -450,17 +453,17 @@ function PatientProfileForm({ initialProfile, onSave, onCancel }) {
           />
         </div>
         <div className="pd-profile-form-field">
-          <label>Role</label>
-          <input type="text" value="Patient" disabled readOnly />
+          <label>{t("patient.role")}</label>
+          <input type="text" value={t("common.patient")} disabled readOnly />
         </div>
       </div>
 
       <div className="pd-profile-actions">
         <button type="button" className="pd-ghost-btn" onClick={onCancel}>
-          Cancel
+          {t("patient.cancelEdit")}
         </button>
         <button type="submit" className="pd-primary-btn">
-          Save changes
+          {t("patient.saveChanges")}
         </button>
       </div>
     </form>

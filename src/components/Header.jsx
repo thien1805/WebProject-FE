@@ -5,6 +5,8 @@ import { ChevronDown, Bell } from "lucide-react";
 import Logo from "./Logo/Logo";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../hooks/useToast";
+import { useTranslation } from "../hooks/useTranslation";
+import LanguageSwitcher from "./LanguageSwitcher/LanguageSwitcher";
 import "./Header.css";
 
 // ⚠️ TODO: Khi bạn tạo API thật, bỏ comment dòng dưới và tạo file:
@@ -42,6 +44,7 @@ const Header = () => {
 
   const { user, isAuth, logout } = useAuth();
   const { success: showSuccess } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const displayName = user?.full_name || "Null User";
@@ -177,13 +180,13 @@ const Header = () => {
               className="nav-link"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              Home
+              {t('common.home')}
             </Link>
             <Link to="/about" className="nav-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              About us
+              {t('common.aboutUs')}
             </Link>
             <Link to="/medical" className="nav-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              Medical services
+              {t('common.medicalServices')}
             </Link>
 
             {/* Booking */}
@@ -201,19 +204,22 @@ const Header = () => {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             >
-              Booking
+              {t('common.booking')}
             </Link>
           </nav>
 
           {/* Auth / Account */}
           <div className="header-actions">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {!isAuth && (
               <div className="auth-buttons">
                 <Link to="/login" className="btn-login" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                  Log in
+                  {t('common.login')}
                 </Link>
                 <Link to="/signup" className="btn-signup" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                  Sign up
+                  {t('common.signup')}
                 </Link>
               </div>
             )}
@@ -238,20 +244,20 @@ const Header = () => {
                     {notifOpen && (
                       <div className="notif-dropdown">
                         <div className="notif-header">
-                          <span>Notifications</span>
+                          <span>{t('header.notifications')}</span>
                           {!notifLoading && notifications.length > 0 && (
                             <button
                               type="button"
                               className="notif-clear"
                               onClick={handleMarkAllRead}
                             >
-                              Mark all read
+                              {t('common.all')}
                             </button>
                           )}
                         </div>
 
                         {notifLoading && (
-                          <div className="notif-empty">Loading...</div>
+                          <div className="notif-empty">{t('common.loading')}</div>
                         )}
 
                         {notifError && !notifLoading && (
@@ -310,7 +316,7 @@ const Header = () => {
                             navigate("/patient/dashboard?tab=profile");
                           }}
                         >
-                          View profile
+                          {t('common.profile')}
                         </button>
                       )}
 
@@ -320,7 +326,7 @@ const Header = () => {
                           className="dropdown-item"
                           onClick={() => setDropdownOpen(false)}
                         >
-                          Book appointment
+                          {t('common.booking')}
                         </Link>
                       )}
 
@@ -330,7 +336,7 @@ const Header = () => {
                           className="dropdown-item"
                           onClick={() => setDropdownOpen(false)}
                         >
-                          View schedule
+                          {t('common.dashboard')}
                         </Link>
                       )}
 
@@ -339,7 +345,7 @@ const Header = () => {
                         className="dropdown-item dropdown-item--danger"
                         onClick={handleOpenLogoutConfirm}
                       >
-                        Log out
+                        {t('common.logout')}
                       </button>
                     </div>
                   )}
@@ -360,7 +366,7 @@ const Header = () => {
             aria-labelledby="logout-modal-title"
           >
             <div className="header-modal-title" id="logout-modal-title">
-              Are you sure to log out?
+              {t('auth.confirmLogout')}
             </div>
             <div className="header-modal-actions">
               <button
@@ -368,14 +374,14 @@ const Header = () => {
                 className="header-modal-btn header-modal-btn--secondary"
                 onClick={() => setConfirmLogoutOpen(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
                 className="header-modal-btn header-modal-btn--danger"
                 onClick={handleLogoutConfirm}
               >
-                Log out
+                {t('common.logout')}
               </button>
             </div>
           </div>

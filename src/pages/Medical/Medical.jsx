@@ -4,11 +4,13 @@ import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
+import { useTranslation } from "../../hooks/useTranslation";
 import "./Medical.css";
 import Dashboard from "../Doctor-dashboard/DoctorDashboard";
 
 const Services = () => {
   const { isAuth, user } = useAuth();
+  const { t } = useTranslation();
 
   const role =
     user?.role || user?.accountType || user?.userType || "patient";
@@ -23,57 +25,57 @@ const Services = () => {
   const services = [
     {
       image: "/homePage_images/whole-body-thumb.jpg",
-      title: "General Health Check & Cancer Screening",
-      description: "Comprehensive health assessment and early cancer detection with advanced screening technologies.",
-      details: "Our general health check includes complete blood count, metabolic panel, cancer markers, and imaging studies to detect potential health issues early."
+      title: t('medical.generalCheckup'),
+      description: t('medical.generalCheckupDesc'),
+      details: t('medical.generalCheckupDetails')
     },
     {
       image: "/homePage_images/advancedCheckUp.png",
-      title: "Advanced Health Checkup",
-      description: "In-depth medical examination with advanced diagnostics and specialized testing.",
-      details: "Includes all basic tests plus cardiac stress test, advanced imaging (CT/MRI), endoscopy, and consultation with specialists."
+      title: t('medical.advancedCheckup'),
+      description: t('medical.advancedCheckupDesc'),
+      details: t('medical.advancedCheckupDetails')
     },
     {
       image: "/homePage_images/healthcheckup.jpeg",
-      title: "Basic Health Checkup",
-      description: "Essential health screening for preventive care and routine monitoring.",
-      details: "Perfect for annual checkups including vital signs, basic blood tests, urinalysis, chest X-ray, and doctor consultation."
+      title: t('medical.basicCheckup'),
+      description: t('medical.basicCheckupDesc'),
+      details: t('medical.basicCheckupDetails')
     },
     {
       image: "/homePage_images/specifiedCheckUp.png",
-      title: "Specialized Health Checkup",
-      description: "Targeted health assessments for specific conditions and organ systems.",
-      details: "Customized packages for cardiac, diabetes, women's health, men's health, bone health, and other specialized screenings."
+      title: t('medical.specializedCheckup'),
+      description: t('medical.specializedCheckupDesc'),
+      details: t('medical.specializedCheckupDetails')
     },
     {
       image: "/homePage_images/radiologist.jpg",
-      title: "Imaging Diagnosis",
-      description: "Advanced imaging technology for accurate diagnosis including X-ray, CT, MRI, and Ultrasound.",
-      details: "State-of-the-art imaging equipment operated by experienced radiologists for precise diagnostic results."
+      title: t('medical.imagingDiagnosis'),
+      description: t('medical.imagingDiagnosisDesc'),
+      details: t('medical.imagingDiagnosisDetails')
     },
     {
       image: "/homePage_images/the-basics-of-bone-joint-care-web.jpg",
-      title: "Bone & Joint Care",
-      description: "Orthopedic care and joint health specialists for all musculoskeletal conditions.",
-      details: "Treatment for arthritis, sports injuries, fractures, joint replacement, and rehabilitation services."
+      title: t('medical.boneJointCare'),
+      description: t('medical.boneJointCareDesc'),
+      details: t('medical.boneJointCareDetails')
     },
     {
       image: "/homePage_images/Pediatrics.jpeg",
-      title: "Pediatrics",
-      description: "Comprehensive care for infants, children, and adolescents with experienced pediatricians.",
-      details: "Well-child visits, vaccinations, growth monitoring, developmental assessments, and treatment of childhood illnesses."
+      title: t('medical.pediatricsService'),
+      description: t('medical.pediatricsServiceDesc'),
+      details: t('medical.pediatricsServiceDetails')
     },
     {
       image: "/homePage_images/OB-GYN.jpg",
-      title: "Obstetrics & Gynecology",
-      description: "Women's health and reproductive care with compassionate specialists.",
-      details: "Prenatal care, delivery services, gynecological exams, family planning, and menopause management."
+      title: t('medical.obgynService'),
+      description: t('medical.obgynServiceDesc'),
+      details: t('medical.obgynServiceDetails')
     },
     {
       image: "/homePage_images/bethesda-naval-medical-center.jpg",
-      title: "ENT - Audiology",
-      description: "Ear, nose, throat, and hearing specialists for all ENT conditions.",
-      details: "Treatment for hearing loss, sinus problems, throat disorders, balance issues, and hearing aid services."
+      title: t('medical.entService'),
+      description: t('medical.entServiceDesc'),
+      details: t('medical.entServiceDetails')
     }
   ];
 
@@ -94,23 +96,23 @@ const Services = () => {
 
   const serviceCategories = [
     {
-      name: "Preventive Care",
-      description: "Regular checkups and screenings to maintain optimal health",
+      name: t('medical.preventiveCare'),
+      description: t('medical.preventiveCareDesc'),
       icon: "🛡️"
     },
     {
-      name: "Diagnostic Services",
-      description: "Advanced testing and imaging for accurate diagnosis",
+      name: t('medical.diagnosticServices'),
+      description: t('medical.diagnosticServicesDesc'),
       icon: "🔬"
     },
     {
-      name: "Specialized Care",
-      description: "Expert treatment for specific conditions and organ systems",
+      name: t('medical.specializedCare'),
+      description: t('medical.specializedCareDesc'),
       icon: "⚕️"
     },
     {
-      name: "Emergency Services",
-      description: "24/7 emergency care for urgent medical needs",
+      name: t('medical.emergencyServices'),
+      description: t('medical.emergencyServicesDesc'),
       icon: "🚑"
     }
   ];
@@ -123,18 +125,15 @@ const Services = () => {
         {/* Hero Section */}
         <section className="services-hero">
           <div className="hero-content">
-            <h1>Our Medical Services</h1>
-            <p>
-              Comprehensive healthcare solutions delivered by experienced professionals
-              using cutting-edge technology
-            </p>
+            <h1>{t('medical.pageTitle')}</h1>
+            <p>{t('medical.pageSubtitle')}</p>
           </div>
         </section>
 
         {/* Service Categories */}
         <section className="categories-section">
           <div className="section-container">
-            <h2 className="section-title">Service Categories</h2>
+            <h2 className="section-title">{t('medical.serviceCategories')}</h2>
             <div className="categories-grid">
               {serviceCategories.map((category, index) => (
                 <div key={index} className="category-card">
@@ -151,16 +150,16 @@ const Services = () => {
         <section className="all-services-section">
           <div className="section-container">
             <div className="section-header">
-              <h2 className="section-title">Comprehensive Medical Services</h2>
+              <h2 className="section-title">{t('common.medicalServices')}</h2>
               <p className="section-subtitle">
-                Comprehensive healthcare services tailored to your needs
+                {t('medical.pageSubtitle')}
               </p>
             </div>
 
             <div className="checkup-section">
               <div className="subsection-header">
                 <div>
-                  <h3 className="subsection-title">Health Checkup Packages</h3>
+                  <h3 className="subsection-title">{t('medical.checkupPackages')}</h3>
 
                 </div>
               </div>
@@ -180,7 +179,7 @@ const Services = () => {
                       <p className="service-description">{service.description}</p>
                       <p className="service-details">{service.details}</p>
                       <Link to={bookingPath} className="service-link">
-                        Book Appointment <ArrowRight className="link-icon" />
+                        {t('home.bookAppointment')} <ArrowRight className="link-icon" />
                       </Link>
                     </div>
                   </div>
@@ -191,9 +190,9 @@ const Services = () => {
             <div className="specialties-section">
               <div className="specialties-top">
                 <div>
-                  <h3 className="subsection-title">Medical Specialties</h3>
+                  <h3 className="subsection-title">{t('medical.specialties')}</h3>
                   <p className="subsection-subtitle">
-                    Explore specialty services with horizontal scroll
+                    {t('common.viewMore')}
                   </p>
                 </div>
                 <div className="slider-controls">
@@ -232,7 +231,7 @@ const Services = () => {
                         <p className="service-description">{service.description}</p>
                         <p className="service-details">{service.details}</p>
                         <Link to={bookingPath} className="service-link">
-                          Book Appointment <ArrowRight className="link-icon" />
+                          {t('home.bookAppointment')} <ArrowRight className="link-icon" />
                         </Link>
                       </div>
                     </div>

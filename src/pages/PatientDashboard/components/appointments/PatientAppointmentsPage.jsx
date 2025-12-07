@@ -4,24 +4,19 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../../../components/Header";
 import Footer from "../../../../components/Footer";
 import { useAuth } from "../../../../context/AuthContext";
+import { useTranslation } from "../../../../hooks/useTranslation";
+import { useToast } from "../../../../hooks/useToast";
 
 import {
   getAvailableSlots,
   bookAppointment,
   suggestDepartmentAI,
   getDepartments,
+  getDoctorsByDepartment,
 } from "../../../../api/appointmentAPI";
 
 import "../../PatientDashboard.css";
 import "./BookingWizard.css";
-
-const STEPS = [
-  { id: "symptom", label: "Symptoms" },
-  { id: "specialty", label: "Specialty" },
-  { id: "doctor", label: "Doctor" },
-  { id: "time", label: "Time" },
-  { id: "confirm", label: "Confirm" },
-];
 
 // Fallback specialties if API fails
 const FALLBACK_SPECIALTIES = [
@@ -33,19 +28,6 @@ const FALLBACK_SPECIALTIES = [
   { id: 6, name: "Ophthalmology", icon: "👁️" },
   { id: 7, name: "ENT (Ear-Nose-Throat)", icon: "👂" },
   { id: 8, name: "Dentistry", icon: "🦷" },
-];
-
-const DOCTORS = [
-  // Keep existing for now until doctor API is integrated
-  {
-    id: 1,
-    name: "BS. Lê Minh Tuấn",
-    departmentId: 2, // Cardiology
-    experience: "20 years",
-    price: 500000,
-    rating: 4.9,
-  },
-  // ...other doctors
 ];
 
 // Fallback time slots
@@ -62,20 +44,40 @@ const DEFAULT_SERVICE_ID = 3;
 export default function PatientAppointmentsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const toast = useToast();
+
+  const STEPS = [
+    { id: "symptom", label: t("booking.symptoms") },
+    { id: "specialty", label: t("booking.specialty") },
+    { id: "doctor", label: t("booking.doctor") },
+    { id: "time", label: t("booking.time") },
+    { id: "confirm", label: t("booking.confirmStep") },
+    { id: "payment", label: t("booking.payment") },
+  ];
 
   const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState({
     symptoms: "",
     departmentId: null,
-    doctorId: null,
+    doctorId: null, // This is now user_id from API (not doctor profile id)
     date: "",
     timeSlot: "",
     extraNote: "",
-    // serviceId: null, // để dành sau
+    paymentMethod: "card",
   });
+
+  // AI suggestions - multiple departments (lifted up to persist on back navigation)
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [aiResult, setAiResult] = useState(null);
+  const [previousSymptoms, setPreviousSymptoms] = useState(""); // Track symptoms to detect changes
 
   const [departments, setDepartments] = useState([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
+
+  // Doctors state - fetched from API based on department
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
 
   const [timeSlots, setTimeSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -85,10 +87,8 @@ export default function PatientAppointmentsPage() {
   const selectedSpecialty = departments.find(
     (d) => d.id === form.departmentId
   );
-  const filteredDoctors = DOCTORS.filter(
-    (d) => !form.departmentId || d.departmentId === form.departmentId
-  );
-  const selectedDoctor = DOCTORS.find((d) => d.id === form.doctorId);
+  // doctors is now fetched from API, filtered by department_id
+  const selectedDoctor = doctors.find((d) => d.user_id === form.doctorId);
 
   // Get patient name from user object - try multiple field names
   const getPatientName = () => {
@@ -107,6 +107,30 @@ export default function PatientAppointmentsPage() {
 
   const patientName = getPatientName();
   const initialLetter = patientName.charAt(0).toUpperCase();
+
+  // ===== Fetch doctors when department changes =====
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      if (!form.departmentId) {
+        setDoctors([]);
+        return;
+      }
+      
+      try {
+        setLoadingDoctors(true);
+        const data = await getDoctorsByDepartment(form.departmentId);
+        // API returns: { department: {...}, doctors: [...], count: N }
+        setDoctors(data.doctors || []);
+      } catch (err) {
+        console.error("Error fetching doctors:", err);
+        setDoctors([]);
+      } finally {
+        setLoadingDoctors(false);
+      }
+    };
+    
+    fetchDoctors();
+  }, [form.departmentId]);
 
   // ===== Load available time slots từ backend khi doctor/date đổi =====
   useEffect(() => {
@@ -179,6 +203,8 @@ export default function PatientAppointmentsPage() {
         return !!form.date && !!form.timeSlot;
       case "confirm":
         return true;
+      case "payment":
+        return !!form.paymentMethod;
       default:
         return false;
     }
@@ -190,20 +216,21 @@ export default function PatientAppointmentsPage() {
     if (stepIndex < STEPS.length - 1) {
       setStepIndex((prev) => prev + 1);
     } else {
-      // ===== TODO: GỌI API BOOK APPOINTMENT Ở ĐÂY =====
+      // ===== FINAL STEP: PAYMENT - GỌI API BOOK APPOINTMENT =====
       try {
         setBookingLoading(true);
 
         const payload = {
           doctor_id: form.doctorId,
           department_id: form.departmentId, 
-          service_id: DEFAULT_SERVICE_ID,
           appointment_date: form.date,
-          appointment_time: form.timeSlot,
+          appointment_time: form.timeSlot, // Backend expects HH:MM format
           symptoms: form.symptoms,
           reason: form.symptoms,
-          notes: form.extraNote,
+          notes: form.extraNote || "",
         };
+        
+        console.log("Booking payload:", payload);
         const res = await bookAppointment(payload);
         console.log("Book appointment response:", res);
 
@@ -212,27 +239,22 @@ export default function PatientAppointmentsPage() {
         }
 
         exportBookingTicket({
-          patientName: user?.fullName || user?.name || "Patient",
+          patientName: patientName,
           symptoms: form.symptoms,
           specialty: selectedSpecialty?.name,
-          doctor: selectedDoctor?.name,
+          doctor: selectedDoctor ? `${selectedDoctor.title} ${selectedDoctor.full_name}` : null,
           date: form.date,
           time: form.timeSlot,
           price: selectedDoctor
-            ? `${selectedDoctor.price.toLocaleString("vi-VN")} VND`
+            ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND`
             : "N/A",
         });
 
-        alert(
-          "Appointment booked successfully!"
-        );
+        toast.success(t("booking.bookingSuccess"));
         navigate("/patient/dashboard?tab=appointments");
       } catch (err) {
         console.error("Book appointment error:", err);
-        alert(
-          err?.message ||
-            "Something went wrong while booking the appointment."
-        );
+        toast.error(err?.message || t("booking.bookingError"));
       } finally {
         setBookingLoading(false);
       }
@@ -246,14 +268,15 @@ export default function PatientAppointmentsPage() {
 
   return (
     <>
+      <toast.ToastContainer />
       <Header />
       <main className="booking-page">
         <div className="booking-container">
           {/* Title */}
           <header className="booking-header">
-            <h1 className="booking-title">Book an appointment</h1>
+            <h1 className="booking-title">{t("booking.title")}</h1>
             <p className="booking-subtitle">
-              Step {stepIndex + 1} of {STEPS.length}
+              {t("booking.step")} {stepIndex + 1} {t("booking.of")} {STEPS.length}
             </p>
           </header>
 
@@ -299,7 +322,16 @@ export default function PatientAppointmentsPage() {
           {/* Step content card */}
           <section className="booking-card">
             {currentStep.id === "symptom" && (
-              <StepSymptom form={form} setForm={setForm} />
+              <StepSymptom 
+                form={form} 
+                setForm={setForm} 
+                aiSuggestions={aiSuggestions} 
+                setAiSuggestions={setAiSuggestions}
+                aiResult={aiResult}
+                setAiResult={setAiResult}
+                previousSymptoms={previousSymptoms}
+                setPreviousSymptoms={setPreviousSymptoms}
+              />
             )}
 
             {currentStep.id === "specialty" && (
@@ -315,7 +347,8 @@ export default function PatientAppointmentsPage() {
               <StepDoctor
                 form={form}
                 setForm={setForm}
-                doctors={filteredDoctors}
+                doctors={doctors}
+                loadingDoctors={loadingDoctors}
                 selectedDepartment={selectedSpecialty}
               />
             )}
@@ -338,6 +371,15 @@ export default function PatientAppointmentsPage() {
                 initialLetter={initialLetter}
               />
             )}
+
+            {currentStep.id === "payment" && (
+              <StepPayment
+                form={form}
+                setForm={setForm}
+                selectedDoctor={selectedDoctor}
+                selectedSpecialty={selectedSpecialty}
+              />
+            )}
           </section>
 
           {/* Navigation buttons */}
@@ -348,7 +390,7 @@ export default function PatientAppointmentsPage() {
               disabled={stepIndex === 0 || bookingLoading}
               onClick={handleBack}
             >
-              ← Back
+              ← {t("common.back")}
             </button>
 
             <button
@@ -362,11 +404,13 @@ export default function PatientAppointmentsPage() {
               onClick={handleNext}
               disabled={!canGoNext() || bookingLoading}
             >
-              {stepIndex === STEPS.length - 1
+              {currentStep.id === "confirm"
+                ? t("booking.proceedToPayment") || "Tiến hành thanh toán →"
+                : currentStep.id === "payment"
                 ? bookingLoading
-                  ? "Booking..."
-                  : "Confirm & download ticket"
-                : "Continue →"}
+                  ? t("common.loading")
+                  : t("payment.confirmPayment") || "Xác nhận thanh toán"
+                : t("common.next") + " →"}
             </button>
           </footer>
         </div>
@@ -376,33 +420,48 @@ export default function PatientAppointmentsPage() {
   );
 }
 
-/* ===== Symptom options for chips ===== */
-const SYMPTOM_OPTIONS = [
-  { id: "fever", label: "Fever" },
-  { id: "cough", label: "Cough" },
-  { id: "headache", label: "Headache" },
-  { id: "fatigue", label: "Fatigue" },
-  { id: "chest_pain", label: "Chest Pain" },
-  { id: "shortness_breath", label: "Shortness of Breath" },
-  { id: "nausea", label: "Nausea" },
-  { id: "dizziness", label: "Dizziness" },
-  { id: "skin_rash", label: "Skin Rash" },
-  { id: "joint_pain", label: "Joint Pain" },
-  { id: "sore_throat", label: "Sore Throat" },
-  { id: "stomach_ache", label: "Stomach Ache" },
-];
-
 /* ===== Step components ===== */
 
-function StepSymptom({ form, setForm }) {
+function StepSymptom({ 
+  form, 
+  setForm, 
+  aiSuggestions, 
+  setAiSuggestions,
+  aiResult,
+  setAiResult,
+  previousSymptoms,
+  setPreviousSymptoms
+}) {
+  const { t } = useTranslation();
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [aiResult, setAiResult] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Reset AI suggestions only when symptoms actually change (not on re-render)
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, symptoms: e.target.value }));
+    const newSymptoms = e.target.value;
+    setForm((prev) => ({ ...prev, symptoms: newSymptoms }));
+    
+    // Only reset AI suggestions if symptoms significantly changed
+    if (previousSymptoms && newSymptoms.trim() !== previousSymptoms.trim()) {
+      // Don't reset immediately - let user finish typing
+    }
   };
+
+  const SYMPTOM_OPTIONS = [
+    { id: "fever", label: t("symptoms.fever") },
+    { id: "cough", label: t("symptoms.cough") },
+    { id: "headache", label: t("symptoms.headache") },
+    { id: "fatigue", label: t("symptoms.fatigue") },
+    { id: "chest_pain", label: t("symptoms.chestPain") },
+    { id: "shortness_breath", label: t("symptoms.shortnessOfBreath") },
+    { id: "nausea", label: t("symptoms.nausea") },
+    { id: "dizziness", label: t("symptoms.dizziness") },
+    { id: "skin_rash", label: t("symptoms.skinRash") },
+    { id: "joint_pain", label: t("symptoms.jointPain") },
+    { id: "sore_throat", label: t("symptoms.soreThroat") },
+    { id: "stomach_ache", label: t("symptoms.stomachAche") },
+  ];
 
   const toggleSymptom = (id) => {
     setSelectedSymptoms((prevIds) => {
@@ -441,8 +500,15 @@ function StepSymptom({ form, setForm }) {
       return;
     }
 
+    // Check if symptoms haven't changed since last AI suggestion
+    if (previousSymptoms === form.symptoms.trim() && aiResult?.success) {
+      // Don't call API again if symptoms are the same
+      return;
+    }
+
     setLoading(true);
     setAiResult(null);
+    setAiSuggestions([]);
 
     try {
       // Call AI suggest department API
@@ -452,17 +518,33 @@ function StepSymptom({ form, setForm }) {
       });
 
       if (res?.success && res.primary_department) {
-        const dept = res.primary_department;
+        // Collect all suggested departments (primary + related)
+        const allSuggestions = [];
+        
+        // Add primary department
+        allSuggestions.push({
+          ...res.primary_department,
+          isPrimary: true,
+          reason: res.reason
+        });
+        
+        // Add related departments if any
+        if (res.related_departments && res.related_departments.length > 0) {
+          res.related_departments.forEach(dept => {
+            allSuggestions.push({
+              ...dept,
+              isPrimary: false,
+              reason: dept.reason || res.reason
+            });
+          });
+        }
 
-        // Update form with suggested department
-        setForm((prev) => ({
-          ...prev,
-          departmentId: dept.id,
-        }));
+        setAiSuggestions(allSuggestions);
+        setPreviousSymptoms(form.symptoms.trim()); // Save symptoms for which AI was called
 
         setAiResult({
           success: true,
-          department: dept,
+          departments: allSuggestions,
           reason: res.reason,
           urgency: res.urgency
         });
@@ -483,18 +565,27 @@ function StepSymptom({ form, setForm }) {
     }
   };
 
+  const handleSelectAISuggestion = (dept) => {
+    setForm((prev) => ({
+      ...prev,
+      departmentId: dept.id,
+      doctorId: null,
+      timeSlot: "",
+    }));
+  };
+
   return (
     <>
-      <h2 className="booking-section-title">🩺 Mô tả triệu chứng</h2>
+      <h2 className="booking-section-title">🩺 {t("booking.describeSymptoms")}</h2>
       <p className="booking-section-subtitle">
-        Mô tả triệu chứng để AI gợi ý chuyên khoa phù hợp
+        {t("booking.symptomsSubtitle")}
       </p>
 
-      <label className="booking-field-label">Triệu chứng của bạn</label>
+      <label className="booking-field-label">{t("booking.yourSymptoms")}</label>
       <textarea
         className="booking-textarea"
         rows={4}
-        placeholder="Ví dụ: Đau bụng, buồn nôn, chóng mặt..."
+        placeholder={t("booking.symptomsPlaceholder")}
         value={form.symptoms}
         onChange={handleChange}
       />
@@ -508,40 +599,53 @@ function StepSymptom({ form, setForm }) {
         {loading ? (
           <>
             <span className="booking-btn-spinner">🔄</span>
-            Đang phân tích...
+            {t("booking.analyzing")}
           </>
         ) : (
           <>
             <span>🤖</span>
-            Nhận gợi ý từ AI
+            {t("booking.getAISuggestion")}
           </>
         )}
       </button>
 
-      {/* AI Result Card */}
-      {aiResult && aiResult.success && (
+      {/* AI Result Card - Multiple Suggestions */}
+      {aiResult && aiResult.success && aiResult.departments && (
         <div className="ai-result-card">
           <div className="ai-result-header">
             <span className="ai-result-icon">✨</span>
-            <h3>Gợi ý từ AI</h3>
+            <h3>{t("booking.aiSuggestion")}</h3>
           </div>
           
           <div className="ai-result-body">
             <p className="ai-result-intro">
-              Dựa trên triệu chứng, chúng tôi gợi ý các chuyên khoa sau:
+              {t("booking.aiMultipleSuggestions") || "Dựa vào triệu chứng của bạn, AI đề xuất các chuyên khoa sau:"}
             </p>
 
-            <div className="ai-suggestion-item">
-              <div className="ai-suggestion-badge">Nội khoa</div>
-              <div className="ai-suggestion-badge ai-suggestion-badge--secondary">Tổng quát</div>
-            </div>
-
-            <div className="ai-result-department">
-              <div className="ai-result-dept-icon">🏥</div>
-              <div className="ai-result-dept-info">
-                <h4>{aiResult.department.name}</h4>
-                <p className="ai-result-reason">{aiResult.reason}</p>
-              </div>
+            <div className="ai-suggestions-list">
+              {aiResult.departments.map((dept, index) => (
+                <div 
+                  key={dept.id || index}
+                  className={`ai-suggestion-card ${form.departmentId === dept.id ? 'ai-suggestion-card--selected' : ''} ${dept.isPrimary ? 'ai-suggestion-card--primary' : ''}`}
+                  onClick={() => handleSelectAISuggestion(dept)}
+                >
+                  <div className="ai-suggestion-card-header">
+                    <span className="ai-suggestion-dept-icon">{dept.icon || "🏥"}</span>
+                    <div className="ai-suggestion-dept-info">
+                      <h4>{dept.name}</h4>
+                      {dept.isPrimary && (
+                        <span className="ai-primary-badge">{t("booking.recommended") || "Đề xuất hàng đầu"}</span>
+                      )}
+                    </div>
+                    <div className="ai-suggestion-check">
+                      {form.departmentId === dept.id ? '✓' : ''}
+                    </div>
+                  </div>
+                  {dept.reason && (
+                    <p className="ai-suggestion-reason">{dept.reason}</p>
+                  )}
+                </div>
+              ))}
             </div>
 
             {aiResult.urgency && (
@@ -550,10 +654,14 @@ function StepSymptom({ form, setForm }) {
                   {aiResult.urgency === 'high' ? '⚠️' : aiResult.urgency === 'medium' ? '⚡' : 'ℹ️'}
                 </span>
                 <span className="ai-urgency-text">
-                  Mức độ: {aiResult.urgency === 'high' ? 'Khẩn cấp' : aiResult.urgency === 'medium' ? 'Trung bình' : 'Thấp'}
+                  {t("booking.urgency")}: {aiResult.urgency === 'high' ? t("booking.urgencyHigh") : aiResult.urgency === 'medium' ? t("booking.urgencyMedium") : t("booking.urgencyLow")}
                 </span>
               </div>
             )}
+            
+            <p className="ai-suggestion-hint">
+              {t("booking.clickToSelectDepartment") || "👆 Nhấn vào chuyên khoa để chọn"}
+            </p>
           </div>
         </div>
       )}
@@ -574,19 +682,21 @@ function StepSymptom({ form, setForm }) {
 }
 
 function StepSpecialty({ form, setForm, departments, loading }) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="booking-loading">
-        <p>Loading departments...</p>
+        <p>{t("common.loading")}</p>
       </div>
     );
   }
 
   return (
     <>
-      <h2 className="booking-section-title">Choose a specialty</h2>
+      <h2 className="booking-section-title">{t("booking.chooseSpecialty")}</h2>
       <p className="booking-section-subtitle">
-        Select a specialty based on your symptoms or AI suggestions.
+        {t("booking.chooseSpecialtySubtitle")}
       </p>
 
       <div className="booking-specialty-grid">
@@ -626,99 +736,235 @@ function StepSpecialty({ form, setForm, departments, loading }) {
   );
 }
 
-function StepDoctor({ form, setForm, doctors, selectedDepartment }) {
+function StepDoctor({ form, setForm, doctors, loadingDoctors, selectedDepartment }) {
+  const { t } = useTranslation();
+
   return (
     <>
-      <h2 className="booking-section-title">Choose a doctor</h2>
+      <h2 className="booking-section-title">{t("booking.chooseDoctor")}</h2>
       <p className="booking-section-subtitle">
         {selectedDepartment
-          ? `Department: ${selectedDepartment.name}`
-          : "Choose a department first to see available doctors."}
+          ? `${t("booking.specialty")}: ${selectedDepartment.name}`
+          : t("booking.chooseDepartmentFirst")}
       </p>
 
-      <div className="booking-doctor-list">
-        {doctors.map((doc) => {
-          const isActive = form.doctorId === doc.id;
-          return (
-            <button
-              key={doc.id}
-              type="button"
-              className={
-                "booking-doctor-card" +
-                (isActive ? " booking-doctor-card--active" : "")
-              }
-              onClick={() =>
-                setForm((prev) => ({
-                  ...prev,
-                  doctorId: doc.id,
-                  timeSlot: "",
-                }))
-              }
-            >
-              <div className="booking-doctor-avatar">👨‍⚕️</div>
-              <div className="booking-doctor-info">
-                <div className="booking-doctor-name">{doc.name}</div>
-                <div className="booking-doctor-exp">
-                  Experience: {doc.experience}
+      {loadingDoctors ? (
+        <div className="booking-loading">{t("common.loading") || "Loading..."}</div>
+      ) : (
+        <div className="booking-doctor-list">
+          {doctors.map((doc) => {
+            // Use user_id for booking (not doc.id which is Doctor profile id)
+            const isActive = form.doctorId === doc.user_id;
+            return (
+              <button
+                key={doc.id}
+                type="button"
+                className={
+                  "booking-doctor-card" +
+                  (isActive ? " booking-doctor-card--active" : "")
+                }
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    doctorId: doc.user_id, // IMPORTANT: use user_id for API booking
+                    timeSlot: "",
+                  }))
+                }
+              >
+                <div className="booking-doctor-avatar">
+                  {doc.avatar_url ? (
+                    <img src={doc.avatar_url} alt={doc.full_name} />
+                  ) : "👨‍⚕️"}
                 </div>
-                <div className="booking-doctor-meta">
-                  ⭐ {doc.rating.toFixed(1)} •{" "}
-                  {doc.price.toLocaleString("vi-VN")} VND
+                <div className="booking-doctor-info">
+                  <div className="booking-doctor-name">{doc.title} {doc.full_name}</div>
+                  <div className="booking-doctor-exp">
+                    {t("booking.experience")}: {doc.experience_years} {t("booking.years") || "years"}
+                  </div>
+                  <div className="booking-doctor-meta">
+                    ⭐ {Number(doc.rating).toFixed(1)} •{" "}
+                    {Math.round(Number(doc.consultation_fee)).toLocaleString("vi-VN")} VND
+                  </div>
                 </div>
-              </div>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
 
-        {doctors.length === 0 && (
-          <div className="booking-empty">
-            Please choose a specialty first to see matching doctors.
-          </div>
-        )}
-      </div>
+          {doctors.length === 0 && (
+            <div className="booking-empty">
+              {selectedDepartment 
+                ? (t("booking.noDoctorsAvailable") || "Không có bác sĩ nào trong chuyên khoa này.")
+                : t("booking.chooseDepartmentFirst")
+              }
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
 
 function StepTime({ form, setForm, timeSlots, loadingSlots }) {
+  const { t } = useTranslation();
   const hasDoctorAndDate = form.doctorId && form.date;
+  
+  // Calendar state
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  
+  const monthNames = [
+    t("calendar.january") || "January", t("calendar.february") || "February", 
+    t("calendar.march") || "March", t("calendar.april") || "April",
+    t("calendar.may") || "May", t("calendar.june") || "June",
+    t("calendar.july") || "July", t("calendar.august") || "August",
+    t("calendar.september") || "September", t("calendar.october") || "October",
+    t("calendar.november") || "November", t("calendar.december") || "December"
+  ];
+  
+  const dayNames = [
+    t("calendar.sun") || "Sun", t("calendar.mon") || "Mon", 
+    t("calendar.tue") || "Tue", t("calendar.wed") || "Wed",
+    t("calendar.thu") || "Thu", t("calendar.fri") || "Fri", 
+    t("calendar.sat") || "Sat"
+  ];
+  
+  // Get days in month
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+  
+  // Get first day of month (0 = Sunday)
+  const getFirstDayOfMonth = (month, year) => {
+    return new Date(year, month, 1).getDay();
+  };
+  
+  const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+  const firstDayOfMonth = getFirstDayOfMonth(currentMonth, currentYear);
+  
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+  
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+  
+  const handleSelectDate = (day) => {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setForm((prev) => ({
+      ...prev,
+      date: dateStr,
+      timeSlot: "",
+    }));
+  };
+  
+  const isDateSelected = (day) => {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return form.date === dateStr;
+  };
+  
+  const isDateDisabled = (day) => {
+    const date = new Date(currentYear, currentMonth, day);
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return date < todayStart;
+  };
+  
+  const isToday = (day) => {
+    return day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+  };
+  
+  // Generate calendar days
+  const calendarDays = [];
+  // Empty cells for days before the first day
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    calendarDays.push(<div key={`empty-${i}`} className="calendar-day calendar-day--empty"></div>);
+  }
+  // Actual days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const disabled = isDateDisabled(day);
+    const selected = isDateSelected(day);
+    const todayClass = isToday(day) ? ' calendar-day--today' : '';
+    
+    calendarDays.push(
+      <button
+        key={day}
+        type="button"
+        disabled={disabled}
+        className={`calendar-day${selected ? ' calendar-day--selected' : ''}${disabled ? ' calendar-day--disabled' : ''}${todayClass}`}
+        onClick={() => !disabled && handleSelectDate(day)}
+      >
+        {day}
+      </button>
+    );
+  }
 
   return (
     <>
-      <h2 className="booking-section-title">Select date and time</h2>
+      <h2 className="booking-section-title">{t("booking.chooseTime")}</h2>
       <p className="booking-section-subtitle">
-        Choose a convenient date and time for your visit.
+        {t("booking.chooseTimeSubtitle")}
       </p>
 
       <div className="booking-time-layout">
-        <div className="booking-date-picker">
-          <label className="booking-field-label">Appointment date</label>
-          <input
-            type="date"
-            className="booking-date-input"
-            value={form.date}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                date: e.target.value,
-                timeSlot: "",
-              }))
-            }
-          />
+        {/* Custom Calendar Picker */}
+        <div className="booking-calendar-container">
+          <label className="booking-field-label">{t("booking.appointmentDate")}</label>
+          
+          <div className="custom-calendar">
+            <div className="calendar-header">
+              <button type="button" className="calendar-nav-btn" onClick={handlePrevMonth}>
+                ‹
+              </button>
+              <span className="calendar-month-year">
+                {monthNames[currentMonth]} {currentYear}
+              </span>
+              <button type="button" className="calendar-nav-btn" onClick={handleNextMonth}>
+                ›
+              </button>
+            </div>
+            
+            <div className="calendar-weekdays">
+              {dayNames.map((day, i) => (
+                <div key={i} className="calendar-weekday">{day}</div>
+              ))}
+            </div>
+            
+            <div className="calendar-days">
+              {calendarDays}
+            </div>
+          </div>
+          
+          {form.date && (
+            <div className="selected-date-display">
+              📅 {t("booking.selectedDate") || "Ngày đã chọn"}: <strong>{form.date}</strong>
+            </div>
+          )}
         </div>
 
+        {/* Time Slots */}
         <div className="booking-time-slots">
-          <label className="booking-field-label">Time slot</label>
+          <label className="booking-field-label">{t("booking.timeSlot")}</label>
 
           {loadingSlots ? (
-            <div className="booking-empty">Loading available slots...</div>
+            <div className="booking-empty">{t("booking.loadingSlots")}</div>
           ) : !hasDoctorAndDate ? (
             <div className="booking-empty">
-              Please select a doctor and date first.
+              {t("booking.selectDoctorFirst")}
             </div>
           ) : timeSlots.length === 0 ? (
             <div className="booking-empty">
-              No available slots for this date. Please choose another date.
+              {t("booking.noSlotsAvailable")}
             </div>
           ) : (
             <div className="booking-time-grid">
@@ -744,11 +990,11 @@ function StepTime({ form, setForm, timeSlots, loadingSlots }) {
         </div>
       </div>
 
-      <label className="booking-field-label">Additional notes (optional)</label>
+      <label className="booking-field-label">{t("booking.additionalNotes")}</label>
       <textarea
         className="booking-textarea"
         rows={3}
-        placeholder="Add any important information about your health condition..."
+        placeholder={t("booking.notesPlaceholder")}
         value={form.extraNote}
         onChange={(e) =>
           setForm((prev) => ({ ...prev, extraNote: e.target.value }))
@@ -765,16 +1011,18 @@ function StepConfirm({
   patientName,
   initialLetter,
 }) {
+  const { t } = useTranslation();
+
   return (
     <>
-      <h2 className="booking-section-title">Review your details</h2>
+      <h2 className="booking-section-title">{t("booking.reviewDetails")}</h2>
       <p className="booking-section-subtitle">
-        Please check the information before confirming your booking.
+        {t("booking.reviewSubtitle")}
       </p>
 
       <div className="booking-confirm-card">
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Patient:</span>
+          <span className="booking-confirm-label">{t("common.patient")}:</span>
           <span className="booking-confirm-value">
             <span className="booking-confirm-avatar">{initialLetter}</span>
             {patientName}
@@ -782,51 +1030,256 @@ function StepConfirm({
         </div>
 
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Symptoms:</span>
+          <span className="booking-confirm-label">{t("booking.symptoms")}:</span>
           <span className="booking-confirm-value">
-            {form.symptoms || "Not provided"}
+            {form.symptoms || t("patient.notProvided")}
           </span>
         </div>
 
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Department:</span>
+          <span className="booking-confirm-label">{t("booking.specialty")}:</span>
           <span className="booking-confirm-value">
-            {selectedSpecialty?.name || "Not selected"}
+            {selectedSpecialty?.name || t("patient.notProvided")}
           </span>
         </div>
 
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Doctor:</span>
+          <span className="booking-confirm-label">{t("booking.doctor")}:</span>
           <span className="booking-confirm-value">
-            {selectedDoctor?.name || "Not selected"}
+            {selectedDoctor ? `${selectedDoctor.title} ${selectedDoctor.full_name}` : t("patient.notProvided")}
           </span>
         </div>
 
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Date:</span>
+          <span className="booking-confirm-label">{t("patient.date")}:</span>
           <span className="booking-confirm-value">
-            {form.date || "Not selected"}
+            {form.date || t("patient.notProvided")}
           </span>
         </div>
 
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Time:</span>
+          <span className="booking-confirm-label">{t("patient.time")}:</span>
           <span className="booking-confirm-value">
-            {form.timeSlot || "Not selected"}
+            {form.timeSlot || t("patient.notProvided")}
           </span>
         </div>
 
         <div className="booking-confirm-row booking-confirm-row--price">
-          <span className="booking-confirm-label">Consultation fee:</span>
+          <span className="booking-confirm-label">{t("booking.consultationFee")}:</span>
           <span className="booking-confirm-price">
             {selectedDoctor
-              ? `${selectedDoctor.price.toLocaleString("vi-VN")} VND`
+              ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND`
               : "N/A"}
           </span>
         </div>
 
         <div className="booking-confirm-note">
-          <em>Please bring this booking ticket when going to the appointment.</em>
+          <em>{t("booking.confirmInfoNote") || "Vui lòng kiểm tra thông tin trước khi tiến hành thanh toán."}</em>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ===== STEP PAYMENT =====
+function StepPayment({ form, setForm, selectedDoctor, selectedSpecialty }) {
+  const { t } = useTranslation();
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+
+  const paymentMethods = [
+    { id: 'card', icon: '💳', label: t("payment.creditCard") || "Thẻ tín dụng/Ghi nợ" },
+    { id: 'ewallet', icon: '📱', label: t("payment.ewallet") || "Ví điện tử" },
+    { id: 'bank', icon: '🏦', label: t("payment.bankTransfer") || "Chuyển khoản ngân hàng" },
+    { id: 'clinic', icon: '🏥', label: t("payment.payAtClinic") || "Thanh toán tại phòng khám" },
+  ];
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    return parts.length ? parts.join(' ') : value;
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  return (
+    <>
+      <h2 className="booking-section-title">💳 {t("payment.title") || "Thanh toán"}</h2>
+      <p className="booking-section-subtitle">
+        {t("payment.subtitle") || "Chọn phương thức thanh toán và hoàn tất đặt lịch"}
+      </p>
+
+      <div className="payment-layout">
+        {/* Payment Methods */}
+        <div className="payment-methods-section">
+          <label className="booking-field-label">{t("payment.selectMethod") || "Chọn phương thức thanh toán"}</label>
+          
+          <div className="payment-methods-grid">
+            {paymentMethods.map((method) => (
+              <button
+                key={method.id}
+                type="button"
+                className={`payment-method-card ${form.paymentMethod === method.id ? 'payment-method-card--active' : ''}`}
+                onClick={() => setForm(prev => ({ ...prev, paymentMethod: method.id }))}
+              >
+                <span className="payment-method-icon">{method.icon}</span>
+                <span className="payment-method-label">{method.label}</span>
+                {form.paymentMethod === method.id && (
+                  <span className="payment-method-check">✓</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Card Form - Only show when card is selected */}
+          {form.paymentMethod === 'card' && (
+            <div className="payment-card-form">
+              <div className="payment-form-group">
+                <label>{t("payment.cardNumber") || "Số thẻ"}</label>
+                <input
+                  type="text"
+                  placeholder="0000 0000 0000 0000"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  maxLength={19}
+                  className="payment-input"
+                />
+              </div>
+              
+              <div className="payment-form-group">
+                <label>{t("payment.cardName") || "Tên chủ thẻ"}</label>
+                <input
+                  type="text"
+                  placeholder="NGUYEN VAN A"
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                  className="payment-input"
+                />
+              </div>
+              
+              <div className="payment-form-row">
+                <div className="payment-form-group payment-form-group--half">
+                  <label>{t("payment.expiry") || "Ngày hết hạn"}</label>
+                  <input
+                    type="text"
+                    placeholder="MM/YY"
+                    value={expiry}
+                    onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                    maxLength={5}
+                    className="payment-input"
+                  />
+                </div>
+                
+                <div className="payment-form-group payment-form-group--half">
+                  <label>{t("payment.cvv") || "CVV"}</label>
+                  <input
+                    type="password"
+                    placeholder="***"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').substring(0, 3))}
+                    maxLength={3}
+                    className="payment-input"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* E-wallet options */}
+          {form.paymentMethod === 'ewallet' && (
+            <div className="payment-ewallet-options">
+              <p className="payment-info-text">{t("payment.ewalletInfo") || "Chọn ví điện tử:"}</p>
+              <div className="ewallet-buttons">
+                <button type="button" className="ewallet-btn">MoMo</button>
+                <button type="button" className="ewallet-btn">ZaloPay</button>
+                <button type="button" className="ewallet-btn">VNPay</button>
+              </div>
+            </div>
+          )}
+
+          {/* Bank transfer info */}
+          {form.paymentMethod === 'bank' && (
+            <div className="payment-bank-info">
+              <p className="payment-info-text">{t("payment.bankInfo") || "Thông tin chuyển khoản:"}</p>
+              <div className="bank-details">
+                <p><strong>{t("payment.bankName") || "Ngân hàng"}:</strong> Vietcombank</p>
+                <p><strong>{t("payment.accountNumber") || "Số tài khoản"}:</strong> 1234567890</p>
+                <p><strong>{t("payment.accountName") || "Tên tài khoản"}:</strong> PHONG KHAM MY HEALTHCARE</p>
+                <p><strong>{t("payment.content") || "Nội dung"}:</strong> [Họ tên] - Đặt khám</p>
+              </div>
+            </div>
+          )}
+
+          {/* Pay at clinic info */}
+          {form.paymentMethod === 'clinic' && (
+            <div className="payment-clinic-info">
+              <p className="payment-info-text">
+                {t("payment.clinicInfo") || "Bạn sẽ thanh toán trực tiếp tại phòng khám khi đến khám."}
+              </p>
+              <div className="clinic-note">
+                <span>💡</span>
+                <p>{t("payment.clinicNote") || "Vui lòng đến trước giờ hẹn 15 phút để làm thủ tục thanh toán."}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Order Summary */}
+        <div className="payment-summary-section">
+          <div className="payment-summary-card">
+            <h3 className="payment-summary-title">{t("payment.orderSummary") || "Chi tiết đặt lịch"}</h3>
+            
+            <div className="payment-summary-row">
+              <span>{t("booking.specialty")}:</span>
+              <span>{selectedSpecialty?.name || '-'}</span>
+            </div>
+            
+            <div className="payment-summary-row">
+              <span>{t("booking.doctor")}:</span>
+              <span>{selectedDoctor ? `${selectedDoctor.title} ${selectedDoctor.full_name}` : '-'}</span>
+            </div>
+            
+            <div className="payment-summary-row">
+              <span>{t("patient.date")}:</span>
+              <span>{form.date || '-'}</span>
+            </div>
+            
+            <div className="payment-summary-row">
+              <span>{t("patient.time")}:</span>
+              <span>{form.timeSlot || '-'}</span>
+            </div>
+            
+            <div className="payment-summary-divider"></div>
+            
+            <div className="payment-summary-row">
+              <span>{t("payment.consultationFee") || "Phí khám"}:</span>
+              <span>{selectedDoctor ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND` : '-'}</span>
+            </div>
+            
+            <div className="payment-summary-row payment-summary-row--total">
+              <span>{t("payment.total") || "Tổng cộng"}:</span>
+              <span className="payment-total-amount">
+                {selectedDoctor ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND` : '-'}
+              </span>
+            </div>
+          </div>
+
+          <div className="payment-secure-badge">
+            🔒 {t("payment.securePayment") || "Thanh toán an toàn & bảo mật"}
+          </div>
         </div>
       </div>
     </>

@@ -1,29 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTranslation } from "../../hooks/useTranslation";
 import "./Carousel.css";
 
-const slides = [
-  {
-    image: "/homePage_images/homepage1.png",
-    title: "Welcome to MyHealthCare",
-    subtitle: "Your trusted partner in health. Book appointments, access medical records, and connect with healthcare professionals.",
-  },
-  {
-    image: "/homePage_images/homepage2.png",
-    title: "State-of-the-art Facilities",
-    subtitle: "Modern equipment, comfortable environment, expert staff for comprehensive care.",
-  },
-  {
-    image: "/homePage_images/homepage3.png",
-    title: "Your Trusted Partner in Health and Wellness",
-    subtitle: "Building healthier communities, one family at a time.",
-  },
-];
+// Import images
+import homepage1 from "../../assets/homePage_images/homepage1.png";
+import homepage2 from "../../assets/homePage_images/homepage2.png";
+import homepage3 from "../../assets/homePage_images/homepage3.png";
 
 export default function Carousel() {
   const [current, setCurrent] = useState(0);
   const { isAuth, user } = useAuth();
+  const { t } = useTranslation();
+
+  const slides = [
+    {
+      image: homepage1,
+      title: t('home.slide1Title'),
+      subtitle: t('home.slide1Subtitle'),
+    },
+    {
+      image: homepage2,
+      title: t('home.slide2Title'),
+      subtitle: t('home.slide2Subtitle'),
+    },
+    {
+      image: homepage3,
+      title: t('home.slide3Title'),
+      subtitle: t('home.slide3Subtitle'),
+    },
+  ];
 
   const role =
     user?.role || user?.accountType || user?.userType || "patient";
@@ -61,7 +68,7 @@ export default function Carousel() {
       {/* Fixed Button */}
       <div className="slide-button-wrapper">
         <Link to={bookingPath} className="slide-button">
-          Book an Appointment
+          {t('home.bookAppointment')}
         </Link>
       </div>
 

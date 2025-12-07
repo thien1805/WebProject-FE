@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, CheckCircle, Loader2 } from 'lucide-react';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 export default function LoginForm({ formData, loading, onFormChange, onKeyPress, onSubmit }) {
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState('');
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
@@ -12,7 +14,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
       <div className="transform transition-all duration-300 hover:scale-[1.02]">
         <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
           <Mail className="w-4 h-4 text-blue-600" />
-          Email Address
+          {t('auth.emailAddress')}
         </label>
         <div className="relative">
           <input
@@ -23,7 +25,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
             onKeyPress={onKeyPress}
             onFocus={() => setFocusedField('email')}
             onBlur={() => setFocusedField('')}
-            placeholder="your.email@example.com"
+            placeholder={t('auth.emailPlaceholder')}
             className={`w-full px-4 py-3.5 bg-gray-50 border-2 rounded-xl focus:outline-none transition-all duration-300 ${
               focusedField === 'email' 
                 ? 'border-blue-500 shadow-lg shadow-blue-100 bg-white' 
@@ -42,7 +44,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
       <div className="transform transition-all duration-300 hover:scale-[1.02]">
         <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
           <Lock className="w-4 h-4 text-blue-600" />
-          Password
+          {t('auth.password')}
         </label>
         <div className="relative">
           <input
@@ -53,7 +55,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
             onKeyPress={onKeyPress}
             onFocus={() => setFocusedField('password')}
             onBlur={() => setFocusedField('')}
-            placeholder="Enter your password"
+            placeholder={t('auth.passwordPlaceholder')}
             className={`w-full px-4 py-3.5 bg-gray-50 border-2 rounded-xl focus:outline-none transition-all duration-300 pr-12 ${
               focusedField === 'password' 
                 ? 'border-blue-500 shadow-lg shadow-blue-100 bg-white' 
@@ -77,13 +79,13 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
             type="checkbox" 
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer" 
           />
-          <span className="text-gray-600 group-hover:text-gray-900 transition-colors">Remember me</span>
+          <span className="text-gray-600 group-hover:text-gray-900 transition-colors">{t('auth.rememberMe')}</span>
         </label>
         <Link
           to="/forgot-password"
           className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-all"
         >
-          Forgot password?
+          {t('auth.forgotPassword')}
         </Link>
       </div>
 
@@ -96,12 +98,12 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
         {loading ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Signing you in...
+            {t('auth.signingIn')}
           </>
         ) : (
           <>
             <Lock className="w-5 h-5" />
-            Sign In
+            {t('auth.signIn')}
           </>
         )}
       </button>
@@ -115,9 +117,9 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
 
       {/* Register Link */}
       <div className="mt-8 text-center text-sm">
-        <span className="text-gray-600">Don't have an account?</span>{' '}
+        <span className="text-gray-600">{t('auth.noAccount')}</span>{' '}
         <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-bold hover:underline transition-all">
-          Create one now →
+          {t('auth.registerNow')} →
         </Link>
       </div>
     </div>

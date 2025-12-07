@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const STATUS_LABELS = {
-  booked: "Pending",
-  pending: "Pending",
-  confirmed: "Confirmed",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
+import { useTranslation } from "../../../../hooks/useTranslation";
 
 const STATUS_COLORS = {
   pending: "pd-status--pending",
@@ -19,12 +12,21 @@ const STATUS_COLORS = {
 
 export default function AppointmentItem({ appt, recordId, onCancel, isCancelling }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
+  const STATUS_LABELS = {
+    booked: t("patient.pending"),
+    pending: t("patient.pending"),
+    confirmed: t("patient.confirmed"),
+    completed: t("patient.completed"),
+    cancelled: t("patient.cancelled"),
+  };
+
   const handleViewRecord = () => {
-    if (!recordId) return;
-    navigate(`/patient/medical-record/${recordId}`);
+    // Navigate to appointment detail page
+    navigate(`/patient/appointment/${appt.id}`);
   };
 
   const status = appt.status?.toLowerCase?.() || "pending";
@@ -57,10 +59,9 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
     try {
       const date = new Date(dateStr);
       return date.toLocaleDateString("vi-VN", {
-        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
         year: "numeric",
-        month: "short",
-        day: "numeric",
       });
     } catch {
       return dateStr;
@@ -77,6 +78,8 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
     return timeStr;
   };
 
+  const isHistory = ["completed", "cancelled"].includes(status);
+
   return (
     <>
       <div className={`pd-appointment-card ${status === 'cancelled' ? 'pd-appointment-card--cancelled' : ''}`}>
@@ -84,22 +87,26 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
           <div className="pd-avatar-circle">
             <span>{appt.doctorName?.charAt(0) || "?"}</span>
           </div>
-          <div>
+          <div className="pd-appointment-doctor-info">
             <div className="pd-doc-name">{appt.doctorName || "Unknown Doctor"}</div>
-            <div className="pd-doc-specialty">{appt.specialty || "General"}</div>
-            {appt.location && <div className="pd-location">📍 {appt.location}</div>}
+            <div className="pd-doc-specialty">{t("patient.doctorAt")} {appt.specialty || "General"}</div>
+            {isHistory && appt.reason && (
+              <div className="pd-appointment-reason">{appt.reason}</div>
+            )}
           </div>
         </div>
 
         <div className="pd-appointment-info">
           <div className="pd-appointment-meta">
-            <span className="pd-appointment-label">📅 Date</span>
+            <span className="pd-appointment-icon">📅</span>
             <span className="pd-appointment-value">{formatDate(appt.date)}</span>
           </div>
-          <div className="pd-appointment-meta">
-            <span className="pd-appointment-label">🕐 Time</span>
-            <span className="pd-appointment-value">{formatTime(appt.time)}</span>
-          </div>
+          {!isHistory && (
+            <div className="pd-appointment-meta">
+              <span className="pd-appointment-icon">🕐</span>
+              <span className="pd-appointment-value">{formatTime(appt.time)}</span>
+            </div>
+          )}
         </div>
 
         <div className="pd-appointment-actions">
@@ -107,28 +114,24 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
             {statusLabel}
           </span>
           
-          <div className="pd-action-buttons">
-            {canCancel && (
-              <button
-                type="button"
-                className="pd-cancel-btn"
-                onClick={handleCancelClick}
-                disabled={isCancelling}
-              >
-                {isCancelling ? "Cancelling..." : "Cancel"}
-              </button>
-            )}
-            
+          <button
+            type="button"
+            className="pd-detail-btn"
+            onClick={handleViewRecord}
+          >
+            {t("patient.viewDetail")}
+          </button>
+
+          {canCancel && (
             <button
               type="button"
-              className="pd-outline-btn"
-              onClick={handleViewRecord}
-              disabled={!recordId}
-              title={recordId ? "View medical record" : "No record available"}
+              className="pd-cancel-btn-small"
+              onClick={handleCancelClick}
+              disabled={isCancelling}
             >
-              View detail
+              {isCancelling ? "..." : "✕"}
             </button>
-          </div>
+          )}
         </div>
       </div>
 
@@ -136,17 +139,17 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
       {showCancelModal && (
         <div className="pd-modal-overlay" onClick={handleCloseModal}>
           <div className="pd-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="pd-modal-title">Cancel Appointment</h3>
+            <h3 className="pd-modal-title">{t("patient.cancelAppointment")}</h3>
             <p className="pd-modal-text">
-              Are you sure you want to cancel this appointment with <strong>{appt.doctorName}</strong> on <strong>{formatDate(appt.date)}</strong> at <strong>{formatTime(appt.time)}</strong>?
+              {t("patient.cancelConfirmText")} <strong>{appt.doctorName}</strong> - <strong>{formatDate(appt.date)}</strong> - <strong>{formatTime(appt.time)}</strong>?
             </p>
             
             <label className="pd-modal-label">
-              Reason for cancellation (optional):
+              {t("patient.cancelReason")}
             </label>
             <textarea
               className="pd-modal-textarea"
-              placeholder="Enter your reason..."
+              placeholder={t("patient.enterReason")}
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={3}
@@ -158,7 +161,7 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
                 className="pd-secondary-btn"
                 onClick={handleCloseModal}
               >
-                Keep Appointment
+                {t("patient.keepAppointment")}
               </button>
               <button
                 type="button"
@@ -166,7 +169,7 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
                 onClick={handleConfirmCancel}
                 disabled={isCancelling}
               >
-                {isCancelling ? "Cancelling..." : "Yes, Cancel"}
+                {isCancelling ? t("common.loading") : t("patient.yesCancel")}
               </button>
             </div>
           </div>
