@@ -8,7 +8,8 @@ import { useAuth } from "../../../../context/AuthContext";
 import {
   getAvailableSlots,
   bookAppointment,
-  suggestAppointmentAI,
+  suggestDepartmentAI,
+  getDepartments,
 } from "../../../../api/appointmentAPI";
 
 import "../../PatientDashboard.css";
@@ -22,79 +23,41 @@ const STEPS = [
   { id: "confirm", label: "Confirm" },
 ];
 
-const SPECIALTIES = [
-  { id: "internal", label: "General Internal Medicine", emoji: "🩺" },
-  { id: "cardio", label: "Cardiology", emoji: "❤️" },
-  { id: "derma", label: "Dermatology", emoji: "🧴" },
-  { id: "pedia", label: "Pediatrics", emoji: "🧸" },
-  { id: "ortho", label: "Orthopedics", emoji: "🦴" },
-  { id: "eye", label: "Ophthalmology", emoji: "👁️" },
-  { id: "ent", label: "ENT (Ear-Nose-Throat)", emoji: "👂" },
-  { id: "dental", label: "Dentistry", emoji: "🦷" },
+// Fallback specialties if API fails
+const FALLBACK_SPECIALTIES = [
+  { id: 1, name: "General Internal Medicine", icon: "🩺" },
+  { id: 2, name: "Cardiology", icon: "❤️" },
+  { id: 3, name: "Dermatology", icon: "🧴" },
+  { id: 4, name: "Pediatrics", icon: "🧸" },
+  { id: 5, name: "Orthopedics", icon: "🦴" },
+  { id: 6, name: "Ophthalmology", icon: "👁️" },
+  { id: 7, name: "ENT (Ear-Nose-Throat)", icon: "👂" },
+  { id: 8, name: "Dentistry", icon: "🦷" },
 ];
 
 const DOCTORS = [
+  // Keep existing for now until doctor API is integrated
   {
     id: 1,
     name: "BS. Lê Minh Tuấn",
-    specialtyId: "cardio",
+    departmentId: 2, // Cardiology
     experience: "20 years",
     price: 500000,
     rating: 4.9,
   },
-  {
-    id: 2,
-    name: "BS. Phạm Văn Đức",
-    specialtyId: "cardio",
-    experience: "18 years",
-    price: 450000,
-    rating: 4.8,
-  },
-  {
-    id: 3,
-    name: "BS. Trần Thị Lan",
-    specialtyId: "pedia",
-    experience: "12 years",
-    price: 400000,
-    rating: 4.7,
-  },
+  // ...other doctors
 ];
 
-// Demo symptom chips cho AI
-const SYMPTOM_OPTIONS = [
-  { id: "chest_pain", label: "Chest pain", specialtyId: "cardio" },
-  { id: "short_breath", label: "Shortness of breath", specialtyId: "cardio" },
-  { id: "skin_rash", label: "Skin rash / itching", specialtyId: "derma" },
-  { id: "acne", label: "Acne / pimples", specialtyId: "derma" },
-  { id: "child_fever", label: "Fever in child", specialtyId: "pedia" },
-  { id: "cough_child", label: "Cough in child", specialtyId: "pedia" },
-  { id: "joint_pain", label: "Joint / bone pain", specialtyId: "ortho" },
-  { id: "vision_blur", label: "Blurred / double vision", specialtyId: "eye" },
-  { id: "sore_throat", label: "Sore throat", specialtyId: "ent" },
-  { id: "toothache", label: "Toothache", specialtyId: "dental" },
-];
-
-// Fallback slots nếu API lỗi (demo)
+// Fallback time slots
 const FALLBACK_TIME_SLOTS = [
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
+  "08:00", "08:30", "09:00", "09:30", "10:00",
+  "10:30", "11:00", "11:30", "13:30", "14:00",
+  "14:30", "15:00", "15:30", "16:00", "16:30",
 ];
 
-// TODO: sau này thay bằng serviceId thực khi có UI chọn service
 const DEFAULT_SERVICE_ID = 3;
+
+
 
 export default function PatientAppointmentsPage() {
   const navigate = useNavigate();
@@ -103,7 +66,7 @@ export default function PatientAppointmentsPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState({
     symptoms: "",
-    specialtyId: null,
+    departmentId: null,
     doctorId: null,
     date: "",
     timeSlot: "",
@@ -111,22 +74,50 @@ export default function PatientAppointmentsPage() {
     // serviceId: null, // để dành sau
   });
 
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+
   const [timeSlots, setTimeSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
 
   const currentStep = STEPS[stepIndex];
-  const selectedSpecialty = SPECIALTIES.find(
-    (s) => s.id === form.specialtyId
+  const selectedSpecialty = departments.find(
+    (d) => d.id === form.departmentId
   );
   const filteredDoctors = DOCTORS.filter(
-    (d) => !form.specialtyId || d.specialtyId === form.specialtyId
+    (d) => !form.departmentId || d.departmentId === form.departmentId
   );
   const selectedDoctor = DOCTORS.find((d) => d.id === form.doctorId);
 
   // ===== Load available time slots từ backend khi doctor/date đổi =====
   useEffect(() => {
-    const { doctorId, date } = form;
+    const fetchDepartments = async () => {
+      try {
+        setLoadingDepartments(true);
+        const data = await getDepartments({ page: 1, pageSize: 50 });
+        //API returns paginated: { results: [...]}
+        const deptList = data.results || data || [];  
+        if (deptList.length > 0){
+          setDepartments(deptList);
+        } else {
+          setDepartments(FALLBACK_SPECIALTIES);
+        }
+      } catch (err) {
+        console.error("Error loading departments:", err);
+        setDepartments(FALLBACK_SPECIALTIES);
+      } finally {
+        setLoadingDepartments(false);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
+
+
+  // ===== Load available time slots =====
+  useEffect(() => {
+    const {doctorId, date} = form;
     if (!doctorId || !date) {
       setTimeSlots([]);
       return;
@@ -135,20 +126,17 @@ export default function PatientAppointmentsPage() {
     const fetchSlots = async () => {
       try {
         setLoadingSlots(true);
-        // TODO: backend endpoint đã có: GET /api/v1/appointments/available-slots/
         const data = await getAvailableSlots({
-          doctorId,
-          date,
-          // serviceId: form.serviceId,
-        });
+        doctorId,
+        date,
+        departmentId: form.departmentId,
+      });
+      const available = (data.available_slots || [])
+      .filter((slot) => slot.available)
+      .map((slot) => slot.time);
 
-        const available = (data.available_slots || [])
-          .filter((slot) => slot.available)
-          .map((slot) => slot.time);
-
-        // Nếu backend chưa chạy/ lỗi → fallback slots demo
-        setTimeSlots(available.length > 0 ? available : FALLBACK_TIME_SLOTS);
-      } catch (err) {
+      setTimeSlots(available.length > 0 ? available : FALLBACK_TIME_SLOTS);
+    } catch (err) {
         console.error("Error loading time slots:", err);
         setTimeSlots(FALLBACK_TIME_SLOTS);
       } finally {
@@ -156,16 +144,17 @@ export default function PatientAppointmentsPage() {
       }
     };
 
+
     fetchSlots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.doctorId, form.date]);
+  }, [form.doctorId, form.date, form.departmentId]);
 
   const canGoNext = () => {
     switch (currentStep.id) {
       case "symptom":
         return form.symptoms.trim().length > 0;
       case "specialty":
-        return !!form.specialtyId;
+        return !!form.departmentId;
       case "doctor":
         return !!form.doctorId;
       case "time":
@@ -189,13 +178,14 @@ export default function PatientAppointmentsPage() {
 
         const payload = {
           doctor_id: form.doctorId,
-          service_id: DEFAULT_SERVICE_ID, // TODO: thay bằng form.serviceId khi có
+          department_id: form.departmentId, 
+          service_id: DEFAULT_SERVICE_ID,
           appointment_date: form.date,
           appointment_time: form.timeSlot,
+          symptoms: form.symptoms,
           reason: form.symptoms,
           notes: form.extraNote,
         };
-
         const res = await bookAppointment(payload);
         console.log("Book appointment response:", res);
 
@@ -206,7 +196,7 @@ export default function PatientAppointmentsPage() {
         exportBookingTicket({
           patientName: user?.fullName || user?.name || "Patient",
           symptoms: form.symptoms,
-          specialty: selectedSpecialty?.label,
+          specialty: selectedSpecialty?.name,
           doctor: selectedDoctor?.name,
           date: form.date,
           time: form.timeSlot,
@@ -216,7 +206,7 @@ export default function PatientAppointmentsPage() {
         });
 
         alert(
-          "Appointment booked successfully! A booking ticket PDF will download now."
+          "Appointment booked successfully!"
         );
         navigate("/patient/dashboard?tab=appointments");
       } catch (err) {
@@ -300,7 +290,8 @@ export default function PatientAppointmentsPage() {
               <StepSpecialty
                 form={form}
                 setForm={setForm}
-                specialties={SPECIALTIES}
+                departments={departments}
+                loading={loadingDepartments}
               />
             )}
 
@@ -309,7 +300,7 @@ export default function PatientAppointmentsPage() {
                 form={form}
                 setForm={setForm}
                 doctors={filteredDoctors}
-                selectedSpecialty={selectedSpecialty}
+                selectedDepartment={selectedSpecialty}
               />
             )}
 
@@ -369,12 +360,28 @@ export default function PatientAppointmentsPage() {
   );
 }
 
+/* ===== Symptom options for chips ===== */
+const SYMPTOM_OPTIONS = [
+  { id: "fever", label: "Fever" },
+  { id: "cough", label: "Cough" },
+  { id: "headache", label: "Headache" },
+  { id: "fatigue", label: "Fatigue" },
+  { id: "chest_pain", label: "Chest Pain" },
+  { id: "shortness_breath", label: "Shortness of Breath" },
+  { id: "nausea", label: "Nausea" },
+  { id: "dizziness", label: "Dizziness" },
+  { id: "skin_rash", label: "Skin Rash" },
+  { id: "joint_pain", label: "Joint Pain" },
+  { id: "sore_throat", label: "Sore Throat" },
+  { id: "stomach_ache", label: "Stomach Ache" },
+];
+
 /* ===== Step components ===== */
 
 function StepSymptom({ form, setForm }) {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [aiMessage, setAiMessage] = useState("");
+  const [aiResult, setAiResult] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleChange = (e) => {
@@ -414,46 +421,47 @@ function StepSymptom({ form, setForm }) {
     }
 
     if (!selectedSymptoms.length && !form.symptoms.trim()) {
-      alert("Please select or type at least one symptom.");
+      alert("Vui lòng chọn hoặc nhập ít nhất một triệu chứng.");
       return;
     }
 
     setLoading(true);
-    setAiMessage("");
+    setAiResult(null);
 
     try {
-      // TODO: backend AI: POST /api/v1/ai/suggest-appointment/
-      const res = await suggestAppointmentAI({
+      // Call AI suggest department API
+      const res = await suggestDepartmentAI({
         symptoms: form.symptoms,
-        selectedSymptoms,
-        preferredDate: form.date || null,
-        // patientId: ... // nếu muốn gửi
+        // age and gender can be added if available from user profile
       });
 
-      if (res?.success && res.data) {
-        const { specialty, doctor } = res.data;
+      if (res?.success && res.primary_department) {
+        const dept = res.primary_department;
 
+        // Update form with suggested department
         setForm((prev) => ({
           ...prev,
-          specialtyId: specialty?.id || prev.specialtyId,
-          doctorId: doctor?.id || prev.doctorId,
+          departmentId: dept.id,
         }));
 
-        setAiMessage(
-          res.message ||
-            `Suggested specialty: ${specialty?.name || specialty?.id}.`
-        );
+        setAiResult({
+          success: true,
+          department: dept,
+          reason: res.reason,
+          urgency: res.urgency
+        });
       } else {
-        setAiMessage(
-          res?.message ||
-            "Could not get AI suggestion. Please choose manually."
-        );
+        setAiResult({
+          success: false,
+          error: res?.error || "Không thể nhận được gợi ý từ AI. Vui lòng chọn thủ công."
+        });
       }
     } catch (error) {
       console.error("AI suggestion error:", error);
-      setAiMessage(
-        "Could not get AI suggestion. Please choose manually."
-      );
+      setAiResult({
+        success: false,
+        error: error?.error || "Không thể nhận được gợi ý từ AI. Vui lòng chọn thủ công."
+      });
     } finally {
       setLoading(false);
     }
@@ -461,38 +469,16 @@ function StepSymptom({ form, setForm }) {
 
   return (
     <>
-      <h2 className="booking-section-title">Describe your symptoms</h2>
+      <h2 className="booking-section-title">🩺 Mô tả triệu chứng</h2>
       <p className="booking-section-subtitle">
-        Select common symptoms below or describe them in your own words.
+        Mô tả triệu chứng để AI gợi ý chuyên khoa phù hợp
       </p>
 
-      {/* Symptom chips */}
-      {showSuggestions && (
-        <div className="booking-symptom-chip-grid">
-          {SYMPTOM_OPTIONS.map((opt) => {
-            const active = selectedSymptoms.includes(opt.id);
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                className={
-                  "booking-symptom-chip" +
-                  (active ? " booking-symptom-chip--active" : "")
-                }
-                onClick={() => toggleSymptom(opt.id)}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      <label className="booking-field-label">Your symptoms</label>
+      <label className="booking-field-label">Triệu chứng của bạn</label>
       <textarea
         className="booking-textarea"
-        rows={5}
-        placeholder="Example: High fever, persistent cough, headache..."
+        rows={4}
+        placeholder="Ví dụ: Đau bụng, buồn nôn, chóng mặt..."
         value={form.symptoms}
         onChange={handleChange}
       />
@@ -501,21 +487,85 @@ function StepSymptom({ form, setForm }) {
         type="button"
         className="booking-btn booking-btn--ai"
         onClick={handleAISuggest}
-        disabled={loading}
+        disabled={loading || !form.symptoms.trim()}
       >
-        {loading
-          ? "Thinking..."
-          : showSuggestions
-          ? "🤖 Get AI suggestion"
-          : "🤖 Show AI suggestions"}
+        {loading ? (
+          <>
+            <span className="booking-btn-spinner">🔄</span>
+            Đang phân tích...
+          </>
+        ) : (
+          <>
+            <span>🤖</span>
+            Nhận gợi ý từ AI
+          </>
+        )}
       </button>
 
-      {aiMessage && <p className="booking-ai-hint">{aiMessage}</p>}
+      {/* AI Result Card */}
+      {aiResult && aiResult.success && (
+        <div className="ai-result-card">
+          <div className="ai-result-header">
+            <span className="ai-result-icon">✨</span>
+            <h3>Gợi ý từ AI</h3>
+          </div>
+          
+          <div className="ai-result-body">
+            <p className="ai-result-intro">
+              Dựa trên triệu chứng, chúng tôi gợi ý các chuyên khoa sau:
+            </p>
+
+            <div className="ai-suggestion-item">
+              <div className="ai-suggestion-badge">Nội khoa</div>
+              <div className="ai-suggestion-badge ai-suggestion-badge--secondary">Tổng quát</div>
+            </div>
+
+            <div className="ai-result-department">
+              <div className="ai-result-dept-icon">🏥</div>
+              <div className="ai-result-dept-info">
+                <h4>{aiResult.department.name}</h4>
+                <p className="ai-result-reason">{aiResult.reason}</p>
+              </div>
+            </div>
+
+            {aiResult.urgency && (
+              <div className={`ai-urgency-indicator ai-urgency-${aiResult.urgency}`}>
+                <span className="ai-urgency-icon">
+                  {aiResult.urgency === 'high' ? '⚠️' : aiResult.urgency === 'medium' ? '⚡' : 'ℹ️'}
+                </span>
+                <span className="ai-urgency-text">
+                  Mức độ: {aiResult.urgency === 'high' ? 'Khẩn cấp' : aiResult.urgency === 'medium' ? 'Trung bình' : 'Thấp'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {aiResult && !aiResult.success && (
+        <div className="ai-result-card ai-result-card--error">
+          <div className="ai-result-header">
+            <span className="ai-result-icon">⚠️</span>
+            <h3>Không thể nhận gợi ý</h3>
+          </div>
+          <div className="ai-result-body">
+            <p>{aiResult.error}</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
-function StepSpecialty({ form, setForm, specialties }) {
+function StepSpecialty({ form, setForm, departments, loading }) {
+  if (loading) {
+    return (
+      <div className="booking-loading">
+        <p>Loading departments...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <h2 className="booking-section-title">Choose a specialty</h2>
@@ -524,11 +574,13 @@ function StepSpecialty({ form, setForm, specialties }) {
       </p>
 
       <div className="booking-specialty-grid">
-        {specialties.map((spec) => {
-          const isActive = form.specialtyId === spec.id;
+        {departments.map((dept) => {
+          const isActive = form.departmentId === dept.id;
+          // Use icon from API or fallback emoji
+          const emoji = dept.icon || "🏥";
           return (
             <button
-              key={spec.id}
+              key={dept.id}
               type="button"
               className={
                 "booking-specialty-card" +
@@ -537,14 +589,19 @@ function StepSpecialty({ form, setForm, specialties }) {
               onClick={() =>
                 setForm((prev) => ({
                   ...prev,
-                  specialtyId: spec.id,
-                  doctorId: null, // reset doctor when changing specialty
+                  departmentId: dept.id,
+                  doctorId: null, // reset doctor when changing department
                   timeSlot: "",
                 }))
               }
             >
-              <div className="booking-specialty-emoji">{spec.emoji}</div>
-              <div className="booking-specialty-name">{spec.label}</div>
+              <div className="booking-specialty-emoji">{emoji}</div>
+              <div className="booking-specialty-name">{dept.name}</div>
+              {dept.health_examination_fee && (
+                <div className="booking-specialty-fee">
+                  {dept.health_examination_fee.toLocaleString("vi-VN")} VND
+                </div>
+              )}
             </button>
           );
         })}
@@ -553,14 +610,14 @@ function StepSpecialty({ form, setForm, specialties }) {
   );
 }
 
-function StepDoctor({ form, setForm, doctors, selectedSpecialty }) {
+function StepDoctor({ form, setForm, doctors, selectedDepartment }) {
   return (
     <>
       <h2 className="booking-section-title">Choose a doctor</h2>
       <p className="booking-section-subtitle">
-        {selectedSpecialty
-          ? `Specialty: ${selectedSpecialty.label}`
-          : "Choose a specialty first to see available doctors."}
+        {selectedDepartment
+          ? `Department: ${selectedDepartment.name}`
+          : "Choose a department first to see available doctors."}
       </p>
 
       <div className="booking-doctor-list">
@@ -716,9 +773,9 @@ function StepConfirm({
         </div>
 
         <div className="booking-confirm-row">
-          <span className="booking-confirm-label">Specialty:</span>
+          <span className="booking-confirm-label">Department:</span>
           <span className="booking-confirm-value">
-            {selectedSpecialty?.label || "Not selected"}
+            {selectedSpecialty?.name || "Not selected"}
           </span>
         </div>
 

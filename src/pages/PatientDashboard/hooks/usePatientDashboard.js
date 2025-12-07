@@ -1,5 +1,5 @@
 // src/pages/PatientDashboard/hooks/usePatientDashboard.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getMyProfile,
   getMyAppointments,
@@ -8,6 +8,7 @@ import {
 } from "../../../api/patientAPI";
 import { getMe } from "../../../api/authAPI";
 import { useAuth } from "../../../context/AuthContext";
+import { cancelAppointment } from "../../../api/appointmentAPI";
 
 function buildStats(appointments = [], records = [], healthStatus = "Good") {
   const upcomingCount = appointments.filter((a) =>
@@ -61,6 +62,7 @@ export function usePatientDashboard() {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [activeStatus, setActiveStatus] = useState("all");
 
@@ -291,7 +293,12 @@ export function usePatientDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [authUser, appointmentPage, appointmentPageSize]);
+  }, [authUser, appointmentPage, appointmentPageSize, refreshKey]);
+
+  // Function to refresh appointments
+  const refreshAppointments = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
 
   const tabs = [
     { id: "appointments", label: "Appointments" }, // now history
@@ -323,5 +330,6 @@ export function usePatientDashboard() {
     setActiveStatus,
     loading,
     error,
+    refreshAppointments,
   };
 }

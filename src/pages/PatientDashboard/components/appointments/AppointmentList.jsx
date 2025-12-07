@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import AppointmentItem from "./AppointmentItem";
 import AppointmentStatusFilter from "./AppointmentStatusFilter";
+import { cancelAppointment } from "../../../../api/appointmentAPI";
 
 export default function AppointmentList({
   appointments,
@@ -12,7 +13,11 @@ export default function AppointmentList({
   pageSize = 5,
   total = 0,
   onPageChange,
+  toast,
+  onRefresh,
 }) {
+  const [cancellingId, setCancellingId] = useState(null);
+
   const filtered =
     activeStatus === "all"
       ? appointments
@@ -26,6 +31,34 @@ export default function AppointmentList({
 
   const handleNext = () => {
     if (page < totalPages && onPageChange) onPageChange(page + 1);
+  };
+
+  const handleCancelAppointment = async (appointmentId, reason = "Cancelled by patient") => {
+    if (!appointmentId) return;
+    
+    setCancellingId(appointmentId);
+    try {
+      const result = await cancelAppointment(appointmentId, reason);
+      
+      if (result?.success) {
+        toast?.success(result.message || "Appointment cancelled successfully!", 4000);
+        // Refresh the appointments list
+        if (onRefresh) onRefresh();
+      } else {
+        toast?.error(result?.error || result?.message || "Failed to cancel appointment", 5000);
+      }
+    } catch (err) {
+      console.error("Cancel appointment error:", err);
+      // Extract error message from backend response
+      const errorMessage = 
+        err?.message || 
+        err?.error || 
+        err?.detail ||
+        (typeof err === 'string' ? err : "Failed to cancel appointment. Please try again.");
+      toast?.error(errorMessage, 5000);
+    } finally {
+      setCancellingId(null);
+    }
   };
 
   const startIdx = (page - 1) * pageSize + 1;
@@ -44,7 +77,9 @@ export default function AppointmentList({
 
       {filtered.length === 0 ? (
         <div className="pd-empty-tab">
-          You don&apos;t have any completed appointments yet.
+          {activeStatus === "all" 
+            ? "You don't have any appointments yet."
+            : `No ${activeStatus} appointments found.`}
         </div>
       ) : (
         <div className="pd-appointments-list">
@@ -56,6 +91,8 @@ export default function AppointmentList({
                 key={appt.id}
                 appt={appt}
                 recordId={recordForAppt?.id}
+                onCancel={handleCancelAppointment}
+                isCancelling={cancellingId === appt.id}
               />
             );
           })}

@@ -41,8 +41,6 @@
 
 .slide-content {
   position: absolute;
-  top: 25%;
-  left: 11%;
   transform: translate(-50%, -50%);
   z-index: 2;
   background: none;

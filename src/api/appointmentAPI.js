@@ -254,9 +254,8 @@ export const rescheduleAppointment = async (
 
 /**
  * 7. (Future) AI suggestion for appointment
- *    POST /api/v1/ai/suggest-appointment/
+ *    POST /api/v1/appointments/suggest-appointment/
  *
- * Hiện tại backend chưa có endpoint này → vẫn giữ fake demo.
  */
 export const suggestAppointmentAI = async ({
   symptoms,
@@ -266,7 +265,7 @@ export const suggestAppointmentAI = async ({
 }) => {
   try {
     const response = await apiClient.post(
-      `${API_PREFIX}/ai/suggest-appointment/`,
+      `${API_PREFIX}/appointments/suggest-department/`,
       {
         symptoms,
         selected_symptoms: selectedSymptoms,
@@ -311,6 +310,73 @@ export const suggestAppointmentAI = async ({
       },
     };
     */
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+
+
+/**
+ * Get list of active departments
+ * GET /api/v1/departments/
+ * 
+ * @param {Object} options - pagination options
+ * @param {number} [options.page=1] - Page number
+ * @param {number} [options.pageSize] - Items per page
+ * @returns {Promise<{count: number, next: string|null, previous: string|null, results: Array}>}
+ */
+export const getDepartments = async ({ page = 1, pageSize } = {}) => {
+  try {
+    const query = buildQueryString({
+      page,
+      page_size: pageSize,
+    });
+
+    const response = await apiClient.get(`${API_PREFIX}/departments/${query}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * Get department detail by ID
+ * GET /api/v1/departments/{id}/
+ * 
+ * @param {number|string} departmentId - ID of the department
+ */
+export const getDepartmentDetail = async (departmentId) => {
+  try {
+    const response = await apiClient.get(
+      `${API_PREFIX}/departments/${departmentId}/`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * AI suggest department based on symptoms 
+ * POST /api/v1/appointments/suggest-department/
+ * @param {Object} options
+ * @param {string} options.symptoms - Patient symptoms description
+ * @param {number} [options.age] - Patient age (optional)
+ * @param {string} [options.gender] - male/female/other (optional)
+ * @returns {Promise<{success: boolean, primary_department: Object, reason: string, urgency: string}>}
+ */
+export const suggestDepartmentAI = async ({ symptoms, age,gender }) => {
+  try {
+    const response = await apiClient.post(
+      `${API_PREFIX}/appointments/suggest-department/`,
+      {
+        symptoms,
+        age,
+        gender
+      }
+    );
+    return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }

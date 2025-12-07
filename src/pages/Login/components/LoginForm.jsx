@@ -63,7 +63,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-all duration-300 hover:scale-110"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-300 transition-all duration-300 hover:scale-110"
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -91,7 +91,7 @@ export default function LoginForm({ formData, loading, onFormChange, onKeyPress,
       <button
         onClick={onSubmit}
         disabled={loading}
-        className="w-full bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95"
+        className="w-full bg-gradient-to-r from-sky-300 to-blue-300 hover:from-sky-400 hover:to-blue-400 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95"
       >
         {loading ? (
           <>

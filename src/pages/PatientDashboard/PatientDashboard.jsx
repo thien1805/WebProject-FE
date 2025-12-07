@@ -1,8 +1,9 @@
 // src/pages/PatientDashboard/PatientDashboard.jsx
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useToast } from "../../hooks/useToast";
 
 import "./PatientDashboard.css";
 import { usePatientDashboard } from "./hooks/usePatientDashboard";
@@ -23,7 +24,9 @@ import MedicalRecordList from "./components/records/MedicalRecordList";
 export default function PatientDashboard() {
   // 🔹 TẤT CẢ HOOK PHẢI Ở ĐÂY
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const toast = useToast();
+  const { ToastContainer } = toast;
 
   const {
     user,
@@ -42,6 +45,7 @@ export default function PatientDashboard() {
     setAppointmentPage,
     loading,
     error,
+    refreshAppointments,
   } = usePatientDashboard();
   
   console.log("🔍 [PatientDashboard] user object:", user);
@@ -49,13 +53,71 @@ export default function PatientDashboard() {
   console.log("🔍 [PatientDashboard] user.name:", user?.name);
   console.log("🔍 [PatientDashboard] user.email:", user?.email);
 
-  // 🔹 sync tab với ?tab=profile / appointments / ...
-  React.useEffect(() => {
+  // 🔹 Sync URL params -> state (on mount and URL change)
+  useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
-    if (tabFromUrl) {
+    const statusFromUrl = searchParams.get("status");
+    const pageFromUrl = searchParams.get("page");
+
+    if (tabFromUrl && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
     }
-  }, [searchParams, setActiveTab]);
+    if (statusFromUrl && statusFromUrl !== activeStatus) {
+      setActiveStatus(statusFromUrl);
+    }
+    if (pageFromUrl) {
+      const pageNum = parseInt(pageFromUrl, 10);
+      if (!isNaN(pageNum) && pageNum !== appointmentPage) {
+        setAppointmentPage(pageNum);
+      }
+    }
+  }, [searchParams]);
+
+  // 🔹 Update URL when state changes
+  const updateUrlParams = useCallback((newParams) => {
+    setSearchParams((prev) => {
+      const updated = new URLSearchParams(prev);
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value && value !== "all" && value !== 1) {
+          updated.set(key, value);
+        } else {
+          updated.delete(key);
+        }
+      });
+      return updated;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // 🔹 Handle tab change with URL sync
+  const handleTabChange = useCallback((newTab) => {
+    setActiveTab(newTab);
+    updateUrlParams({ 
+      tab: newTab !== "appointments" ? newTab : null,
+      status: null,
+      page: null 
+    });
+  }, [setActiveTab, updateUrlParams]);
+
+  // 🔹 Handle status filter change with URL sync
+  const handleStatusChange = useCallback((newStatus) => {
+    setActiveStatus(newStatus);
+    setAppointmentPage(1);
+    updateUrlParams({ 
+      tab: activeTab !== "appointments" ? activeTab : null,
+      status: newStatus !== "all" ? newStatus : null,
+      page: null 
+    });
+  }, [setActiveStatus, setAppointmentPage, activeTab, updateUrlParams]);
+
+  // 🔹 Handle page change with URL sync
+  const handlePageChange = useCallback((newPage) => {
+    setAppointmentPage(newPage);
+    updateUrlParams({ 
+      tab: activeTab !== "appointments" ? activeTab : null,
+      status: activeStatus !== "all" ? activeStatus : null,
+      page: newPage > 1 ? newPage : null 
+    });
+  }, [setAppointmentPage, activeTab, activeStatus, updateUrlParams]);
 
   // 🔹 sau khi gọi hook MỚI được if/return
   if (loading && !user) {
@@ -91,6 +153,7 @@ export default function PatientDashboard() {
   return (
     <>
       <Header />
+      <ToastContainer />
 
       <main className="pd-page">
         {/* HERO */}
@@ -134,7 +197,7 @@ export default function PatientDashboard() {
         <DashboardTabs
           tabs={tabs}
           activeTab={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
         />
 
         {/* TAB CONTENT */}
@@ -144,11 +207,13 @@ export default function PatientDashboard() {
             records={records}
             statusOptions={statusOptions}
             activeStatus={activeStatus}
-            onStatusChange={setActiveStatus}
+            onStatusChange={handleStatusChange}
             page={appointmentPage}
             pageSize={appointmentPageSize}
             total={appointmentTotal}
-            onPageChange={setAppointmentPage}
+            onPageChange={handlePageChange}
+            toast={toast}
+            onRefresh={refreshAppointments}
           />
         )}
 

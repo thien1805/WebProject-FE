@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown, Bell } from "lucide-react";
 import Logo from "./Logo/Logo";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../hooks/useToast";
 import "./Header.css";
 
 // ⚠️ TODO: Khi bạn tạo API thật, bỏ comment dòng dưới và tạo file:
@@ -40,6 +41,7 @@ const Header = () => {
   const [notifError, setNotifError] = useState(null);
 
   const { user, isAuth, logout } = useAuth();
+  const { success: showSuccess } = useToast();
   const navigate = useNavigate();
 
   const displayName = user?.full_name || "Null User";
@@ -56,7 +58,8 @@ const Header = () => {
       await logout();
       setDropdownOpen(false);
       setConfirmLogoutOpen(false);
-      navigate("/");
+      showSuccess("Logged out successfully!");
+      setTimeout(() => navigate("/"), 500);
     } catch (error) {
       console.error("Logout error:", error);
     }

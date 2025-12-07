@@ -1,6 +1,7 @@
 // src/pages/PatientDashboard/components/profile/PatientProfileCard.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../../context/AuthContext";
+import { useToast } from "../../../../hooks/useToast";
 import { getMe, updateProfile } from "../../../../api/authAPI";
 
 const EMPTY_PROFILE = {
@@ -17,6 +18,7 @@ const EMPTY_PROFILE = {
 
 export default function PatientProfileCard({ user, initialProfile, startEditing }) {
   const { updateUser } = useAuth();
+  const { success: showSuccess, error: showError } = useToast();
   
   console.log("🔍 [PatientProfileCard] Received props - user:", user);
   console.log("🔍 [PatientProfileCard] Received props - initialProfile:", initialProfile);
@@ -152,7 +154,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
         email: norm.email,
       });
 
-      alert("Profile updated successfully.");
+      showSuccess("Profile updated successfully!");
       setIsEditing(false);
     } catch (err) {
       console.error("Update profile error:", err);

@@ -2,35 +2,33 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { useToast } from '../../../hooks/useToast';
 
-export const useLogin = () => {
+export const useLogin = (toastApi) => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { success: showSuccess, error: showError } = toastApi || useToast();
 
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError('');
   };
 
   const handleSubmit = async () => {
     if (!formData.email || !formData.password) {
-      setError('Please fill in all fields');
+      showError('Please fill in all fields');
       return;
     }
 
     setLoading(true);
-    setError('');
 
     try {
       // Xoá token cũ
@@ -51,33 +49,30 @@ export const useLogin = () => {
       }
 
       const user = result.user;
-      console.log('👤 User Info:', user);
+      console.log('User Info:', user);
 
-      setSuccess(true);
+      showSuccess('Login successful! Redirecting...', 2000);
 
       // Chuẩn hoá role
       const rawRole =
         user.role || user.accountType || user.userType || 'patient';
       const role = String(rawRole).toLowerCase();
 
-      console.log('🔎 Role after normalize:', role);
+      console.log(' Role after normalize:', role);
 
       // 👉 Redirect NGAY sau khi login thành công
-      if (role === 'doctor') {
-        navigate('/doctor/dashboard');
-      } else if (role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        // patient hoặc bất kỳ role nào khác
-        navigate('/patient/dashboard');
-      }
+      setTimeout(() => {
+        if (role === 'doctor') {
+          navigate('/doctor/dashboard');
+        } else if (role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          // patient hoặc bất kỳ role nào khác
+          navigate('/patient/dashboard');
+        }
+      }, 500);
     } catch (err) {
       console.error('Login error:', err);
-      console.error('Error type:', typeof err);
-      console.error(
-        'Error keys:',
-        err && typeof err === 'object' ? Object.keys(err) : 'no keys'
-      );
 
       let errorMessage = 'Invalid email or password';
 
@@ -98,8 +93,7 @@ export const useLogin = () => {
         }
       }
 
-      setError(errorMessage);
-      setSuccess(false);
+      showError(errorMessage, 5000);
     } finally {
       setLoading(false);
     }
@@ -114,8 +108,6 @@ export const useLogin = () => {
   return {
     formData,
     loading,
-    error,
-    success,
     handleChange,
     handleSubmit,
     handleKeyPress,
