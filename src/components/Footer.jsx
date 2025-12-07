@@ -82,15 +82,15 @@ const Footer = () => {
             <ul className="contact-list">
               <li className="contact-item">
                 <Phone className="contact-icon" />
-                <span className="contact-text">+1 (555) 123-4567</span>
+                <a href="tel:+84765628670" className="contact-text">+84 765 628 670</a>
               </li>
               <li className="contact-item">
                 <Mail className="contact-icon" />
-                <Link to= 'https://mail.google.com/mail/u/0/#inbox?compose=GTvVlcSKhbtspNvxjxFRBgRnQlPBgLQvpvwrTwSHXpnBGClSbzbgCqdTCTKbFtNzDCqPRrdMFmLKp' target="_blank" rel="noopener noreferrer" className="contact-text">myhealthcare@gmail.com</Link>
+                <a href="mailto:myhealthcare@gmail.com" target="_blank" rel="noopener noreferrer" className="contact-text">myhealthcare@gmail.com</a>
               </li>
               <li className="contact-item">
                 <MapPin className="contact-icon" />
-                <Link to='https://www.google.com/maps/place/University+of+Information+Technology+-+VNUHCM/@10.8700142,106.8004792,814m/data=!3m2!1e3!4b1!4m6!3m5!1s0x317527587e9ad5bf:0xafa66f9c8be3c91!8m2!3d10.8700089!4d106.8030541!16s%2Fm%2F02qqlmm?entry=ttu&g_ep=EgoyMDI1MTExOC4wIKXMDSoASAFQAw%3D%3D' target="_blank" rel="noopener noreferrer" className="contact-text">6 Han Thuyen, Thu Duc</Link>
+                <a href='https://www.google.com/maps/place/University+of+Information+Technology+-+VNUHCM/@10.8700142,106.8004792,814m/data=!3m2!1e3!4b1!4m6!3m5!1s0x317527587e9ad5bf:0xafa66f9c8be3c91!8m2!3d10.8700089!4d106.8030541!16s%2Fm%2F02qqlmm?entry=ttu&g_ep=EgoyMDI1MTExOC4wIKXMDSoASAFQAw%3D%3D' target="_blank" rel="noopener noreferrer" className="contact-text">6 Han Thuyen, Thu Duc</a>
               </li>
             </ul>
           </div>

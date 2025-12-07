@@ -249,17 +249,13 @@ const Services = () => {
             <h2>Need Help Choosing the Right Service?</h2>
             <p>Our healthcare advisors are here to guide you</p>
             <div className="cta-buttons">
-              <Link to="/login" className="btn-secondary">
-                Schedule Consultation
-              </Link>
-              <Link to='#' className="btn-secondary">
+              <a href="tel:+84765628670" className="btn-secondary">
                 Call Us Now
-              </Link>
+              </a>
             </div>
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );

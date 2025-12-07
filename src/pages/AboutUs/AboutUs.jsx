@@ -2,7 +2,7 @@ import React from "react";
 import Logo from "../../components/Logo/Logo";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import "./aboutus.css";
+import "./Aboutus.css";
 
 const AboutUs = () => {
   return (
@@ -95,6 +95,16 @@ const AboutUs = () => {
                   examination lists, track upcoming appointments, and best prepare
                   for treatment, optimizing the entire consultation process for
                   our patients.
+                </p>
+              </div>
+                <div className="feature-item">
+                <h3>Personal Health Record Dashboard</h3>
+                <p>
+                  View and manage your health information in one secure place. After
+                  logging in, you can review your visit history, prescriptions, test
+                  results, and upcoming appointments through a simple, visual dashboard.
+                  This helps you follow your treatment plan, share accurate information
+                  with doctors, and stay more in control of your health.
                 </p>
               </div>
             </div>

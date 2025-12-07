@@ -176,10 +176,10 @@ const Header = () => {
             >
               Home
             </Link>
-            <Link to="/about" className="nav-link">
+            <Link to="/about" className="nav-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
               About us
             </Link>
-            <Link to="/medical" className="nav-link">
+            <Link to="/medical" className="nav-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
               Medical services
             </Link>
 
@@ -193,7 +193,10 @@ const Header = () => {
                   : "/doctor/dashboard"
               }
               className="nav-link"
-              onClick={handleBookingClick}
+              onClick={() => {
+                handleBookingClick();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
             >
               Booking
             </Link>
@@ -203,10 +206,10 @@ const Header = () => {
           <div className="header-actions">
             {!isAuth && (
               <div className="auth-buttons">
-                <Link to="/login" className="btn-login">
+                <Link to="/login" className="btn-login" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                   Log in
                 </Link>
-                <Link to="/signup" className="btn-signup">
+                <Link to="/signup" className="btn-signup" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                   Sign up
                 </Link>
               </div>
