@@ -90,6 +90,24 @@ export default function PatientAppointmentsPage() {
   );
   const selectedDoctor = DOCTORS.find((d) => d.id === form.doctorId);
 
+  // Get patient name from user object - try multiple field names
+  const getPatientName = () => {
+    if (!user) return "Patient";
+    // Backend uses snake_case (full_name), try different variations
+    return (
+      user.full_name ||      // Backend Django API (snake_case)
+      user.fullName ||       // Some APIs (camelCase)
+      user.name ||           // Alternative
+      user.first_name ||     // Some APIs
+      user.firstName ||      // camelCase alternative
+      user.email?.split("@")[0] || // Fallback to email prefix
+      "Patient"
+    );
+  };
+
+  const patientName = getPatientName();
+  const initialLetter = patientName.charAt(0).toUpperCase();
+
   // ===== Load available time slots từ backend khi doctor/date đổi =====
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -226,8 +244,6 @@ export default function PatientAppointmentsPage() {
     setStepIndex((prev) => prev - 1);
   };
 
-  const initialLetter = (user?.fullName || user?.name || "P").charAt(0);
-
   return (
     <>
       <Header />
@@ -318,7 +334,7 @@ export default function PatientAppointmentsPage() {
                 form={form}
                 selectedSpecialty={selectedSpecialty}
                 selectedDoctor={selectedDoctor}
-                patientName={user?.fullName || user?.name || "Patient"}
+                patientName={patientName}
                 initialLetter={initialLetter}
               />
             )}
