@@ -60,13 +60,6 @@
   animation: slideTextIn 0.8s ease both;
 }
 
-@media (min-width: 768px) {
-  .slide-content {
-    gap: 2.5rem;
-    padding: 3rem 4rem;
-  }
-}
-
 .slide-title {
   font-size: 2rem;
   font-weight: 700;
@@ -169,20 +162,6 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-@media (min-width: 768px) {
-  .carousel {
-    height: 80vh;
-    min-height: 600px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .carousel {
-    height: 85vh;
-    min-height: 700px;
-  }
-}
-
 .carousel-nav {
   position: absolute;
   top: 50%;
@@ -251,4 +230,73 @@
 
 .slide-subtitle {
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .slide-content {
+    gap: 2.5rem;
+    padding: 3rem 4rem;
+  }
+
+  .carousel {
+    height: 80vh;
+    min-height: 600px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carousel {
+    height: 85vh;
+    min-height: 700px;
+  }
+}
+
+@media (max-width: 767px) {
+  .carousel {
+    height: 70vh;
+    min-height: 380px;
+    border-radius: 0 0 1.5rem 1.5rem;
+  }
+
+  .slide-content {
+    gap: 1.5rem;
+    padding: 1.75rem 1.25rem;
+    width: 92%;
+  }
+
+  .slide-title {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  .slide-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .slide-button-wrapper {
+    bottom: 2.75rem;
+  }
+
+  .slide-button {
+    padding: 0.85rem 2rem;
+    font-size: 0.95rem;
+    white-space: normal;
+    max-width: 240px;
+    text-align: center;
+  }
+
+  .carousel-nav {
+    padding: 0 1rem;
+  }
+
+  .carousel-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+  }
+
+  .carousel-dots {
+    bottom: 1rem;
+  }
 }

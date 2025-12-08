@@ -4,13 +4,13 @@
   background-color: #f9fafb;
 }
 
-.section-container {
+.why-choose-section .section-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1rem;
 }
 
-.section-title {
+.why-choose-section .section-title {
   font-size: 2rem;
   font-weight: bold;
   color: #1f2937;
@@ -18,7 +18,7 @@
 }
 
 @media (min-width: 768px) {
-  .section-title {
+  .why-choose-section .section-title {
     font-size: 2.5rem;
   }
 }
@@ -89,3 +89,20 @@
   object-fit: cover;
 }
 
+@media (max-width: 767px) {
+  .why-choose-section {
+    padding: 3rem 0;
+  }
+
+  .why-choose-section .section-container {
+    padding: 0 1rem;
+  }
+
+  .why-choose-content {
+    gap: 2.25rem;
+  }
+
+  .why-choose-image {
+    min-height: 260px;
+  }
+}
