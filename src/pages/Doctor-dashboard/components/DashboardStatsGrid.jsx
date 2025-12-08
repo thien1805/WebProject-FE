@@ -6,13 +6,13 @@ export default function DashboardStatsGrid({ stats }) {
     <div className="dd-stats-grid">
       {stats.map((item) => (
         <div className="dd-stat-card" key={item.id}>
-          <div className="dd-stat-label">{item.label}</div>
-          <div className="dd-stat-value">{item.value}</div>
-          <div className="dd-stat-footer dd-stat-footer-up">
-            <span className="dd-stat-subtext">
-              appointments in this month
+          <div className="dd-stat-header">
+            <span className="dd-stat-icon" style={{ backgroundColor: item.color + "20", color: item.color }}>
+              {item.icon}
             </span>
           </div>
+          <div className="dd-stat-value">{item.value}</div>
+          <div className="dd-stat-label">{item.label}</div>
         </div>
       ))}
     </div>

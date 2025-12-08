@@ -2,19 +2,29 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./DoctorSidebar.css";
-import Logo from "../Logo/Logo";
 import { useAuth } from "../../context/AuthContext";
 
-export default function DoctorSidebar({ activeMenu, activeSub }) {
+export default function DoctorSidebar({ activeMenu }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // Get initials for avatar
+  const getInitials = (name) => {
+    if (!name) return "D";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name[0]?.toUpperCase() || "D";
+  };
+
+  const doctorName = user?.full_name || user?.name || "Doctor";
+  const initials = getInitials(doctorName);
 
   const getItemClass = (menuId) =>
     "nav-item" + (activeMenu === menuId ? " nav-item--active" : "");
-
-  const getSubItemClass = (subId) =>
-    "nav-sub-item" + (activeSub === subId ? " nav-sub-item--active" : "");
 
   const handleLogoutConfirm = async () => {
     try {
@@ -28,13 +38,18 @@ export default function DoctorSidebar({ activeMenu, activeSub }) {
 
   return (
     <aside className="doctor-sidebar">
-      {/* Logo (nếu muốn hiện lại thì bỏ comment) */}
-      {/* <div className="doctor-sidebar-logo">
-        <Logo />
-      </div> */}
-      <br />
-      <br />
-      <br />
+      {/* Doctor Profile Section - Clickable to view profile */}
+      <div 
+        className="doctor-sidebar-profile doctor-sidebar-profile--clickable"
+        onClick={() => setProfileModalOpen(true)}
+        title="View Profile"
+      >
+        <div className="doctor-sidebar-avatar">{initials}</div>
+        <div className="doctor-sidebar-info">
+          <span className="doctor-sidebar-name">{doctorName}</span>
+          <span className="doctor-sidebar-role">Bác sĩ</span>
+        </div>
+      </div>
 
       {/* Main menu */}
       <nav className="doctor-sidebar-nav">
@@ -44,70 +59,27 @@ export default function DoctorSidebar({ activeMenu, activeSub }) {
           <span>Dashboard</span>
         </Link>
 
-        {/* Transactions + submenu */}
-        <div>
-          {/* Nếu sau này muốn show item Transactions chính thì mở lại block bên dưới
-          <Link
-            to="/doctor/bill-list"
-            className={getItemClass("transactions")}
-          >
-            <span className="nav-icon">💳</span>
-            <span>Transactions</span>
-          </Link>
-          */}
-
-          {activeMenu === "transactions" && (
-            <div className="nav-sub">
-              <Link
-                to="/doctor/bill-list"
-                className={getSubItemClass("bill-list")}
-              >
-                Bill list
-              </Link>
-              <Link
-                to="/doctor/add-bill"
-                className={getSubItemClass("add-bill")}
-              >
-                Add bill
-              </Link>
-              <Link
-                to="/doctor/invoice"
-                className={getSubItemClass("invoice")}
-              >
-                Invoice
-              </Link>
-            </div>
-          )}
-        </div>
-
         {/* Appointments */}
         <Link
           to="/doctor/appointments"
           className={getItemClass("appointments")}
         >
-          <span className="nav-icon">📅</span>
+          <span className="nav-icon">📋</span>
           <span>Appointments</span>
         </Link>
 
         {/* Calendar */}
         <Link to="/doctor/calendar" className={getItemClass("calendar")}>
-          <span className="nav-icon">📆</span>
+          <span className="nav-icon">📅</span>
           <span>Calendar</span>
         </Link>
       </nav>
-      {/* Bottom section: settings + logout */}
+      
+      {/* Bottom section: logout only */}
       <div className="doctor-sidebar-bottom">
-        <Link
-          to="/doctor/settings/profile"
-          className={getItemClass("settings")}
-        >
-          <span className="nav-icon">⚙️</span>
-          <span>Settings</span>
-        </Link>
-
         <button
           type="button"
-          className="nav-item"
+          className="nav-item nav-item--logout"
           onClick={() => setConfirmLogoutOpen(true)}
         >
           <span className="nav-icon">🚪</span>
@@ -115,6 +87,59 @@ export default function DoctorSidebar({ activeMenu, activeSub }) {
         </button>
       </div>
 
+      {/* Profile Modal - View Only */}
+      {profileModalOpen && (
+        <div
+          className="header-modal-backdrop"
+          onClick={() => setProfileModalOpen(false)}
+        >
+          <div
+            className="profile-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="profile-modal-header">
+              <h2>Doctor Profile</h2>
+              <button
+                type="button"
+                className="profile-modal-close"
+                onClick={() => setProfileModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="profile-modal-body">
+              <div className="profile-modal-avatar">
+                {initials}
+              </div>
+              <div className="profile-modal-info">
+                <div className="profile-info-row">
+                  <span className="profile-label">Full Name:</span>
+                  <span className="profile-value">{user?.full_name || "N/A"}</span>
+                </div>
+                <div className="profile-info-row">
+                  <span className="profile-label">Email:</span>
+                  <span className="profile-value">{user?.email || "N/A"}</span>
+                </div>
+                <div className="profile-info-row">
+                  <span className="profile-label">Phone:</span>
+                  <span className="profile-value">{user?.phone_num || user?.phone || "N/A"}</span>
+                </div>
+                <div className="profile-info-row">
+                  <span className="profile-label">Role:</span>
+                  <span className="profile-value profile-value--badge">Bác sĩ</span>
+                </div>
+              </div>
+              <p className="profile-modal-note">
+                * Contact admin to update your profile information.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
       {confirmLogoutOpen && (
         <div
           className="header-modal-backdrop"

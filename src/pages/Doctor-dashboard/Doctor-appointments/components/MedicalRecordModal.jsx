@@ -1,5 +1,6 @@
 // src/pages/Doctor-dashboard/Doctor-appointments/components/MedicalRecordModal.jsx
 import React, { useState } from "react";
+import useTranslation from "../../../../hooks/useTranslation";
 
 const initialForm = {
   diagnosis: "",
@@ -29,6 +30,7 @@ export default function MedicalRecordModal({
   toast,
 }) {
   const [form, setForm] = useState(initialForm);
+  const { t, formatDate, formatTime } = useTranslation();
 
   if (!appointment) return null;
 
@@ -64,25 +66,6 @@ export default function MedicalRecordModal({
     } else {
       toast?.error?.(result.error || "Failed to create medical record");
     }
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "N/A";
-    try {
-      return new Date(dateStr).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "N/A";
-    if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr.slice(0, 5);
-    return timeStr;
   };
 
   return (

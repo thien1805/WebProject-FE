@@ -11,6 +11,7 @@ import { useToast } from "../../../hooks/useToast";
 export default function DoctorAppointmentLog() {
   const hook = useDoctorAppointmentList();
   const toast = useToast();
+  const { ToastContainer } = toast;
 
   return (
     <DoctorLayout activeMenu="appointments">
@@ -34,6 +35,8 @@ export default function DoctorAppointmentLog() {
           toast={toast}
         />
       )}
+      
+      <ToastContainer />
     </DoctorLayout>
   );
 }

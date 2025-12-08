@@ -12,7 +12,7 @@ import { cancelAppointment } from "../../../api/appointmentAPI";
 
 function buildStats(appointments = [], records = [], healthStatus = "Good") {
   const upcomingCount = appointments.filter((a) =>
-    ["pending", "confirmed"].includes(a.status)
+    ["upcoming", "pending", "confirmed", "booked"].includes(a.status)
   ).length;
   const completedCount = appointments.filter(
     (a) => a.status === "completed"
@@ -81,8 +81,7 @@ export function usePatientDashboard() {
 
   const statusOptions = [
     { id: "all", label: "All" },
-    { id: "pending", label: "Pending" },
-    { id: "confirmed", label: "Confirmed" },
+    { id: "upcoming", label: "Upcoming" },
     { id: "completed", label: "Completed" },
     { id: "cancelled", label: "Cancelled" },
   ];
@@ -171,7 +170,10 @@ export function usePatientDashboard() {
 
         const mappedAppointments = appointmentItems.map((item) => {
           const rawStatus = (item.status || "").toLowerCase();
-          const normalizedStatus = rawStatus === "booked" ? "pending" : rawStatus;
+          // Normalize old statuses to new system: booked/pending/confirmed -> upcoming
+          const normalizedStatus = ["booked", "pending", "confirmed"].includes(rawStatus) 
+            ? "upcoming" 
+            : rawStatus;
           return {
             id: item.id,  // Backend returns 'id', not 'appointment_id'
             date: item.appointment_date,

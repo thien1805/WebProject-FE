@@ -1,5 +1,6 @@
 // src/pages/Doctor-dashboard/Doctor-appointments/components/AppointmentActivityTable.jsx
 import React from "react";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function AppointmentActivityTable({
   rows,
@@ -16,29 +17,11 @@ export default function AppointmentActivityTable({
   onAddRecord,
   toast,
 }) {
+  const { t, formatDate, formatTime } = useTranslation();
+
   const renderStatusLabel = (value) => {
     const found = statusChoices.find((s) => s.value === value);
     return found ? found.label : value;
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "N/A";
-    try {
-      return new Date(dateStr).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "N/A";
-    // If HH:MM:SS format, remove seconds
-    if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr.slice(0, 5);
-    return timeStr;
   };
 
   const handleStatusChange = async (id, newStatus) => {
@@ -201,13 +184,13 @@ export default function AppointmentActivityTable({
                       type="button"
                       className={
                         "appt-record-btn" +
-                        (row.status === "completed" || row.status === "confirmed"
+                        (["upcoming", "completed", "confirmed"].includes(row.status)
                           ? ""
                           : " appt-record-btn--disabled")
                       }
-                      disabled={row.status !== "completed" && row.status !== "confirmed"}
+                      disabled={!["upcoming", "completed", "confirmed"].includes(row.status)}
                       onClick={() => {
-                        if (row.status !== "completed" && row.status !== "confirmed") return;
+                        if (!["upcoming", "completed", "confirmed"].includes(row.status)) return;
                         onAddRecord?.(row._raw || row);
                       }}
                     >

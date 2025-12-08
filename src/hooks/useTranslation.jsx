@@ -49,7 +49,77 @@ export const useTranslation = () => {
     return value;
   };
   
-  return { t, language };
+  /**
+   * Get locale string based on current language
+   * @returns {string} Locale string (e.g., 'vi-VN', 'en-US')
+   */
+  const getLocale = () => {
+    return language === 'vi' ? 'vi-VN' : 'en-US';
+  };
+
+  /**
+   * Format date according to current language
+   * @param {string|Date} dateStr - Date string or Date object
+   * @param {Object} options - Intl.DateTimeFormat options
+   * @returns {string} Formatted date
+   */
+  const formatDate = (dateStr, options = {}) => {
+    if (!dateStr) return "N/A";
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      
+      const defaultOptions = {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        ...options
+      };
+      
+      return date.toLocaleDateString(getLocale(), defaultOptions);
+    } catch {
+      return dateStr;
+    }
+  };
+
+  /**
+   * Format time according to current language
+   * @param {string} timeStr - Time string (HH:MM:SS or HH:MM)
+   * @returns {string} Formatted time (HH:MM)
+   */
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "N/A";
+    // Just return HH:MM format
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(timeStr)) {
+      return timeStr.slice(0, 5);
+    }
+    return timeStr;
+  };
+
+  /**
+   * Format datetime according to current language
+   * @param {string|Date} dateTimeStr - DateTime string or Date object
+   * @returns {string} Formatted datetime
+   */
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return "N/A";
+    try {
+      const date = new Date(dateTimeStr);
+      if (isNaN(date.getTime())) return dateTimeStr;
+      
+      return date.toLocaleString(getLocale(), {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateTimeStr;
+    }
+  };
+  
+  return { t, language, getLocale, formatDate, formatTime, formatDateTime };
 };
 
 /**

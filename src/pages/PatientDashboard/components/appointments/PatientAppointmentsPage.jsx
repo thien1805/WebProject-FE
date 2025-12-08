@@ -220,11 +220,16 @@ export default function PatientAppointmentsPage() {
       try {
         setBookingLoading(true);
 
+        // Ensure time format is HH:MM:SS (backend expects this format for choices)
+        const formattedTime = form.timeSlot.includes(':') && form.timeSlot.split(':').length === 2
+          ? `${form.timeSlot}:00`  // Add seconds if only HH:MM
+          : form.timeSlot;
+
         const payload = {
           doctor_id: form.doctorId,
           department_id: form.departmentId, 
           appointment_date: form.date,
-          appointment_time: form.timeSlot, // Backend expects HH:MM format
+          appointment_time: formattedTime, // Backend expects HH:MM:SS format
           symptoms: form.symptoms,
           reason: form.symptoms,
           notes: form.extraNote || "",
@@ -946,7 +951,7 @@ function StepTime({ form, setForm, timeSlots, loadingSlots }) {
           
           {form.date && (
             <div className="selected-date-display">
-              📅 {t("booking.selectedDate") || "Ngày đã chọn"}: <strong>{form.date}</strong>
+              {t("booking.selectedDate") || "Ngày đã chọn"}: <strong>{form.date}</strong>
             </div>
           )}
         </div>

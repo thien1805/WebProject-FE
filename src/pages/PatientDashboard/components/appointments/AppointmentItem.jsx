@@ -3,23 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../hooks/useTranslation";
 
 const STATUS_COLORS = {
-  pending: "pd-status--pending",
-  booked: "pd-status--pending",
-  confirmed: "pd-status--confirmed",
+  upcoming: "pd-status--upcoming",
+  pending: "pd-status--upcoming",
+  booked: "pd-status--upcoming",
+  confirmed: "pd-status--upcoming",
   completed: "pd-status--completed",
   cancelled: "pd-status--cancelled",
 };
 
 export default function AppointmentItem({ appt, recordId, onCancel, isCancelling }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, getLocale } = useTranslation();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
   const STATUS_LABELS = {
-    booked: t("patient.pending"),
-    pending: t("patient.pending"),
-    confirmed: t("patient.confirmed"),
+    upcoming: t("patient.upcoming"),
+    booked: t("patient.upcoming"),
+    pending: t("patient.upcoming"),
+    confirmed: t("patient.upcoming"),
     completed: t("patient.completed"),
     cancelled: t("patient.cancelled"),
   };
@@ -29,12 +31,12 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
     navigate(`/patient/appointment/${appt.id}`);
   };
 
-  const status = appt.status?.toLowerCase?.() || "pending";
+  const status = appt.status?.toLowerCase?.() || "upcoming";
   const statusLabel = STATUS_LABELS[status] || appt.status || "Unknown";
   const statusColor = STATUS_COLORS[status] || "";
 
-  // Can only cancel pending or confirmed appointments
-  const canCancel = ["pending", "confirmed", "booked"].includes(status);
+  // Can only cancel upcoming appointments
+  const canCancel = ["upcoming", "pending", "confirmed", "booked"].includes(status);
 
   const handleCancelClick = () => {
     setShowCancelModal(true);
@@ -53,12 +55,12 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
     setCancelReason("");
   };
 
-  // Format date for display
+  // Format date for display - use current language
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString("vi-VN", {
+      return date.toLocaleDateString(getLocale(), {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -98,12 +100,12 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
 
         <div className="pd-appointment-info">
           <div className="pd-appointment-meta">
-            <span className="pd-appointment-icon">📅</span>
+            <span className="pd-appointment-label">Ngày:</span>
             <span className="pd-appointment-value">{formatDate(appt.date)}</span>
           </div>
           {!isHistory && (
             <div className="pd-appointment-meta">
-              <span className="pd-appointment-icon">🕐</span>
+              <span className="pd-appointment-label">Giờ:</span>
               <span className="pd-appointment-value">{formatTime(appt.time)}</span>
             </div>
           )}
