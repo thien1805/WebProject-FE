@@ -440,6 +440,7 @@ function StepSymptom({
   setPreviousSymptoms
 }) {
   const { t } = useTranslation();
+  const { getLocalizedName } = useLanguage();
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -601,7 +602,7 @@ function StepSymptom({
         type="button"
         className="booking-btn booking-btn--ai"
         onClick={handleAISuggest}
-        disabled={loading || !form.symptoms.trim()}
+        disabled={loading}
       >
         {loading ? (
           <>
@@ -748,6 +749,15 @@ function StepDoctor({ form, setForm, doctors, loadingDoctors, selectedDepartment
   const { t } = useTranslation();
   const { getLocalizedName } = useLanguage();
 
+  const getInitials = (name = "") => {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    // Prefer first letter of given name (last word), fallback to first word
+    const last = parts[parts.length - 1].charAt(0).toUpperCase();
+    const first = parts[0].charAt(0).toUpperCase();
+    return last || first || "?";
+  };
+
   return (
     <>
       <h2 className="booking-section-title">{t("booking.chooseDoctor")}</h2>
@@ -764,6 +774,7 @@ function StepDoctor({ form, setForm, doctors, loadingDoctors, selectedDepartment
           {doctors.map((doc) => {
             // Use user_id for booking (not doc.id which is Doctor profile id)
             const isActive = form.doctorId === doc.user_id;
+            const hasAvatar = Boolean(doc.avatar_url);
             return (
               <button
                 key={doc.id}
@@ -780,10 +791,22 @@ function StepDoctor({ form, setForm, doctors, loadingDoctors, selectedDepartment
                   }))
                 }
               >
-                <div className="booking-doctor-avatar">
-                  {doc.avatar_url ? (
-                    <img src={doc.avatar_url} alt={doc.full_name} />
-                  ) : "👨‍⚕️"}
+                <div className="booking-doctor-avatar" data-fallback={hasAvatar ? "0" : "1"}>
+                  {hasAvatar && (
+                    <img
+                      src={doc.avatar_url}
+                      alt={doc.full_name || "Doctor avatar"}
+                      onError={(e) => {
+                        const parent = e.target?.parentElement;
+                        if (parent) {
+                          parent.setAttribute("data-fallback", "1");
+                        }
+                        e.target.style.display = "none";
+                      }}
+                      loading="lazy"
+                    />
+                  )}
+                  <span className="booking-doctor-avatar-fallback">{getInitials(doc.full_name)}</span>
                 </div>
                 <div className="booking-doctor-info">
                   <div className="booking-doctor-name">{doc.title} {doc.full_name}</div>
