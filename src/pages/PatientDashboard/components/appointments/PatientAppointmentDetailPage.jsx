@@ -5,6 +5,7 @@ import Header from "../../../../components/Header";
 import Footer from "../../../../components/Footer";
 import { getAppointmentDetail, cancelAppointment, rescheduleAppointment } from "../../../../api/appointmentAPI";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import { useLanguage } from "../../../../context/LanguageContext";
 import { useToast } from "../../../../hooks/useToast";
 import "../../PatientDashboard.css";
 
@@ -21,6 +22,7 @@ export default function PatientAppointmentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, formatDate: tFormatDate, formatTime: tFormatTime, formatDateTime: tFormatDateTime, getLocale } = useTranslation();
+  const { getLocalizedName } = useLanguage();
   const toast = useToast();
   const { ToastContainer } = toast;
   const [appointment, setAppointment] = useState(null);
@@ -126,6 +128,16 @@ export default function PatientAppointmentDetailPage() {
       return;
     }
 
+    // Validate date is not in the past
+    const selectedDate = new Date(rescheduleData.newDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      toast.error(t("patient.dateInPast") || "Không thể chọn ngày trong quá khứ");
+      return;
+    }
+
     setRescheduling(true);
     try {
       const result = await rescheduleAppointment(id, {
@@ -140,11 +152,24 @@ export default function PatientAppointmentDetailPage() {
           window.location.reload();
         }, 1500);
       } else {
-        toast.error(result?.message || result?.error || t("patient.rescheduleFailed") || "Dời hẹn thất bại");
+        // Handle specific error messages from backend
+        const errorMsg = result?.error || result?.message || result?.new_date?.[0] || result?.new_time?.[0];
+        toast.error(errorMsg || t("patient.rescheduleFailed") || "Dời hẹn thất bại");
       }
     } catch (err) {
       console.error("Reschedule error:", err);
-      toast.error(err?.message || t("patient.rescheduleFailed") || "Dời hẹn thất bại");
+      // Handle validation errors from backend
+      let errorMessage = t("patient.rescheduleFailed") || "Dời hẹn thất bại";
+      if (err?.new_date) {
+        errorMessage = Array.isArray(err.new_date) ? err.new_date[0] : err.new_date;
+      } else if (err?.new_time) {
+        errorMessage = Array.isArray(err.new_time) ? err.new_time[0] : err.new_time;
+      } else if (err?.error) {
+        errorMessage = err.error;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setRescheduling(false);
     }
@@ -294,7 +319,7 @@ export default function PatientAppointmentDetailPage() {
                 <div className="pd-detail-item">
                   <span className="pd-detail-label">{t("patient.specialty")}</span>
                   <span className="pd-detail-value">
-                    {appointment.department?.name || appointment.doctor?.specialization || "N/A"}
+                    {getLocalizedName(appointment.department) || appointment.doctor?.specialization || "N/A"}
                   </span>
                 </div>
                 {appointment.room && (
@@ -321,7 +346,7 @@ export default function PatientAppointmentDetailPage() {
                   <div className="pd-detail-item">
                     <span className="pd-detail-label">{t("patient.service")}</span>
                     <span className="pd-detail-value">
-                      {appointment.service.name} - {formatCurrency(appointment.service.price)}
+                      {getLocalizedName(appointment.service)} - {formatCurrency(appointment.service.price)}
                     </span>
                   </div>
                 )}

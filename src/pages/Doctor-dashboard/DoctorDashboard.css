@@ -24,7 +24,7 @@
 
 /* HEADER */
 .dd-header {
-  background: #1e40af; /* Blue header to match patient side */
+  background: linear-gradient(135deg, #bcdff1 0%, #a8d4e8 100%);
   padding: 12px 22px;
 }
 
@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   gap:20px;
-  color: #bfdbfe; /* Light blue text */
+  color: #1a4a5e;
   font-size: 14px;
 }
 
@@ -54,27 +54,28 @@
   gap: 10px;
     padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(59, 130, 246, 0.4);
-  border: 1px solid rgba(191, 219, 254, 0.4);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  color: #e0f2fe;
+  color: #1a4a5e;
 }
 
 .dd-header-account:hover {
-  background: rgba(59, 130, 246, 0.6);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .dd-header-avatar {
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  background: #3b82f6;
+  background: #7ab8d4;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 14px;
   overflow: hidden;
+  color: #ffffff;
 }
 
 .dd-header-dropdown {
@@ -128,10 +129,10 @@
 }
 
 .dd-header-logout {
-  border: 1px solid #bfdbfe;
+  border: 1px solid #7ab8d4;
   border-radius: 999px;
   background: transparent;
-  color: #bfdbfe;
+  color: #1a4a5e;
   padding: 4px 10px;
   font-size: 12px;
   cursor: pointer;
@@ -166,14 +167,14 @@
 
 /* HERO CARD */
 .dd-hero-card {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #bcdff1 0%, #8ac4dc 100%);
   border-radius: 20px;
   padding: 18px 22px;
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 10px;
-  color: #ffffff;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
+  color: #1a4a5e;
+  box-shadow: 0 10px 24px rgba(122, 184, 212, 0.3);
   border: none;
 }
 
@@ -181,12 +182,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  color: #ffffff;
+  color: #1a4a5e;
 }
 
 .dd-hero-hello {
   font-size: 18px;
-  color: #ffffff;
+  color: #1a4a5e;
 }
 
 .dd-hero-hello span {
@@ -196,19 +197,19 @@
 .dd-hero-sub {
   font-size: 13px;
   opacity: 0.9;
-  color: #dbeafe;
+  color: #3d7a94;
 }
 
 .dd-hero-quote {
   margin-top: 6px;
   font-size: 12px;
   opacity: 0.9;
-  color: #dbeafe;
+  color: #3d7a94;
 }
 
 .dd-hero-illustration {
   border-radius: 16px;
-  background: radial-gradient(circle at top, #3b82f6, #1d4ed8, #1e3a8a);
+  background: radial-gradient(circle at top, #8ac4dc, #7ab8d4, #5a9bb8);
 }
 
 /* STATS */
@@ -433,8 +434,8 @@
 }
 
 .dd-calendar-day--active {
-  background: #3b82f6;
-  color: #f9fafb;
+  background: #7ab8d4;
+  color: #ffffff;
 }
 
 /* .dd-calendar-day--dot {
@@ -456,7 +457,7 @@
   border: none;
   background: none;
   font-size: 12px;
-  color: #2563eb;
+  color: #5a9bb8;
   cursor: pointer;
 }
 
@@ -464,7 +465,7 @@
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  background: #e5f3ff;
+  background: #e8f4f8;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -474,7 +475,7 @@
   width: 36px;
   height: 36px;
   border-radius: 999px;
-  background: #3b82f6;
+  background: #7ab8d4;
 }
 
 .dd-upcoming-name {
@@ -524,11 +525,15 @@
 .dd-primary-btn {
   border: none;
   border-radius: 10px;
-  background: #2563eb;
+  background: #7ab8d4;
   color: #ffffff;
   padding: 8px 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.dd-primary-btn:hover {
+  background: #5a9bb8;
 }
 
 .dd-primary-btn:disabled {
@@ -628,7 +633,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border-top-color: #7ab8d4;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -719,7 +724,7 @@
 .dd-today-time {
   font-size: 14px;
   font-weight: 600;
-  color: #3b82f6;
+  color: #5a9bb8;
   min-width: 50px;
 }
 
@@ -774,10 +779,10 @@
 }
 
 .dd-next-card {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #8ac4dc 0%, #bcdff1 100%);
   border-radius: 12px;
   padding: 16px;
-  color: #ffffff;
+  color: #1a4a5e;
 }
 
 .dd-next-patient {
@@ -807,9 +812,79 @@
   opacity: 0.8;
 }
 
+/* Mobile Sidebar Toggle */
+.mobile-sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 110;
+  background: #7ab8d4;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s;
+}
+
+.mobile-sidebar-toggle:hover {
+  background: #5a9bb8;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .dd-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .dd-page {
+    margin-left: 0;
+  }
+
+  .dd-header {
+    padding-left: 60px;
+  }
+
+  .dd-main {
+    padding: 16px 12px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-sidebar-toggle {
+    top: 8px;
+    left: 8px;
+    padding: 8px;
+  }
+
+  .dd-header {
+    padding: 10px 12px 10px 56px;
+  }
+
+  .dd-main {
+    padding: 12px 8px 20px;
   }
 }

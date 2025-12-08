@@ -65,7 +65,9 @@ export const useLogin = (toastApi) => {
         if (role === 'doctor') {
           navigate('/doctor/dashboard');
         } else if (role === 'admin') {
-          navigate('/admin/dashboard');
+          // Redirect to Django admin panel - use production URL
+          const adminUrl = import.meta.env.VITE_API_BASE_URL || 'https://myhealthcare-api-h3amhrevg2feeab9.southeastasia-01.azurewebsites.net';
+          window.location.href = `${adminUrl}/api/v1/admin/`;
         } else {
           // patient hoặc bất kỳ role nào khác
           navigate('/patient/dashboard');

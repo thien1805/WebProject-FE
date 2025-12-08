@@ -1,6 +1,7 @@
 // src/pages/Doctor-dashboard/Doctor-appointments/components/MedicalRecordModal.jsx
 import React, { useState } from "react";
 import useTranslation from "../../../../hooks/useTranslation";
+import { useLanguage } from "../../../../context/LanguageContext";
 
 const initialForm = {
   diagnosis: "",
@@ -31,6 +32,7 @@ export default function MedicalRecordModal({
 }) {
   const [form, setForm] = useState(initialForm);
   const { t, formatDate, formatTime } = useTranslation();
+  const { getLocalizedName } = useLanguage();
 
   if (!appointment) return null;
 
@@ -95,7 +97,7 @@ export default function MedicalRecordModal({
           <div className="modal-info-row">
             <span className="modal-info-label">Department:</span>
             <span className="modal-info-value">
-              {appointment.department?.name || "N/A"}
+              {getLocalizedName(appointment.department, "N/A")}
             </span>
           </div>
           <div className="modal-info-row">
@@ -124,7 +126,7 @@ export default function MedicalRecordModal({
                   <option value="">-- No additional service --</option>
                   {services.map((svc) => (
                     <option key={svc.id} value={svc.id}>
-                      {svc.name} - {Number(svc.price).toLocaleString("vi-VN")} VND
+                      {getLocalizedName(svc)} - {Number(svc.price).toLocaleString("vi-VN")} VND
                     </option>
                   ))}
                 </select>

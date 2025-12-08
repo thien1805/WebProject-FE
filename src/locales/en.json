@@ -157,7 +157,6 @@
     "payNow": "Pay Now",
     "completePayment": "Complete Payment",
     "paymentFor": "Payment for medical service",
-    "selectMethod": "Select payment method",
     "paymentSuccess": "Payment completed successfully!",
     "paymentFailed": "Payment failed. Please try again."
   },
@@ -351,7 +350,6 @@
     "noDiagnosis": "No diagnosis recorded yet.",
     "notesPrescription": "Notes / Prescription",
     "noNotes": "No additional notes recorded.",
-    "selectAppointmentToView": "Select an appointment on the left to view its record.",
     "appointmentDetail": "Appointment Details",
     "scheduleInfo": "Schedule Information",
     "doctorInfo": "Doctor Information",

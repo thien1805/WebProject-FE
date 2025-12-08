@@ -1,7 +1,5 @@
 // src/api/chatbotAPI.js
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+import apiClient, { API_PREFIX } from "./authAPI";
 
 /**
  * Send message to AI Health Chatbot
@@ -11,23 +9,12 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
  */
 export async function sendChatMessage(message, conversationHistory = []) {
   try {
-    const token = localStorage.getItem("access_token");
-    const headers = {
-      "Content-Type": "application/json",
-    };
-    
-    // Add auth token if available (optional for chatbot)
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await axios.post(
-      `${API_BASE_URL}/api/v1/ai/health-qa/`,
+    const response = await apiClient.post(
+      `${API_PREFIX}/ai/health-qa/`,
       {
         message,
         conversation_history: conversationHistory,
-      },
-      { headers }
+      }
     );
 
     if (response.data?.response) {

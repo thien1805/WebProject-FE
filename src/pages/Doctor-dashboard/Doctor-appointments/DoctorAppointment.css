@@ -200,11 +200,15 @@
 .appt-record-send-btn {
   border: none;
   border-radius: 999px;
-  background: #2563eb;
+  background: #7ab8d4;
   color: #ffffff;
   padding: 8px 20px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.appt-record-send-btn:hover {
+  background: #5a9bb8;
 }
 
 .appt-record-send-btn:disabled {
@@ -262,9 +266,9 @@
 .appt-status-select--booked,
 .appt-status-select--pending,
 .appt-status-select--confirmed {
-  background: #dbeafe;
-  border-color: #3b82f6;
-  color: #1d4ed8;
+  background: #e8f4f8;
+  border-color: #7ab8d4;
+  color: #3d7a94;
 }
 
 /* completed */
@@ -473,8 +477,8 @@
 .modal-field textarea:focus,
 .modal-field select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #7ab8d4;
+  box-shadow: 0 0 0 3px rgba(122, 184, 212, 0.2);
 }
 
 .modal-field textarea {
@@ -506,16 +510,16 @@
 }
 
 .modal-btn--primary {
-  background: #2563eb;
+  background: #7ab8d4;
   color: #ffffff;
 }
 
 .modal-btn--primary:hover {
-  background: #1d4ed8;
+  background: #5a9bb8;
 }
 
 .modal-btn--primary:disabled {
-  background: #93c5fd;
+  background: #bcdff1;
   cursor: not-allowed;
 }
 

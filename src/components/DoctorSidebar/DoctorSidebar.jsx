@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./DoctorSidebar.css";
 import { useAuth } from "../../context/AuthContext";
 
-export default function DoctorSidebar({ activeMenu }) {
+export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
@@ -36,8 +36,12 @@ export default function DoctorSidebar({ activeMenu }) {
     }
   };
 
+  const handleNavClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
-    <aside className="doctor-sidebar">
+    <aside className={`doctor-sidebar ${isOpen ? 'sidebar--open' : ''}`}>
       {/* Doctor Profile Section - Clickable to view profile */}
       <div 
         className="doctor-sidebar-profile doctor-sidebar-profile--clickable"
@@ -54,7 +58,7 @@ export default function DoctorSidebar({ activeMenu }) {
       {/* Main menu */}
       <nav className="doctor-sidebar-nav">
         {/* Dashboard */}
-        <Link to="/doctor/dashboard" className={getItemClass("dashboard")}>
+        <Link to="/doctor/dashboard" className={getItemClass("dashboard")} onClick={handleNavClick}>
           <span className="nav-icon">🏠</span>
           <span>Dashboard</span>
         </Link>
@@ -63,13 +67,14 @@ export default function DoctorSidebar({ activeMenu }) {
         <Link
           to="/doctor/appointments"
           className={getItemClass("appointments")}
+          onClick={handleNavClick}
         >
           <span className="nav-icon">📋</span>
           <span>Appointments</span>
         </Link>
 
         {/* Calendar */}
-        <Link to="/doctor/calendar" className={getItemClass("calendar")}>
+        <Link to="/doctor/calendar" className={getItemClass("calendar")} onClick={handleNavClick}>
           <span className="nav-icon">📅</span>
           <span>Calendar</span>
         </Link>

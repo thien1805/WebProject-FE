@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../../../components/Header";
 import Footer from "../../../../components/Footer";
 import { useAuth } from "../../../../context/AuthContext";
+import { useLanguage } from "../../../../context/LanguageContext";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { useToast } from "../../../../hooks/useToast";
 
@@ -45,6 +46,7 @@ export default function PatientAppointmentsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { getLocalizedName } = useLanguage();
   const toast = useToast();
 
   const STEPS = [
@@ -637,7 +639,7 @@ function StepSymptom({
                   <div className="ai-suggestion-card-header">
                     <span className="ai-suggestion-dept-icon">{dept.icon || "🏥"}</span>
                     <div className="ai-suggestion-dept-info">
-                      <h4>{dept.name}</h4>
+                      <h4>{getLocalizedName(dept)}</h4>
                       {dept.isPrimary && (
                         <span className="ai-primary-badge">{t("booking.recommended") || "Đề xuất hàng đầu"}</span>
                       )}
@@ -688,6 +690,7 @@ function StepSymptom({
 
 function StepSpecialty({ form, setForm, departments, loading }) {
   const { t } = useTranslation();
+  const { getLocalizedName } = useLanguage();
 
   if (loading) {
     return (
@@ -727,7 +730,7 @@ function StepSpecialty({ form, setForm, departments, loading }) {
               }
             >
               <div className="booking-specialty-emoji">{emoji}</div>
-              <div className="booking-specialty-name">{dept.name}</div>
+              <div className="booking-specialty-name">{getLocalizedName(dept)}</div>
               {dept.health_examination_fee && (
                 <div className="booking-specialty-fee">
                   {dept.health_examination_fee.toLocaleString("vi-VN")} VND
@@ -743,13 +746,14 @@ function StepSpecialty({ form, setForm, departments, loading }) {
 
 function StepDoctor({ form, setForm, doctors, loadingDoctors, selectedDepartment }) {
   const { t } = useTranslation();
+  const { getLocalizedName } = useLanguage();
 
   return (
     <>
       <h2 className="booking-section-title">{t("booking.chooseDoctor")}</h2>
       <p className="booking-section-subtitle">
         {selectedDepartment
-          ? `${t("booking.specialty")}: ${selectedDepartment.name}`
+          ? `${t("booking.specialty")}: ${getLocalizedName(selectedDepartment)}`
           : t("booking.chooseDepartmentFirst")}
       </p>
 

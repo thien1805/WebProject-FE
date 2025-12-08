@@ -1,7 +1,5 @@
 // src/api/notificationAPI.js
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+import apiClient, { API_PREFIX } from "./authAPI";
 
 /**
  * Get all notifications for the current patient
@@ -16,12 +14,7 @@ export async function getPatientNotifications() {
     }
 
     // Get patient's appointments to generate notifications
-    const response = await axios.get(`${API_BASE_URL}/api/v1/my-appointments/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await apiClient.get(`${API_PREFIX}/patient/appointments/`);
 
     const appointments = response.data?.results || response.data || [];
     const notifications = [];

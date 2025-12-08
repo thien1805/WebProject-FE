@@ -120,8 +120,8 @@
 }
 
 .cal-day-cell--today {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
+  border-color: #7ab8d4;
+  box-shadow: 0 0 0 1px #7ab8d4;
 }
 
 .cal-day-number {
@@ -144,7 +144,7 @@
 .cal-event {
   border-radius: 6px;
   padding: 2px 4px;
-  background: #e0f2fe;          /* xanh nhạt */
+  background: #e8f4f8;          /* xanh nhạt pastel */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -153,7 +153,7 @@
 .cal-event-time {
   font-size: 10px;
   font-weight: 600;
-  color: #1d4ed8;               /* xanh đậm hơn */
+  color: #3d7a94;               /* xanh pastel đậm hơn */
 }
 
 .cal-event-name {
