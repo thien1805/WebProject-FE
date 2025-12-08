@@ -3,7 +3,7 @@ import Logo from "../../components/Logo/Logo";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useTranslation } from "../../hooks/useTranslation";
-import "./Aboutus.css";
+import "./AboutUs.css";
 
 const AboutUs = () => {
   const { t } = useTranslation();
