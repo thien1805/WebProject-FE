@@ -87,3 +87,17 @@ export const deleteMedicalRecord = async (id) => {
     throw error.response?.data || error.message;
   }
 };
+
+// Thanh toán medical record
+export const payMedicalRecord = async (id, paymentData) => {
+  if (!id) throw new Error("Record id is required");
+  try {
+    const res = await apiClient.post(
+      `${API_PREFIX}/medical-records/${id}/pay/`,
+      paymentData
+    );
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
