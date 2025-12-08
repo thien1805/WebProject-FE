@@ -53,6 +53,34 @@ export const LanguageProvider = ({ children }) => {
   // Check if current language is English
   const isEnglish = language === LANGUAGES.EN;
 
+  /**
+   * Get localized name from an object that has name and name_en fields
+   * @param {Object} obj - Object with name and name_en properties
+   * @param {string} fallback - Fallback value if no name is found
+   * @returns {string} Localized name
+   */
+  const getLocalizedName = (obj, fallback = "") => {
+    if (!obj) return fallback;
+    if (language === LANGUAGES.EN && obj.name_en) {
+      return obj.name_en;
+    }
+    return obj.name || fallback;
+  };
+
+  /**
+   * Get localized description from an object that has description and description_en fields
+   * @param {Object} obj - Object with description and description_en properties
+   * @param {string} fallback - Fallback value if no description is found
+   * @returns {string} Localized description
+   */
+  const getLocalizedDescription = (obj, fallback = "") => {
+    if (!obj) return fallback;
+    if (language === LANGUAGES.EN && obj.description_en) {
+      return obj.description_en;
+    }
+    return obj.description || fallback;
+  };
+
   const value = {
     language,
     setLanguage,
@@ -61,6 +89,8 @@ export const LanguageProvider = ({ children }) => {
     isVietnamese,
     isEnglish,
     LANGUAGES,
+    getLocalizedName,
+    getLocalizedDescription,
   };
 
   return (

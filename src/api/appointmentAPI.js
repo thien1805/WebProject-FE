@@ -211,6 +211,56 @@ export const getDoctorAppointments = async ({
 };
 
 /**
+ * 3d. Update appointment status (Doctor only)
+ *     PATCH /api/v1/appointments/{id}/update-status/
+ */
+export const updateAppointmentStatus = async (appointmentId, newStatus) => {
+  try {
+    const response = await apiClient.patch(
+      `${API_PREFIX}/appointments/${appointmentId}/update-status/`,
+      { status: newStatus }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * 3e. Assign service to appointment (Doctor only)
+ *     POST /api/v1/appointments/{id}/assign-service/
+ */
+export const assignServiceToAppointment = async (appointmentId, serviceId) => {
+  try {
+    const response = await apiClient.post(
+      `${API_PREFIX}/appointments/${appointmentId}/assign-service/`,
+      { service_id: serviceId }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * 3f. Get services by department
+ *     GET /api/v1/services/?department_id=
+ */
+export const getServices = async ({ departmentId, page = 1, pageSize } = {}) => {
+  try {
+    const query = buildQueryString({
+      department_id: departmentId,
+      page,
+      page_size: pageSize,
+    });
+    const response = await apiClient.get(`${API_PREFIX}/services/${query}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
  * 4. Get appointment detail (bao gồm medical_record nếu có)
  *    GET /api/v1/appointments/{id}/
  */

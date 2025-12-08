@@ -180,7 +180,7 @@ export default function PatientDashboard() {
               className="pd-primary-btn"
               onClick={handleHeroBookClick}
             >
-              📅 {t("patient.bookNewAppointment")}
+              {t("patient.bookNewAppointment")}
             </button>
           </div>
         </section>
@@ -215,8 +215,11 @@ export default function PatientDashboard() {
         )}
 
         {activeTab === "records" && <MedicalRecordList 
-        records={records}
-        appointments={appointments} />}
+          records={records}
+          appointments={appointments}
+          toast={toast}
+          onRefresh={refreshAppointments}
+        />}
 
         {activeTab === "profile" && (
           <PatientProfileCard user={user} />

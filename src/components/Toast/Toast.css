@@ -113,12 +113,62 @@
   opacity: 1;
 }
 
-/* Mobile responsive */
-@media (max-width: 640px) {
+/* Tablet responsive */
+@media (max-width: 768px) {
   .toast {
-    bottom: 16px;
+    max-width: 320px;
+    padding: 12px 14px;
+    font-size: 13px;
+    gap: 10px;
     right: 16px;
-    left: 16px;
+    top: 16px;
+  }
+
+  .toast-close {
+    font-size: 20px;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .toast {
+    top: auto;
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
     max-width: none;
+    padding: 10px 12px;
+    font-size: 12px;
+    gap: 8px;
+    border-radius: 8px;
+  }
+
+  .toast-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .toast-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .toast-close {
+    font-size: 18px;
+  }
+
+  .toast-message {
+    line-height: 1.4;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .toast {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
   }
 }

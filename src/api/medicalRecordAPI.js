@@ -38,25 +38,26 @@ export const getMedicalRecordDetail = async (id) => {
   }
 };
 
-// Tạo medical record mới (doctor gửi sau khi khám)
-export const createMedicalRecord = async (payload) => {
-  // Expected payload: {
-  //   appointment_id: string,
-  //   diagnosis: string,
-  //   treatment: string,
-  //   notes?: string,
-  //   doctor_comment?: string,
-  //   health_status: string (e.g., "Good", "Fair", "Poor")
-  // }
-  if (!payload?.appointment_id) {
-    throw new Error("appointment_id is required");
-  }
+/**
+ * Create medical record for an appointment
+ * POST /api/v1/appointments/{id}/medical-record/
+ * 
+ * @param {number} appointmentId - The appointment ID
+ * @param {Object} data - Medical record data
+ * @param {string} data.diagnosis - Doctor's diagnosis
+ * @param {string} data.prescription - Prescription details
+ * @param {string} data.treatment_plan - Treatment plan
+ * @param {string} [data.notes] - Additional notes
+ * @param {string} [data.follow_up_date] - Follow-up date (YYYY-MM-DD)
+ * @param {Object} [data.vital_signs] - Vital signs object
+ */
+export const createMedicalRecord = async (appointmentId, data) => {
   try {
     const res = await apiClient.post(
-      `${API_PREFIX}/medical-records/`,
-      payload
+      `${API_PREFIX}/appointments/${appointmentId}/medical-record/`,
+      data
     );
-    return res.data; // { success: true, data: { record_id, ... } } hoặc object record
+    return res.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
@@ -81,6 +82,20 @@ export const deleteMedicalRecord = async (id) => {
   if (!id) throw new Error("Record id is required");
   try {
     const res = await apiClient.delete(`${API_PREFIX}/medical-records/${id}/`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+// Thanh toán medical record
+export const payMedicalRecord = async (id, paymentData) => {
+  if (!id) throw new Error("Record id is required");
+  try {
+    const res = await apiClient.post(
+      `${API_PREFIX}/medical-records/${id}/pay/`,
+      paymentData
+    );
     return res.data;
   } catch (error) {
     throw error.response?.data || error.message;
