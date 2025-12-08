@@ -161,6 +161,9 @@ export function usePatientDashboard() {
           appointmentsRes ||
           [];
 
+        console.log("🔍 [usePatientDashboard] appointmentsRes:", appointmentsRes);
+        console.log("🔍 [usePatientDashboard] appointmentItems:", appointmentItems);
+
         const totalAppointments =
           appointmentsRes?.count ??
           appointmentsRes?.total ??
@@ -171,9 +174,12 @@ export function usePatientDashboard() {
           const rawStatus = (item.status || "").toLowerCase();
           const normalizedStatus = rawStatus === "booked" ? "pending" : rawStatus;
           return {
-            id: item.appointment_id,
-            date: item.appointment_date,
-            time: item.appointment_time,
+            // Hỗ trợ cả hai format: appointment_id hoặc id
+            id: item.appointment_id || item.id,
+            // Hỗ trợ cả appointment_date, date, scheduled_date
+            date: item.appointment_date || item.date || item.scheduled_date || "",
+            // Hỗ trợ cả appointment_time, time, scheduled_time
+            time: item.appointment_time || item.time || item.scheduled_time || "",
             status: normalizedStatus,
             notes: item.notes,
             doctorId: item.doctor_id,
@@ -207,6 +213,9 @@ export function usePatientDashboard() {
 
         setAppointments(normalizedAppointments);
         setAppointmentTotal(totalAppointments || normalizedAppointments.length);
+
+        console.log("✅ [usePatientDashboard] normalizedAppointments:", normalizedAppointments);
+        console.log("✅ [usePatientDashboard] appointmentTotal:", totalAppointments || normalizedAppointments.length);
 
         const mappedRecords = (recordsRes || []).map((rec) => ({
           id: rec.record_id,
@@ -293,7 +302,7 @@ export function usePatientDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [authUser, appointmentPage, appointmentPageSize, refreshKey]);
+  }, [authUser, appointmentPage, appointmentPageSize, refreshKey, user]);
 
   // Function to refresh appointments
   const refreshAppointments = useCallback(() => {
