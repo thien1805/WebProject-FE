@@ -1,4 +1,4 @@
-// src/components/DoctorSidebar/DoctorSidebar.jsx
+﻿// src/components/DoctorSidebar/DoctorSidebar.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./DoctorSidebar.css";
@@ -10,7 +10,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-  // Get initials for avatar
+  // Compute initials for avatar
   const getInitials = (name) => {
     if (!name) return "D";
     const parts = name.trim().split(" ");
@@ -42,8 +42,8 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
 
   return (
     <aside className={`doctor-sidebar ${isOpen ? 'sidebar--open' : ''}`}>
-      {/* Doctor Profile Section - Clickable to view profile */}
-      <div 
+      {/* Doctor profile - quick view */}
+      <div
         className="doctor-sidebar-profile doctor-sidebar-profile--clickable"
         onClick={() => setProfileModalOpen(true)}
         title="View Profile"
@@ -51,7 +51,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
         <div className="doctor-sidebar-avatar">{initials}</div>
         <div className="doctor-sidebar-info">
           <span className="doctor-sidebar-name">{doctorName}</span>
-          <span className="doctor-sidebar-role">Bác sĩ</span>
+          <span className="doctor-sidebar-role">Doctor</span>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
       <nav className="doctor-sidebar-nav">
         {/* Dashboard */}
         <Link to="/doctor/dashboard" className={getItemClass("dashboard")} onClick={handleNavClick}>
-          <span className="nav-icon">🏠</span>
+          <span className="nav-icon">📊</span>
           <span>Dashboard</span>
         </Link>
 
@@ -69,13 +69,13 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
           className={getItemClass("appointments")}
           onClick={handleNavClick}
         >
-          <span className="nav-icon">📋</span>
+          <span className="nav-icon">📅</span>
           <span>Appointments</span>
         </Link>
 
         {/* Calendar */}
         <Link to="/doctor/calendar" className={getItemClass("calendar")} onClick={handleNavClick}>
-          <span className="nav-icon">📅</span>
+          <span className="nav-icon">🗓</span>
           <span>Calendar</span>
         </Link>
       </nav>
@@ -87,7 +87,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
           className="nav-item nav-item--logout"
           onClick={() => setConfirmLogoutOpen(true)}
         >
-          <span className="nav-icon">🚪</span>
+          <span className="nav-icon">🔒</span>
           <span>Logout</span>
         </button>
       </div>
@@ -111,7 +111,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
                 className="profile-modal-close"
                 onClick={() => setProfileModalOpen(false)}
               >
-                ✕
+                ×
               </button>
             </div>
             <div className="profile-modal-body">
@@ -120,7 +120,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
               </div>
               <div className="profile-modal-info">
                 <div className="profile-info-row">
-                  <span className="profile-label">Full Name:</span>
+                  <span className="profile-label">Full name:</span>
                   <span className="profile-value">{user?.full_name || "N/A"}</span>
                 </div>
                 <div className="profile-info-row">
@@ -133,7 +133,7 @@ export default function DoctorSidebar({ activeMenu, isOpen = false, onClose }) {
                 </div>
                 <div className="profile-info-row">
                   <span className="profile-label">Role:</span>
-                  <span className="profile-value profile-value--badge">Bác sĩ</span>
+                  <span className="profile-value profile-value--badge">Doctor</span>
                 </div>
               </div>
               <p className="profile-modal-note">

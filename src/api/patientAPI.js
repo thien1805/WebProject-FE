@@ -1,6 +1,5 @@
 // src/api/patientAPI.js
-import apiClient, { API_PREFIX } from "./authAPI"; // dùng chung axios instance + interceptor
-
+import apiClient, { API_PREFIX } from "./authAPI"; 
 export async function getMyProfile() {
   const res = await apiClient.get("/api/v1/user/me"); 
   return res.data;
