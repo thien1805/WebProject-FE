@@ -80,12 +80,6 @@ export default function DoctorSidebar({ activeMenu, activeSub }) {
           )}
         </div>
 
-        {/* Patients */}
-        <Link to="/doctor/patients" className={getItemClass("patients")}>
-          <span className="nav-icon">👥</span>
-          <span>Patients</span>
-        </Link>
-
         {/* Appointments */}
         <Link
           to="/doctor/appointments"

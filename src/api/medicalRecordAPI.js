@@ -37,3 +37,28 @@ export const getMedicalRecordDetail = async (id) => {
     throw error.response?.data || error.message;
   }
 };
+
+/**
+ * Create medical record for an appointment
+ * POST /api/v1/appointments/{id}/medical-record/
+ * 
+ * @param {number} appointmentId - The appointment ID
+ * @param {Object} data - Medical record data
+ * @param {string} data.diagnosis - Doctor's diagnosis
+ * @param {string} data.prescription - Prescription details
+ * @param {string} data.treatment_plan - Treatment plan
+ * @param {string} [data.notes] - Additional notes
+ * @param {string} [data.follow_up_date] - Follow-up date (YYYY-MM-DD)
+ * @param {Object} [data.vital_signs] - Vital signs object
+ */
+export const createMedicalRecord = async (appointmentId, data) => {
+  try {
+    const res = await apiClient.post(
+      `${API_PREFIX}/appointments/${appointmentId}/medical-record/`,
+      data
+    );
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

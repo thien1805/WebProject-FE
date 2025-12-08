@@ -3,6 +3,8 @@ import React from "react";
 
 export default function AppointmentActivityTable({
   rows,
+  loading,
+  error,
   search,
   setSearch,
   statusFilter,
@@ -12,10 +14,40 @@ export default function AppointmentActivityTable({
   statusChoices,
   updateStatus,
   onAddRecord,
+  toast,
 }) {
   const renderStatusLabel = (value) => {
     const found = statusChoices.find((s) => s.value === value);
     return found ? found.label : value;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    try {
+      return new Date(dateStr).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "N/A";
+    // If HH:MM:SS format, remove seconds
+    if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr.slice(0, 5);
+    return timeStr;
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    const result = await updateStatus(id, newStatus);
+    if (result.success) {
+      toast?.success?.(`Status updated to ${renderStatusLabel(newStatus)}`);
+    } else {
+      toast?.error?.(result.error || "Failed to update status");
+    }
   };
 
   return (
@@ -98,86 +130,96 @@ export default function AppointmentActivityTable({
         </button>
       </div>
 
+      {/* Loading / Error states */}
+      {loading && (
+        <div className="appt-loading">Loading appointments...</div>
+      )}
+      
+      {error && (
+        <div className="appt-error">{error}</div>
+      )}
+
       {/* TABLE */}
-      <div className="appt-table-wrapper">
-        <table className="appt-table">
-          <thead>
-            <tr>
-              <th>Patient</th>
-              <th>Status</th>
-              <th>Notes</th>
-              <th>Time</th>
-              <th>Date</th>
-              <th style={{ textAlign: "right" }}>Medical record</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
+      {!loading && !error && (
+        <div className="appt-table-wrapper">
+          <table className="appt-table">
+            <thead>
               <tr>
-                <td colSpan={6} className="appt-empty">
-                  No appointments found.
-                </td>
+                <th>Patient</th>
+                <th>Status</th>
+                <th>Department</th>
+                <th>Notes</th>
+                <th>Time</th>
+                <th>Date</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
-            )}
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="appt-empty">
+                    No appointments found.
+                  </td>
+                </tr>
+              )}
 
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td className="appt-patient-cell">
-                  <div className="appt-avatar">
-                    {row.patient.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="appt-patient-name">{row.patient}</div>
-                  </div>
-                </td>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td className="appt-patient-cell">
+                    <div className="appt-avatar">
+                      {row.patient.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="appt-patient-name">{row.patient}</div>
+                      {row.patientEmail && (
+                        <div className="appt-patient-email">{row.patientEmail}</div>
+                      )}
+                    </div>
+                  </td>
 
-                {/* STATUS: select có thể đổi trạng thái */}
-                <td>
-                  <select
-                    className={`appt-status-select appt-status-select--${row.status}`}
-                    value={row.status}
-                    onChange={(e) => updateStatus(row.id, e.target.value)}
-                  >
-                    {statusChoices.map((st) => (
-                      <option key={st.value} value={st.value}>
-                        {st.label}
-                      </option>
-                    ))}
-                  </select>
-                </td>
+                  {/* STATUS: select có thể đổi trạng thái */}
+                  <td>
+                    <select
+                      className={`appt-status-select appt-status-select--${row.status}`}
+                      value={row.status}
+                      onChange={(e) => handleStatusChange(row.id, e.target.value)}
+                    >
+                      {statusChoices.map((st) => (
+                        <option key={st.value} value={st.value}>
+                          {st.label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
 
-                <td>{row.notes}</td>
-                <td>{row.time}</td>
-                <td>
-                  {new Date(row.date).toLocaleDateString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })}
-                </td>
-                <td style={{ textAlign: "right" }}>
-                  <button
-                    type="button"
-                  className={
-                    "appt-record-btn" +
-                    (row.status === "completed"
-                      ? ""
-                      : " appt-record-btn--disabled")
-                  }
-                  disabled={row.status !== "completed"}
-                  onClick={() => {
-                    if (row.status !== "completed") return;
-                    onAddRecord?.(row);
-                  }}
-                >
-                  Add medical record
-                </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  <td>{row.department?.name || "N/A"}</td>
+                  <td>{row.notes || "-"}</td>
+                  <td>{formatTime(row.time)}</td>
+                  <td>{formatDate(row.date)}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <button
+                      type="button"
+                      className={
+                        "appt-record-btn" +
+                        (row.status === "completed" || row.status === "confirmed"
+                          ? ""
+                          : " appt-record-btn--disabled")
+                      }
+                      disabled={row.status !== "completed" && row.status !== "confirmed"}
+                      onClick={() => {
+                        if (row.status !== "completed" && row.status !== "confirmed") return;
+                        onAddRecord?.(row._raw || row);
+                      }}
+                    >
+                      {row.medicalRecord ? "View Record" : "Add Record"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

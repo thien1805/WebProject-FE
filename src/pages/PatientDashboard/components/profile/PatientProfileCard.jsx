@@ -164,7 +164,7 @@ export default function PatientProfileCard({ user, initialProfile, startEditing 
       if (typeof err === "string") msg = err;
       else if (err?.message) msg = err.message;
       else if (err?.detail) msg = err.detail;
-      alert(msg);
+      showError(msg);
     }
   };
 

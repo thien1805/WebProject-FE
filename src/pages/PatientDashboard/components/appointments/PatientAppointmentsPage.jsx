@@ -245,8 +245,8 @@ export default function PatientAppointmentsPage() {
           doctor: selectedDoctor ? `${selectedDoctor.title} ${selectedDoctor.full_name}` : null,
           date: form.date,
           time: form.timeSlot,
-          price: selectedDoctor
-            ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND`
+          price: selectedSpecialty?.health_examination_fee
+            ? `${Math.round(Number(selectedSpecialty.health_examination_fee)).toLocaleString("vi-VN")} VND`
             : "N/A",
         });
 
@@ -782,8 +782,7 @@ function StepDoctor({ form, setForm, doctors, loadingDoctors, selectedDepartment
                     {t("booking.experience")}: {doc.experience_years} {t("booking.years") || "years"}
                   </div>
                   <div className="booking-doctor-meta">
-                    ⭐ {Number(doc.rating).toFixed(1)} •{" "}
-                    {Math.round(Number(doc.consultation_fee)).toLocaleString("vi-VN")} VND
+                    ⭐ {Number(doc.rating).toFixed(1)} • {doc.experience_years} {t("booking.yearsExp") || "năm KN"}
                   </div>
                 </div>
               </button>
@@ -1067,8 +1066,8 @@ function StepConfirm({
         <div className="booking-confirm-row booking-confirm-row--price">
           <span className="booking-confirm-label">{t("booking.consultationFee")}:</span>
           <span className="booking-confirm-price">
-            {selectedDoctor
-              ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND`
+            {selectedSpecialty?.health_examination_fee
+              ? `${Math.round(Number(selectedSpecialty.health_examination_fee)).toLocaleString("vi-VN")} VND`
               : "N/A"}
           </span>
         </div>
@@ -1266,13 +1265,13 @@ function StepPayment({ form, setForm, selectedDoctor, selectedSpecialty }) {
             
             <div className="payment-summary-row">
               <span>{t("payment.consultationFee") || "Phí khám"}:</span>
-              <span>{selectedDoctor ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND` : '-'}</span>
+              <span>{selectedSpecialty?.health_examination_fee ? `${Math.round(Number(selectedSpecialty.health_examination_fee)).toLocaleString("vi-VN")} VND` : '-'}</span>
             </div>
             
             <div className="payment-summary-row payment-summary-row--total">
               <span>{t("payment.total") || "Tổng cộng"}:</span>
               <span className="payment-total-amount">
-                {selectedDoctor ? `${Math.round(Number(selectedDoctor.consultation_fee)).toLocaleString("vi-VN")} VND` : '-'}
+                {selectedSpecialty?.health_examination_fee ? `${Math.round(Number(selectedSpecialty.health_examination_fee)).toLocaleString("vi-VN")} VND` : '-'}
               </span>
             </div>
           </div>

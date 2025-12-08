@@ -109,11 +109,13 @@ export function usePatientDashboard() {
               page: appointmentPage,
               page_size: appointmentPageSize,
             }),
-            getMyMedicalRecords(),
-            getMyHealthTracking(),
+            getMyMedicalRecords().catch(() => []),  // Graceful fallback
+            getMyHealthTracking().catch(() => []),  // Graceful fallback
           ]);
 
         if (cancelled) return;
+
+        console.log("🔍 [usePatientDashboard] appointmentsRes:", appointmentsRes);
 
         // Merge user data from /user/me with patient profile
         const patientProfile = {
@@ -171,15 +173,25 @@ export function usePatientDashboard() {
           const rawStatus = (item.status || "").toLowerCase();
           const normalizedStatus = rawStatus === "booked" ? "pending" : rawStatus;
           return {
-            id: item.appointment_id,
+            id: item.id,  // Backend returns 'id', not 'appointment_id'
             date: item.appointment_date,
             time: item.appointment_time,
             status: normalizedStatus,
             notes: item.notes,
-            doctorId: item.doctor_id,
+            symptoms: item.symptoms,
+            reason: item.reason,
+            doctorId: item.doctor?.id,
             doctorName: item.doctor?.full_name || "Unknown doctor",
+            doctorTitle: item.doctor?.title || "",
             specialty: item.doctor?.specialization || "",
-            location: item.doctor?.clinic_address || "MyHealthCare clinic",
+            department: item.department?.name || "",
+            departmentIcon: item.department?.icon || "",
+            room: item.room?.room_number || "",
+            estimatedFee: item.estimated_fee,
+            location: item.room?.room_number 
+              ? `Phòng ${item.room.room_number}` 
+              : "MyHealthCare clinic",
+            medicalRecord: item.medical_record || null,
           };
         });
 
