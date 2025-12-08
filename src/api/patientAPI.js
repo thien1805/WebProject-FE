@@ -29,14 +29,5 @@ export async function getMyAppointments(params = {}) {
   return [];
 }
 
-// Lấy hồ sơ bệnh án / kết quả xét nghiệm
-export async function getMyMedicalRecords() {
-  const res = await apiClient.get(`${API_PREFIX}/medical-records/my-records`);
-  return res.data;
-}
-
-// Lấy các chỉ số sức khỏe được tracking
-export async function getMyHealthTracking() {
-  const res = await apiClient.get(`${API_PREFIX}/health-tracking/my-metrics`);
-  return res.data;
-}
+// Note: Medical records are fetched from appointment's medical_record field
+// No separate /medical-records/my-records or /health-tracking/my-metrics endpoints

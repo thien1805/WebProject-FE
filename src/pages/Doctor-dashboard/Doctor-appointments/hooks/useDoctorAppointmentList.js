@@ -9,9 +9,7 @@ import {
 import { createMedicalRecord } from "../../../../api/medicalRecordAPI";
 
 const STATUS_CHOICES = [
-  { value: "pending", label: "Pending" },
-  { value: "booked", label: "Booked" },
-  { value: "confirmed", label: "Confirmed" },
+  { value: "upcoming", label: "Upcoming" },
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
 ];

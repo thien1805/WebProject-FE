@@ -1,5 +1,7 @@
 // src/pages/Doctor-dashboard/Doctor-appointments/components/MedicalRecordModal.jsx
 import React, { useState } from "react";
+import useTranslation from "../../../../hooks/useTranslation";
+import { useLanguage } from "../../../../context/LanguageContext";
 
 const initialForm = {
   diagnosis: "",
@@ -29,6 +31,8 @@ export default function MedicalRecordModal({
   toast,
 }) {
   const [form, setForm] = useState(initialForm);
+  const { t, formatDate, formatTime } = useTranslation();
+  const { getLocalizedName } = useLanguage();
 
   if (!appointment) return null;
 
@@ -66,25 +70,6 @@ export default function MedicalRecordModal({
     }
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "N/A";
-    try {
-      return new Date(dateStr).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "N/A";
-    if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr.slice(0, 5);
-    return timeStr;
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-content--large" onClick={(e) => e.stopPropagation()}>
@@ -112,7 +97,7 @@ export default function MedicalRecordModal({
           <div className="modal-info-row">
             <span className="modal-info-label">Department:</span>
             <span className="modal-info-value">
-              {appointment.department?.name || "N/A"}
+              {getLocalizedName(appointment.department, "N/A")}
             </span>
           </div>
           <div className="modal-info-row">
@@ -141,7 +126,7 @@ export default function MedicalRecordModal({
                   <option value="">-- No additional service --</option>
                   {services.map((svc) => (
                     <option key={svc.id} value={svc.id}>
-                      {svc.name} - {Number(svc.price).toLocaleString("vi-VN")} VND
+                      {getLocalizedName(svc)} - {Number(svc.price).toLocaleString("vi-VN")} VND
                     </option>
                   ))}
                 </select>

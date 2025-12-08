@@ -3,8 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   getMyProfile,
   getMyAppointments,
-  getMyMedicalRecords,
-  getMyHealthTracking,
 } from "../../../api/patientAPI";
 import { getMe } from "../../../api/authAPI";
 import { useAuth } from "../../../context/AuthContext";
@@ -12,7 +10,7 @@ import { cancelAppointment } from "../../../api/appointmentAPI";
 
 function buildStats(appointments = [], records = [], healthStatus = "Good") {
   const upcomingCount = appointments.filter((a) =>
-    ["pending", "confirmed"].includes(a.status)
+    ["upcoming", "pending", "confirmed", "booked"].includes(a.status)
   ).length;
   const completedCount = appointments.filter(
     (a) => a.status === "completed"
@@ -81,8 +79,7 @@ export function usePatientDashboard() {
 
   const statusOptions = [
     { id: "all", label: "All" },
-    { id: "pending", label: "Pending" },
-    { id: "confirmed", label: "Confirmed" },
+    { id: "upcoming", label: "Upcoming" },
     { id: "completed", label: "Completed" },
     { id: "cancelled", label: "Cancelled" },
   ];
@@ -101,7 +98,7 @@ export function usePatientDashboard() {
         setLoading(true);
         setError(null);
 
-        const [meRes, , appointmentsRes, recordsRes, metricsRes] =
+        const [meRes, , appointmentsRes] =
           await Promise.all([
             getMe(),
             getMyProfile(),
@@ -109,8 +106,6 @@ export function usePatientDashboard() {
               page: appointmentPage,
               page_size: appointmentPageSize,
             }),
-            getMyMedicalRecords().catch(() => []),  // Graceful fallback
-            getMyHealthTracking().catch(() => []),  // Graceful fallback
           ]);
 
         if (cancelled) return;
@@ -171,7 +166,10 @@ export function usePatientDashboard() {
 
         const mappedAppointments = appointmentItems.map((item) => {
           const rawStatus = (item.status || "").toLowerCase();
-          const normalizedStatus = rawStatus === "booked" ? "pending" : rawStatus;
+          // Normalize old statuses to new system: booked/pending/confirmed -> upcoming
+          const normalizedStatus = ["booked", "pending", "confirmed"].includes(rawStatus) 
+            ? "upcoming" 
+            : rawStatus;
           return {
             id: item.id,  // Backend returns 'id', not 'appointment_id'
             date: item.appointment_date,
@@ -184,7 +182,7 @@ export function usePatientDashboard() {
             doctorName: item.doctor?.full_name || "Unknown doctor",
             doctorTitle: item.doctor?.title || "",
             specialty: item.doctor?.specialization || "",
-            department: item.department?.name || "",
+            department: item.department || null,  // Pass full object for localization
             departmentIcon: item.department?.icon || "",
             room: item.room?.room_number || "",
             estimatedFee: item.estimated_fee,
@@ -220,28 +218,27 @@ export function usePatientDashboard() {
         setAppointments(normalizedAppointments);
         setAppointmentTotal(totalAppointments || normalizedAppointments.length);
 
-        const mappedRecords = (recordsRes || []).map((rec) => ({
-          id: rec.record_id,
-          appointmentId: rec.appointment_id,
-          doctorId: rec.doctor_id,
-          patientId: rec.patient_id,
-          diagnosis: rec.diagnosis,
-          treatment: rec.treatment,
-          notes: rec.notes,
-          visitDate: rec.visit_date,
-          healthStatus: rec.health_status || rec.healthStatus,
-        }));
-        setRecords(mappedRecords);                                                                                                                                                                                                                                                                                                                                                                                                                            
+        // Extract medical records from appointments that have them
+        const mappedRecords = appointmentItems
+          .filter((item) => item.medical_record)
+          .map((item) => {
+            const rec = item.medical_record;
+            return {
+              id: rec.record_id || rec.id,
+              appointmentId: item.id,
+              doctorId: item.doctor?.id,
+              patientId: rec.patient_id,
+              diagnosis: rec.diagnosis,
+              treatment: rec.treatment,
+              notes: rec.notes,
+              visitDate: rec.visit_date || item.appointment_date,
+              healthStatus: rec.health_status || rec.healthStatus,
+            };
+          });
+        setRecords(mappedRecords);
 
+        // Health metrics - currently not available from backend, initialize empty
         const metricsObj = {};
-        (metricsRes || []).forEach((m) => {
-          metricsObj[m.metric_type] = {
-            value: m.value,
-            unit: m.unit,
-            measuredAt: m.measure_at,
-            notes: m.notes,
-          };
-        });
         setMetrics(metricsObj);
 
         const sortedByDate = [...mappedRecords].sort((a, b) => {

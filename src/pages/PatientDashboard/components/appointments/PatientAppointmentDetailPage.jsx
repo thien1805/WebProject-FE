@@ -5,22 +5,26 @@ import Header from "../../../../components/Header";
 import Footer from "../../../../components/Footer";
 import { getAppointmentDetail, cancelAppointment, rescheduleAppointment } from "../../../../api/appointmentAPI";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import { useLanguage } from "../../../../context/LanguageContext";
 import { useToast } from "../../../../hooks/useToast";
 import "../../PatientDashboard.css";
 
 const STATUS_COLORS = {
-  pending: { bg: "#fef9c3", border: "#facc15", text: "#92400e" },
-  booked: { bg: "#fef9c3", border: "#facc15", text: "#92400e" },
-  confirmed: { bg: "#dcfce7", border: "#22c55e", text: "#166534" },
-  completed: { bg: "#dbeafe", border: "#3b82f6", text: "#1d4ed8" },
+  upcoming: { bg: "#dbeafe", border: "#3b82f6", text: "#2563eb" },
+  pending: { bg: "#dbeafe", border: "#3b82f6", text: "#2563eb" },
+  booked: { bg: "#dbeafe", border: "#3b82f6", text: "#2563eb" },
+  confirmed: { bg: "#dbeafe", border: "#3b82f6", text: "#2563eb" },
+  completed: { bg: "#dcfce7", border: "#22c55e", text: "#166534" },
   cancelled: { bg: "#fee2e2", border: "#f87171", text: "#b91c1c" },
 };
 
 export default function PatientAppointmentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, formatDate: tFormatDate, formatTime: tFormatTime, formatDateTime: tFormatDateTime, getLocale } = useTranslation();
+  const { getLocalizedName } = useLanguage();
   const toast = useToast();
+  const { ToastContainer } = toast;
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,7 +58,7 @@ export default function PatientAppointmentDetailPage() {
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     try {
-      return new Date(dateStr).toLocaleDateString("vi-VN", {
+      return new Date(dateStr).toLocaleDateString(getLocale(), {
         weekday: "long",
         day: "2-digit",
         month: "2-digit",
@@ -74,7 +78,7 @@ export default function PatientAppointmentDetailPage() {
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return "N/A";
     try {
-      return new Date(dateTimeStr).toLocaleString("vi-VN", {
+      return new Date(dateTimeStr).toLocaleString(getLocale(), {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -124,6 +128,16 @@ export default function PatientAppointmentDetailPage() {
       return;
     }
 
+    // Validate date is not in the past
+    const selectedDate = new Date(rescheduleData.newDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      toast.error(t("patient.dateInPast") || "Không thể chọn ngày trong quá khứ");
+      return;
+    }
+
     setRescheduling(true);
     try {
       const result = await rescheduleAppointment(id, {
@@ -138,11 +152,24 @@ export default function PatientAppointmentDetailPage() {
           window.location.reload();
         }, 1500);
       } else {
-        toast.error(result?.message || result?.error || t("patient.rescheduleFailed") || "Dời hẹn thất bại");
+        // Handle specific error messages from backend
+        const errorMsg = result?.error || result?.message || result?.new_date?.[0] || result?.new_time?.[0];
+        toast.error(errorMsg || t("patient.rescheduleFailed") || "Dời hẹn thất bại");
       }
     } catch (err) {
       console.error("Reschedule error:", err);
-      toast.error(err?.message || t("patient.rescheduleFailed") || "Dời hẹn thất bại");
+      // Handle validation errors from backend
+      let errorMessage = t("patient.rescheduleFailed") || "Dời hẹn thất bại";
+      if (err?.new_date) {
+        errorMessage = Array.isArray(err.new_date) ? err.new_date[0] : err.new_date;
+      } else if (err?.new_time) {
+        errorMessage = Array.isArray(err.new_time) ? err.new_time[0] : err.new_time;
+      } else if (err?.error) {
+        errorMessage = err.error;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setRescheduling(false);
     }
@@ -159,9 +186,10 @@ export default function PatientAppointmentDetailPage() {
 
   const getStatusLabel = (status) => {
     const labels = {
-      pending: t("patient.pending"),
-      booked: t("patient.pending"),
-      confirmed: t("patient.confirmed"),
+      upcoming: t("patient.upcoming"),
+      pending: t("patient.upcoming"),
+      booked: t("patient.upcoming"),
+      confirmed: t("patient.upcoming"),
       completed: t("patient.completed"),
       cancelled: t("patient.cancelled"),
     };
@@ -232,22 +260,22 @@ export default function PatientAppointmentDetailPage() {
                 {getStatusLabel(status)}
               </span>
             </div>
-            {/* Action Buttons - only show for pending/booked/confirmed */}
-            {["pending", "booked", "confirmed"].includes(status) && (
+            {/* Action Buttons - only show for upcoming appointments */}
+            {["upcoming", "pending", "booked", "confirmed"].includes(status) && (
               <div className="pd-detail-actions">
                 <button
                   type="button"
                   className="pd-action-btn pd-action-btn--reschedule"
                   onClick={() => setShowRescheduleModal(true)}
                 >
-                  📅 {t("patient.reschedule") || "Dời hẹn"}
+                  {t("patient.reschedule") || "Dời lịch hẹn"}
                 </button>
                 <button
                   type="button"
                   className="pd-action-btn pd-action-btn--cancel"
                   onClick={() => setShowCancelModal(true)}
                 >
-                  ❌ {t("patient.cancelAppointment") || "Hủy hẹn"}
+                  {t("patient.cancelAppointment") || "Hủy lịch hẹn"}
                 </button>
               </div>
             )}
@@ -256,7 +284,7 @@ export default function PatientAppointmentDetailPage() {
           {/* Main Info Card */}
           <div className="pd-detail-card">
             <div className="pd-detail-section">
-              <h3>📅 {t("patient.scheduleInfo")}</h3>
+              <h3 className="pd-detail-section-title">{t("patient.scheduleInfo")}</h3>
               <div className="pd-detail-grid">
                 <div className="pd-detail-item">
                   <span className="pd-detail-label">{t("patient.date")}</span>
@@ -280,7 +308,7 @@ export default function PatientAppointmentDetailPage() {
             </div>
 
             <div className="pd-detail-section">
-              <h3>👨‍⚕️ {t("patient.doctorInfo")}</h3>
+              <h3 className="pd-detail-section-title">{t("patient.doctorInfo")}</h3>
               <div className="pd-detail-grid">
                 <div className="pd-detail-item">
                   <span className="pd-detail-label">{t("patient.doctor")}</span>
@@ -291,7 +319,7 @@ export default function PatientAppointmentDetailPage() {
                 <div className="pd-detail-item">
                   <span className="pd-detail-label">{t("patient.specialty")}</span>
                   <span className="pd-detail-value">
-                    {appointment.department?.name || appointment.doctor?.specialization || "N/A"}
+                    {getLocalizedName(appointment.department) || appointment.doctor?.specialization || "N/A"}
                   </span>
                 </div>
                 {appointment.room && (
@@ -306,7 +334,7 @@ export default function PatientAppointmentDetailPage() {
             </div>
 
             <div className="pd-detail-section">
-              <h3>💰 {t("patient.feeInfo")}</h3>
+              <h3 className="pd-detail-section-title">{t("patient.feeInfo")}</h3>
               <div className="pd-detail-grid">
                 <div className="pd-detail-item">
                   <span className="pd-detail-label">{t("patient.consultationFee")}</span>
@@ -318,7 +346,7 @@ export default function PatientAppointmentDetailPage() {
                   <div className="pd-detail-item">
                     <span className="pd-detail-label">{t("patient.service")}</span>
                     <span className="pd-detail-value">
-                      {appointment.service.name} - {formatCurrency(appointment.service.price)}
+                      {getLocalizedName(appointment.service)} - {formatCurrency(appointment.service.price)}
                     </span>
                   </div>
                 )}
@@ -327,7 +355,7 @@ export default function PatientAppointmentDetailPage() {
 
             {(appointment.symptoms || appointment.reason || appointment.notes) && (
               <div className="pd-detail-section">
-                <h3>📝 {t("patient.notes")}</h3>
+                <h3 className="pd-detail-section-title">{t("patient.notes")}</h3>
                 {appointment.symptoms && (
                   <div className="pd-detail-item pd-detail-item--full">
                     <span className="pd-detail-label">{t("patient.symptoms")}</span>
@@ -351,7 +379,7 @@ export default function PatientAppointmentDetailPage() {
 
             {status === "cancelled" && appointment.cancellation_reason && (
               <div className="pd-detail-section pd-detail-section--warning">
-                <h3>❌ {t("patient.cancellationInfo")}</h3>
+                <h3 className="pd-detail-section-title">{t("patient.cancellationInfo")}</h3>
                 <div className="pd-detail-item pd-detail-item--full">
                   <span className="pd-detail-label">{t("patient.reason")}</span>
                   <span className="pd-detail-value">{appointment.cancellation_reason}</span>
@@ -368,7 +396,7 @@ export default function PatientAppointmentDetailPage() {
             {/* Medical Record if exists */}
             {appointment.medical_record && (
               <div className="pd-detail-section pd-detail-section--success">
-                <h3>🏥 {t("patient.medicalRecord")}</h3>
+                <h3 className="pd-detail-section-title">{t("patient.medicalRecord")}</h3>
                 {appointment.medical_record.diagnosis && (
                   <div className="pd-detail-item pd-detail-item--full">
                     <span className="pd-detail-label">{t("patient.diagnosis")}</span>
@@ -540,6 +568,7 @@ export default function PatientAppointmentDetailPage() {
         </div>
       )}
 
+      <ToastContainer />
       <Footer />
     </>
   );

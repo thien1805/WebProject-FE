@@ -200,11 +200,15 @@
 .appt-record-send-btn {
   border: none;
   border-radius: 999px;
-  background: #0ea5e9;
+  background: #7ab8d4;
   color: #ffffff;
   padding: 8px 20px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.appt-record-send-btn:hover {
+  background: #5a9bb8;
 }
 
 .appt-record-send-btn:disabled {
@@ -246,7 +250,7 @@
 }
 
 /* ===== Status select trong bảng ===== */
-/* value trùng STATUS_CHOICES backend: booked / confirmed / completed / cancelled / no_show */
+/* value trùng STATUS_CHOICES backend: upcoming / completed / cancelled */
 
 .appt-status-select {
   min-width: 140px;
@@ -257,26 +261,21 @@
   background: #f9fafb;
 }
 
-/* booked */
+/* upcoming (includes legacy: booked, pending, confirmed) */
+.appt-status-select--upcoming,
 .appt-status-select--booked,
-.appt-status-select--pending {
-  background: #fef9c3;
-  border-color: #facc15;
-  color: #92400e;
-}
-
-/* confirmed */
+.appt-status-select--pending,
 .appt-status-select--confirmed {
-  background: #dcfce7;
-  border-color: #22c55e;
-  color: #166534;
+  background: #e8f4f8;
+  border-color: #7ab8d4;
+  color: #3d7a94;
 }
 
 /* completed */
 .appt-status-select--completed {
-  background: #dbeafe;
-  border-color: #3b82f6;
-  color: #1d4ed8;
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #166534;
 }
 
 /* cancelled */
@@ -478,8 +477,8 @@
 .modal-field textarea:focus,
 .modal-field select:focus {
   outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  border-color: #7ab8d4;
+  box-shadow: 0 0 0 3px rgba(122, 184, 212, 0.2);
 }
 
 .modal-field textarea {
@@ -511,16 +510,16 @@
 }
 
 .modal-btn--primary {
-  background: #0ea5e9;
+  background: #7ab8d4;
   color: #ffffff;
 }
 
 .modal-btn--primary:hover {
-  background: #0284c7;
+  background: #5a9bb8;
 }
 
 .modal-btn--primary:disabled {
-  background: #93c5fd;
+  background: #bcdff1;
   cursor: not-allowed;
 }
 

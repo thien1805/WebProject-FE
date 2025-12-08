@@ -1,31 +1,113 @@
 // src/pages/Doctor-dashboard/hooks/useDoctorDashboard.js
+import { useState, useEffect } from "react";
+import { useAuth } from "../../../context/AuthContext";
+import { getMyAppointments } from "../../../api/appointmentAPI";
+
 export function useDoctorDashboard() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  const [error, setError] = useState(null);
+
+  // Fetch real appointments from API
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        setLoading(true);
+        const data = await getMyAppointments({});
+        // Handle both array and paginated response
+        const list = Array.isArray(data) ? data : data.results || [];
+        setAppointments(list);
+      } catch (err) {
+        console.error("Error fetching appointments:", err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  // Greeting with real doctor name
+  const doctorName = user?.full_name || user?.name || "Doctor";
   const greeting = {
-    name: "Zaid",
+    name: doctorName,
     subText: "Have a nice day and don't forget to take care of your health!",
     quote: "Good things take time.",
   };
 
-  // Demo appointment history (replace with real API data when available)
-  const demoAppointments = [
-    { id: 1, patient: "Nguyen Van A", status: "completed", date: "2025-01-10" },
-    { id: 2, patient: "Tran Thi B", status: "completed", date: "2025-01-21" },
-    { id: 3, patient: "Le Minh C", status: "completed", date: "2025-02-05" },
-    { id: 4, patient: "Pham D", status: "completed", date: "2025-02-18" },
-    { id: 5, patient: "Hoang E", status: "completed", date: "2025-03-02" },
-    { id: 6, patient: "Dang F", status: "completed", date: "2025-03-25" },
-    { id: 7, patient: "Vu G", status: "completed", date: "2025-04-12" },
-    { id: 8, patient: "Vo H", status: "completed", date: "2025-04-20" },
-    { id: 9, patient: "Phan I", status: "completed", date: "2025-05-08" },
-    { id: 10, patient: "Do J", status: "completed", date: "2025-05-22" },
-    { id: 11, patient: "Mai K", status: "completed", date: "2025-06-03" },
-    { id: 12, patient: "Bui L", status: "completed", date: "2025-06-19" },
-    { id: 13, patient: "Ngo M", status: "completed", date: "2025-07-07" },
-    { id: 14, patient: "La N", status: "completed", date: "2025-07-25" },
+  // Calculate stats from real data
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  // Today's appointments
+  const today = now.toISOString().split("T")[0];
+  const todayAppointments = appointments.filter(
+    (apt) => apt.appointment_date === today
+  );
+
+  // This month's appointments
+  const thisMonthAppointments = appointments.filter((apt) => {
+    const aptDate = new Date(apt.appointment_date);
+    return (
+      aptDate.getFullYear() === currentYear &&
+      aptDate.getMonth() === currentMonth
+    );
+  });
+
+  // Upcoming appointments (status = upcoming)
+  const upcomingAppointments = appointments.filter(
+    (apt) => apt.status === "upcoming"
+  );
+
+  // Completed appointments
+  const completedAppointments = appointments.filter(
+    (apt) => apt.status === "completed"
+  );
+
+  // Unique patients
+  const uniquePatientIds = new Set(
+    appointments.map((apt) => apt.patient?.id).filter(Boolean)
+  );
+
+  const formatNumber = (n) =>
+    Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
+
+  const stats = [
+    {
+      id: "today",
+      label: "Today's Appointments",
+      value: formatNumber(todayAppointments.length),
+      icon: "📅",
+      color: "#3b82f6",
+    },
+    {
+      id: "upcoming",
+      label: "Upcoming",
+      value: formatNumber(upcomingAppointments.length),
+      icon: "⏰",
+      color: "#f59e0b",
+    },
+    {
+      id: "completed",
+      label: "Completed",
+      value: formatNumber(completedAppointments.length),
+      icon: "✅",
+      color: "#10b981",
+    },
+    {
+      id: "patients",
+      label: "Total Patients",
+      value: formatNumber(uniquePatientIds.size),
+      icon: "👥",
+      color: "#8b5cf6",
+    },
   ];
 
-  const buildMonthlyActivity = (appointments, months = 6) => {
-    const now = new Date();
+  // Build activity chart from last 6 months
+  const buildMonthlyActivity = (appts, months = 6) => {
     const buckets = [];
 
     for (let offset = months - 1; offset >= 0; offset -= 1) {
@@ -33,9 +115,8 @@ export function useDoctorDashboard() {
       const month = monthDate.getMonth();
       const year = monthDate.getFullYear();
 
-      const count = appointments.filter((appt) => {
-        if (appt.status !== "completed") return false;
-        const d = new Date(appt.date);
+      const count = appts.filter((appt) => {
+        const d = new Date(appt.appointment_date);
         return (
           !Number.isNaN(d.getTime()) &&
           d.getFullYear() === year &&
@@ -52,8 +133,8 @@ export function useDoctorDashboard() {
     const maxValue = Math.max(...buckets.map((b) => b.count), 1);
     const points = buckets.map((bucket, idx) => {
       const x = buckets.length > 1 ? (idx / (buckets.length - 1)) * 100 : 0;
-      const baseline = 35; // axis y position (matches DashboardActivity viewBox)
-      const amplitude = 25; // how high the line can go above baseline
+      const baseline = 35;
+      const amplitude = 25;
       const normalizedY = baseline - (bucket.count / maxValue) * amplitude;
       return { x: Number(x.toFixed(2)), y: Number(normalizedY.toFixed(2)) };
     });
@@ -61,88 +142,10 @@ export function useDoctorDashboard() {
     return { points, labels: buckets.map((b) => b.label), buckets };
   };
 
-  const activityData = buildMonthlyActivity(demoAppointments, 6);
+  const activityData = buildMonthlyActivity(appointments, 6);
   const activity = { points: activityData.points, labels: activityData.labels };
 
-  const formatNumber = (n) =>
-    Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
-
-  const countLastNDays = (appointments, days) => {
-    const now = new Date();
-    const cutoff = new Date(now);
-    cutoff.setDate(now.getDate() - days);
-    return appointments.filter((appt) => {
-      const d = new Date(appt.date);
-      return (
-        !Number.isNaN(d.getTime()) &&
-        d >= cutoff &&
-        d <= now &&
-        appt.status === "completed"
-      );
-    }).length;
-  };
-
-  const uniquePatients = Array.from(
-    new Set(demoAppointments.map((a) => a.patient))
-  ).length;
-  const monthBuckets = buildMonthlyActivity(demoAppointments, 2).buckets;
-  const completedThisMonth =
-    monthBuckets.length > 0 ? monthBuckets[monthBuckets.length - 1].count : 0;
-  const completedLastMonth =
-    monthBuckets.length > 1 ? monthBuckets[monthBuckets.length - 2].count : 0;
-  const monthTrendDelta =
-    completedLastMonth === 0
-      ? 100
-      : ((completedThisMonth - completedLastMonth) / completedLastMonth) * 100;
-
-  const currentMonthLabel = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
-  const stats = [
-    {
-      id: "appointments",
-      label: `Appointments in ${currentMonthLabel}`,
-      value: formatNumber(completedThisMonth),
-      trend: null,
-      trendDirection: null,
-      trendText: null,
-    },
-  ];
-
-  const transactions = [
-    {
-      id: 1,
-      type: "card",
-      title: "Deposit from my Card",
-      date: "28 January 2021",
-      amount: "-$850",
-      positive: false,
-    },
-    {
-      id: 2,
-      type: "paypal",
-      title: "Mohamed Amir",
-      date: "25 January 2025",
-      amount: "+$2,500",
-      positive: true,
-    },
-    {
-      id: 3,
-      type: "user",
-      title: "Hussein Alnashat",
-      date: "21 January 2025",
-      amount: "+$5,400",
-      positive: true,
-    },
-  ];
-
-  // Calendar: dynamic based on real date + demo appointments
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth(); // 0-11
-
+  // Calendar data
   const monthLabel = now.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
@@ -150,23 +153,9 @@ export function useDoctorDashboard() {
 
   const activeDay = now.getDate();
 
-  const demoCalendarAppointments = [
-    {
-      id: 1,
-      date: `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-05`,
-    },
-    {
-      id: 2,
-      date: `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-12`,
-    },
-    {
-      id: 3,
-      date: `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-24`,
-    },
-  ];
-
-  const dotDays = demoCalendarAppointments
-    .map((a) => new Date(a.date))
+  // Get days that have appointments this month
+  const dotDays = appointments
+    .map((a) => new Date(a.appointment_date))
     .filter(
       (d) =>
         !Number.isNaN(d.getTime()) &&
@@ -176,7 +165,7 @@ export function useDoctorDashboard() {
     .map((d) => d.getDate());
 
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-  const firstWeekday = firstDayOfMonth.getDay(); // 0 = Sun
+  const firstWeekday = firstDayOfMonth.getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   const days = [];
@@ -193,21 +182,48 @@ export function useDoctorDashboard() {
   const calendar = {
     monthLabel,
     activeDay,
-    dotDays,
+    dotDays: [...new Set(dotDays)],
     days,
   };
 
-  const upcoming = {
-    name: "Ahmed Tamer Fawzy",
-    dateText: "8 August, 2025 - 04:00 PM",
-  };
+  // Next upcoming appointment
+  const sortedUpcoming = [...upcomingAppointments].sort((a, b) => {
+    const dateA = new Date(`${a.appointment_date}T${a.appointment_time}`);
+    const dateB = new Date(`${b.appointment_date}T${b.appointment_time}`);
+    return dateA - dateB;
+  });
+
+  const nextAppointment = sortedUpcoming[0];
+  const upcoming = nextAppointment
+    ? {
+        name: nextAppointment.patient?.full_name || "Unknown Patient",
+        dateText: `${new Date(nextAppointment.appointment_date).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })} - ${nextAppointment.appointment_time?.slice(0, 5) || "N/A"}`,
+        symptoms: nextAppointment.symptoms,
+      }
+    : null;
+
+  // Today's appointment list for dashboard
+  const todayList = todayAppointments.map((apt) => ({
+    id: apt.id,
+    patientName: apt.patient?.full_name || "Unknown",
+    time: apt.appointment_time?.slice(0, 5) || "N/A",
+    status: apt.status,
+    symptoms: apt.symptoms,
+  }));
 
   return {
+    loading,
+    error,
     greeting,
     stats,
     activity,
-    transactions,
     calendar,
     upcoming,
+    todayList,
+    appointments,
   };
 }
