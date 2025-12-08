@@ -100,12 +100,12 @@ export default function AppointmentItem({ appt, recordId, onCancel, isCancelling
 
         <div className="pd-appointment-info">
           <div className="pd-appointment-meta">
-            <span className="pd-appointment-label">Ngày:</span>
+            <span className="pd-appointment-label">{t("patient.date")}:</span>
             <span className="pd-appointment-value">{formatDate(appt.date)}</span>
           </div>
           {!isHistory && (
             <div className="pd-appointment-meta">
-              <span className="pd-appointment-label">Giờ:</span>
+              <span className="pd-appointment-label">{t("patient.time")}:</span>
               <span className="pd-appointment-value">{formatTime(appt.time)}</span>
             </div>
           )}

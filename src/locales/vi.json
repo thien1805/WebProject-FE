@@ -147,7 +147,19 @@
     "consultationFee": "Phí khám",
     "total": "Tổng cộng",
     "securePayment": "Thanh toán an toàn & bảo mật",
-    "confirmPayment": "Xác nhận thanh toán"
+    "confirmPayment": "Xác nhận thanh toán",
+    "serviceFee": "Phí dịch vụ",
+    "examinationFee": "Phí khám bệnh",
+    "status": "Trạng thái thanh toán",
+    "paid": "Đã thanh toán",
+    "pending": "Chờ thanh toán",
+    "free": "Miễn phí",
+    "payNow": "Thanh toán ngay",
+    "completePayment": "Hoàn tất thanh toán",
+    "paymentFor": "Thanh toán cho dịch vụ y tế",
+    "selectMethod": "Chọn phương thức thanh toán",
+    "paymentSuccess": "Thanh toán thành công!",
+    "paymentFailed": "Thanh toán thất bại. Vui lòng thử lại."
   },
   "calendar": {
     "january": "Tháng 1",
@@ -250,6 +262,9 @@
     "welcomePortal": "Chào mừng đến với cổng bệnh nhân MyHealthCare.",
     "bookNewAppointment": "Đặt lịch hẹn mới",
     "myAppointments": "Lịch hẹn của tôi",
+    "viewPastVisits": "Xem các lần khám bệnh và hồ sơ y tế của bạn",
+    "noCompletedVisits": "Chưa có lần khám nào hoàn thành",
+    "selectAppointmentToView": "Chọn một lịch hẹn để xem chi tiết",
     "medicalRecords": "Hồ sơ bệnh án",
     "upcomingAppointments": "Lịch hẹn sắp tới",
     "upcomingSubtitle": "Các cuộc hẹn khám sắp tới của bạn",
@@ -474,5 +489,23 @@
     "feature4Desc": "Xem và quản lý thông tin sức khỏe của bạn tại một nơi an toàn. Sau khi đăng nhập, bạn có thể xem lịch sử khám, đơn thuốc, kết quả xét nghiệm và lịch hẹn sắp tới thông qua bảng điều khiển trực quan, đơn giản.",
     "commitmentTitle": "Cam kết của chúng tôi",
     "commitmentText": "Bệnh viện UIT và nền tảng \"MyHealthCare\" liên tục nỗ lực cải thiện chất lượng dịch vụ. Chúng tôi mong muốn trở thành đối tác đáng tin cậy của bạn trong hành trình chăm sóc và bảo vệ sức khỏe của bạn và gia đình."
+  },
+  "chatbot": {
+    "title": "Trợ lý Y tế AI",
+    "online": "Đang hoạt động",
+    "welcomeMessage": "Xin chào! Tôi là trợ lý y tế AI của MyHealthCare. Tôi có thể giúp bạn với các câu hỏi về sức khỏe, triệu chứng, hoặc hướng dẫn đặt lịch khám. Bạn cần giúp gì?",
+    "placeholder": "Nhập câu hỏi của bạn...",
+    "typing": "Đang trả lời...",
+    "errorMessage": "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    "disclaimer": "⚠️ Thông tin chỉ mang tính tham khảo, không thay thế khám bác sĩ"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "noNotifications": "Chưa có thông báo nào",
+    "appointmentReminder": "Nhắc nhở lịch hẹn",
+    "bookingConfirmed": "Đặt lịch thành công",
+    "appointmentCancelled": "Lịch hẹn đã hủy",
+    "newMedicalRecord": "Hồ sơ bệnh án mới"
   }
 }

@@ -147,7 +147,19 @@
     "consultationFee": "Consultation Fee",
     "total": "Total",
     "securePayment": "Secure & Safe Payment",
-    "confirmPayment": "Confirm Payment"
+    "confirmPayment": "Confirm Payment",
+    "serviceFee": "Service Fee",
+    "examinationFee": "Examination Fee",
+    "status": "Payment Status",
+    "paid": "Paid",
+    "pending": "Pending Payment",
+    "free": "Free",
+    "payNow": "Pay Now",
+    "completePayment": "Complete Payment",
+    "paymentFor": "Payment for medical service",
+    "selectMethod": "Select payment method",
+    "paymentSuccess": "Payment completed successfully!",
+    "paymentFailed": "Payment failed. Please try again."
   },
   "calendar": {
     "january": "January",
@@ -273,6 +285,8 @@
     "appointmentDetails": "Appointment Details",
     "date": "Date",
     "time": "Time",
+    "dateLabel": "DATE",
+    "timeLabel": "TIME",
     "doctor": "Doctor",
     "specialty": "Specialty",
     "status": "Status",
@@ -304,6 +318,9 @@
     "error": "Error loading data",
     "retry": "Retry",
     "myAppointments": "My Appointments",
+    "viewPastVisits": "View your past medical visits and records",
+    "noCompletedVisits": "No completed visits yet",
+    "selectAppointmentToView": "Select an appointment to view details",
     "upcomingAppointments": "Upcoming Appointments",
     "upcomingSubtitle": "Your upcoming appointments",
     "appointmentHistory": "Appointment History",
@@ -475,5 +492,23 @@
     "feature4Desc": "View and manage your health information in one secure place. After logging in, you can review your visit history, prescriptions, test results, and upcoming appointments through a simple, visual dashboard.",
     "commitmentTitle": "Our Commitment",
     "commitmentText": "UIT Hospital and the \"MyHealthCare\" platform are continually striving to improve our quality of service. We aim to be your trusted partner on the journey to caring for and protecting the health of you and your family."
+  },
+  "chatbot": {
+    "title": "AI Health Assistant",
+    "online": "Online",
+    "welcomeMessage": "Hello! I'm the AI health assistant of MyHealthCare. I can help you with health questions, symptoms, or guide you to book an appointment. How can I help you?",
+    "placeholder": "Type your question...",
+    "typing": "Typing...",
+    "errorMessage": "Sorry, an error occurred. Please try again later.",
+    "disclaimer": "⚠️ This information is for reference only, not a substitute for medical consultation"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications yet",
+    "appointmentReminder": "Appointment Reminder",
+    "bookingConfirmed": "Booking Confirmed",
+    "appointmentCancelled": "Appointment Cancelled",
+    "newMedicalRecord": "New Medical Record"
   }
 }

@@ -7,37 +7,15 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../hooks/useToast";
 import { useTranslation } from "../hooks/useTranslation";
 import LanguageSwitcher from "./LanguageSwitcher/LanguageSwitcher";
+import { getPatientNotifications, markAllNotificationsRead } from "../api/notificationAPI";
 import "./Header.css";
-
-// ⚠️ TODO: Khi bạn tạo API thật, bỏ comment dòng dưới và tạo file:
-// src/api/notificationAPI.js
-// với các hàm: getPatientNotifications, markAllNotificationsRead
-// import { getPatientNotifications, markAllNotificationsRead } from "../api/notificationAPI";
-
-// 🔔 Demo notifications – tạm dùng cho tới khi nối API
-const DUMMY_NOTIFICATIONS = [
-  {
-    id: "booking-1",
-    title: "Booking confirmed",
-    message: "Your appointment has been booked successfully.",
-    unread: true,
-    time: "Today",
-  },
-  {
-    id: "reminder-1",
-    title: "Appointment reminder",
-    message: "You have an appointment tomorrow at 09:00.",
-    unread: true,
-    time: "1 day before",
-  },
-];
 
 const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
 
-  // 🔔 State cho notifications (sau này sẽ nhận data từ API)
+  // 🔔 State cho notifications
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifError, setNotifError] = useState(null);
@@ -90,7 +68,7 @@ const Header = () => {
     }
   };
 
-  // ================== 🔔 Notifications: CHỖ GỌI API ==================
+  // ================== 🔔 Notifications: Fetch from API ==================
   useEffect(() => {
     if (!isAuth || !isPatient) {
       setNotifications([]);
@@ -104,33 +82,20 @@ const Header = () => {
         setNotifLoading(true);
         setNotifError(null);
 
-        // ⚠️ TODO: Sau này dùng API thật:
-        //
-        // try {
-        //   const res = await getPatientNotifications();
-        //   // Gợi ý structure:
-        //   //  - Nếu backend trả dạng { results: [...] }:
-        //   //      const data = res.results;
-        //   //  - Nếu trả luôn array:
-        //   //      const data = res;
-        //   const data = res?.results || res || [];
-        //   if (!cancelled) {
-        //     setNotifications(data);
-        //   }
-        // } catch (apiErr) {
-        //   ...
-        // }
-        //
-        // TẠM THỜI: dùng data demo cho khỏi lỗi
-        const data = DUMMY_NOTIFICATIONS;
-
+        const response = await getPatientNotifications();
+        
         if (!cancelled) {
-          setNotifications(data);
+          if (response.error) {
+            setNotifError(response.error);
+            setNotifications([]);
+          } else {
+            setNotifications(response.results || []);
+          }
         }
       } catch (err) {
         if (!cancelled) {
           console.error("Load notifications error:", err);
-          setNotifError("Failed to load notifications.");
+          setNotifError(t("notifications.loadError") || "Failed to load notifications");
         }
       } finally {
         if (!cancelled) {
@@ -140,10 +105,15 @@ const Header = () => {
     };
 
     fetchNotifications();
+    
+    // Refresh notifications every 5 minutes
+    const interval = setInterval(fetchNotifications, 5 * 60 * 1000);
+    
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
-  }, [isAuth, isPatient]);
+  }, [isAuth, isPatient, t]);
   // =====================================================
 
   const unreadCount = notifications.filter((n) => n.unread).length;
@@ -152,13 +122,12 @@ const Header = () => {
     // Cập nhật UI ngay
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
 
-    // ⚠️ TODO: Khi có API thật, gọi thêm để sync backend:
-    //
-    // try {
-    //   await markAllNotificationsRead();
-    // } catch (err) {
-    //   console.error("Mark all notifications read error:", err);
-    // }
+    // Gọi API để sync backend
+    try {
+      await markAllNotificationsRead();
+    } catch (err) {
+      console.error("Mark all notifications read error:", err);
+    }
   };
 
   const handleToggleNotif = () => {
@@ -244,14 +213,14 @@ const Header = () => {
                     {notifOpen && (
                       <div className="notif-dropdown">
                         <div className="notif-header">
-                          <span>{t('header.notifications')}</span>
-                          {!notifLoading && notifications.length > 0 && (
+                          <span>{t('notifications.title') || t('header.notifications')}</span>
+                          {!notifLoading && notifications.length > 0 && unreadCount > 0 && (
                             <button
                               type="button"
                               className="notif-clear"
                               onClick={handleMarkAllRead}
                             >
-                              {t('common.all')}
+                              {t('notifications.markAllRead') || 'Mark all read'}
                             </button>
                           )}
                         </div>
@@ -270,7 +239,7 @@ const Header = () => {
                           !notifError &&
                           notifications.length === 0 && (
                             <div className="notif-empty">
-                              No notifications yet.
+                              {t('notifications.noNotifications') || 'No notifications yet'}
                             </div>
                           )}
 

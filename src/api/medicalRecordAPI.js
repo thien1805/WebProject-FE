@@ -62,3 +62,22 @@ export const createMedicalRecord = async (appointmentId, data) => {
     throw error.response?.data || error.message;
   }
 };
+
+/**
+ * Pay for medical record services
+ * POST /api/v1/appointments/{id}/pay/
+ * 
+ * @param {number} appointmentId - The appointment ID
+ * @param {string} paymentMethod - Payment method: 'card', 'ewallet', 'bank_transfer', 'cash'
+ */
+export const payMedicalRecord = async (appointmentId, paymentMethod) => {
+  try {
+    const res = await apiClient.post(
+      `${API_PREFIX}/appointments/${appointmentId}/pay/`,
+      { payment_method: paymentMethod }
+    );
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

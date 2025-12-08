@@ -8,6 +8,9 @@ import "./App.css";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DoctorRoute from "./components/DoctorRoute";
 
+// ==== GLOBAL COMPONENTS ====
+import AIChatbot from "./components/AIChatbot/AIChatbot";
+
 // ==== PUBLIC PAGES ====
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
@@ -88,6 +91,14 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/patient/medical-record/:recordId"
+          element={
+            <ProtectedRoute>
+              <PatientMedicalRecordDetailPage />
+            </ProtectedRoute>
+          }
+        />
         {/* ===== PROTECTED: DOCTOR SIDE ===== */}
         <Route
           path="/doctor/dashboard"
@@ -138,6 +149,9 @@ const App = () => {
           }
         />
       </Routes>
+      
+      {/* AI Chatbot - Global floating component */}
+      <AIChatbot />
     </Router>
   );
 };

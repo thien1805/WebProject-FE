@@ -220,8 +220,11 @@ export default function PatientDashboard() {
         )}
 
         {activeTab === "records" && <MedicalRecordList 
-        records={records}
-        appointments={appointments} />}
+          records={records}
+          appointments={appointments}
+          toast={toast}
+          onRefresh={refreshAppointments}
+        />}
 
         {activeTab === "profile" && (
           <PatientProfileCard />

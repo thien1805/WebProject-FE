@@ -21,13 +21,27 @@ export default function AppointmentList({
   const [sortOrder, setSortOrder] = useState("date-desc"); // default: newest first
   const { t } = useTranslation();
 
-  // Sort function
+  // Sort function - handle both 'date'/'time' and 'appointment_date'/'appointment_time' field names
   const sortAppointments = (apps) => {
     if (!apps || apps.length === 0) return [];
     
     return [...apps].sort((a, b) => {
-      const dateA = new Date(`${a.appointment_date} ${a.appointment_time || "00:00"}`);
-      const dateB = new Date(`${b.appointment_date} ${b.appointment_time || "00:00"}`);
+      // Handle both field naming conventions
+      const dateStrA = a.appointment_date || a.date || "";
+      const timeStrA = a.appointment_time || a.time || "00:00";
+      const dateStrB = b.appointment_date || b.date || "";
+      const timeStrB = b.appointment_time || b.time || "00:00";
+      
+      // Parse time to ensure proper format (handle HH:MM:SS)
+      const timeA = timeStrA.slice(0, 5);
+      const timeB = timeStrB.slice(0, 5);
+      
+      const dateA = new Date(`${dateStrA}T${timeA}:00`);
+      const dateB = new Date(`${dateStrB}T${timeB}:00`);
+      
+      // Check for invalid dates
+      if (isNaN(dateA.getTime())) return 1;
+      if (isNaN(dateB.getTime())) return -1;
       
       switch (sortOrder) {
         case "date-asc":
