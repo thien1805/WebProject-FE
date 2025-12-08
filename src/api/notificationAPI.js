@@ -1,5 +1,23 @@
 // src/api/notificationAPI.js
 import apiClient, { API_PREFIX } from "./authAPI";
+import { LANGUAGES } from "../context/LanguageContext";
+import { getTranslation } from "../hooks/useTranslation";
+
+const getCurrentLanguage = () => {
+  const saved = localStorage.getItem("language");
+  return Object.values(LANGUAGES).includes(saved) ? saved : LANGUAGES.VI;
+};
+
+const formatFutureLabel = (days, lang) => {
+  if (days === 0) return lang === LANGUAGES.EN ? "Today" : "Hôm nay";
+  if (days === 1) return lang === LANGUAGES.EN ? "Tomorrow" : "Ngày mai";
+  return lang === LANGUAGES.EN ? `In ${days} days` : `Còn ${days} ngày`;
+};
+
+const formatPastLabel = (days, lang) => {
+  if (days === 0) return lang === LANGUAGES.EN ? "Today" : "Hôm nay";
+  return lang === LANGUAGES.EN ? `${days} days ago` : `${days} ngày trước`;
+};
 
 /**
  * Get all notifications for the current patient
@@ -21,6 +39,9 @@ export async function getPatientNotifications() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const lang = getCurrentLanguage();
+    const isEnglish = lang === LANGUAGES.EN;
+
     appointments.forEach((appt) => {
       const apptDate = new Date(appt.appointment_date);
       apptDate.setHours(0, 0, 0, 0);
@@ -28,20 +49,16 @@ export async function getPatientNotifications() {
       
       // Appointment reminder - upcoming within 3 days
       if (appt.status === "upcoming" && diffDays >= 0 && diffDays <= 3) {
-        let timeLabel = "";
-        if (diffDays === 0) {
-          timeLabel = "Hôm nay";
-        } else if (diffDays === 1) {
-          timeLabel = "Ngày mai";
-        } else {
-          timeLabel = `Còn ${diffDays} ngày`;
-        }
-
+        const timeLabel = formatFutureLabel(diffDays, lang);
         notifications.push({
           id: `reminder-${appt.id}`,
           type: "reminder",
-          title: "Nhắc nhở lịch hẹn",
-          message: `Bạn có lịch hẹn với ${appt.doctor_name || "bác sĩ"} lúc ${(appt.appointment_time || "").slice(0, 5)}`,
+          title:
+            getTranslation(lang, "notifications.appointmentReminder") ||
+            (isEnglish ? "Appointment Reminder" : "Nhắc nhở lịch hẹn"),
+          message: isEnglish
+            ? `You have an appointment with ${appt.doctor_name || "the doctor"} at ${(appt.appointment_time || "").slice(0, 5)}`
+            : `Bạn có lịch hẹn với ${appt.doctor_name || "bác sĩ"} lúc ${(appt.appointment_time || "").slice(0, 5)}`,
           time: timeLabel,
           unread: diffDays <= 1, // Mark as unread if today or tomorrow
           appointmentId: appt.id,
@@ -56,9 +73,11 @@ export async function getPatientNotifications() {
           notifications.push({
             id: `completed-${appt.id}`,
             type: "completed",
-            title: "Khám hoàn thành",
-            message: `Lịch khám với ${appt.doctor_name || "bác sĩ"} đã hoàn thành`,
-            time: completedDaysAgo === 0 ? "Hôm nay" : `${completedDaysAgo} ngày trước`,
+            title: isEnglish ? "Appointment Completed" : "Khám hoàn thành",
+            message: isEnglish
+              ? `Appointment with ${appt.doctor_name || "the doctor"} is completed`
+              : `Lịch khám với ${appt.doctor_name || "bác sĩ"} đã hoàn thành`,
+            time: formatPastLabel(completedDaysAgo, lang),
             unread: completedDaysAgo === 0,
             appointmentId: appt.id,
             date: appt.appointment_date,
@@ -73,9 +92,13 @@ export async function getPatientNotifications() {
           notifications.push({
             id: `cancelled-${appt.id}`,
             type: "cancelled",
-            title: "Lịch hẹn đã hủy",
-            message: `Lịch hẹn với ${appt.doctor_name || "bác sĩ"} đã bị hủy`,
-            time: cancelledDaysAgo === 0 ? "Hôm nay" : `${cancelledDaysAgo} ngày trước`,
+            title:
+              getTranslation(lang, "notifications.appointmentCancelled") ||
+              (isEnglish ? "Appointment Cancelled" : "Lịch hẹn đã hủy"),
+            message: isEnglish
+              ? `Your appointment with ${appt.doctor_name || "the doctor"} was cancelled`
+              : `Lịch hẹn với ${appt.doctor_name || "bác sĩ"} đã bị hủy`,
+            time: formatPastLabel(cancelledDaysAgo, lang),
             unread: cancelledDaysAgo === 0,
             appointmentId: appt.id,
             date: appt.appointment_date,

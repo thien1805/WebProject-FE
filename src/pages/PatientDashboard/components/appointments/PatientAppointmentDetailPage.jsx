@@ -265,14 +265,14 @@ export default function PatientAppointmentDetailPage() {
               <div className="pd-detail-actions">
                 <button
                   type="button"
-                  className="pd-action-btn pd-action-btn--reschedule"
+                  className="pd-btn pd-btn--primary pd-detail-action"
                   onClick={() => setShowRescheduleModal(true)}
                 >
                   {t("patient.reschedule") || "Dời lịch hẹn"}
                 </button>
                 <button
                   type="button"
-                  className="pd-action-btn pd-action-btn--cancel"
+                  className="pd-btn pd-btn--danger pd-detail-action"
                   onClick={() => setShowCancelModal(true)}
                 >
                   {t("patient.cancelAppointment") || "Hủy lịch hẹn"}
