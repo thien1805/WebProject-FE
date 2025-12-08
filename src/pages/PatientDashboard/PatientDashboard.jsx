@@ -185,12 +185,7 @@ export default function PatientDashboard() {
           </div>
         </section>
 
-        {/* nếu đang dùng dữ liệu demo vì API lỗi: */}
-        {error && (
-          <div className="pd-card pd-empty-tab" style={{ marginTop: 0 }}>
-            {error}
-          </div>
-        )}
+        {/* Note: error messages intentionally hidden in UI; developer logs preserved */}
 
         {/* STATS */}
         <DashboardStats stats={stats} />
@@ -224,7 +219,7 @@ export default function PatientDashboard() {
         appointments={appointments} />}
 
         {activeTab === "profile" && (
-          <PatientProfileCard />
+          <PatientProfileCard user={user} />
         )}
       </main>
 

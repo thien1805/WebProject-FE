@@ -50,14 +50,11 @@ export default function MedicalRecordList({
 
   return (
     <div className="pd-card">
-      <h3 className="pd-section-title">{t("patient.myAppointments")}</h3>
-      <p className="pd-section-subtitle">
-        {t("patient.viewPastVisits")}
-      </p>
+      <h3 className="pd-section-title">My medical records</h3>
 
       {historyAppointments.length === 0 ? (
         <div className="pd-empty-tab">
-          {t("patient.noCompletedVisits")}
+          You don't have any records.
         </div>
       ) : (
         <div className="pd-history-layout">

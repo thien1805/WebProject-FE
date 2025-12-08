@@ -17,3 +17,14 @@ body {
   padding: 0;
   width: 100%;
 }
+
+/* Global font settings: prefer Vietnamese-capable "Be Vietnam Pro" then fallbacks */
+:root {
+  --font-vietnam: 'Be Vietnam Pro', Inter, 'Nunito Sans', Manrope, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-vietnam);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

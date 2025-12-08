@@ -189,6 +189,20 @@ const Header = () => {
               {t('common.medicalServices')}
             </Link>
 
+            {/* Patient Dashboard - chỉ hiển thị khi đã login và là patient */}
+            {isAuth && isPatient && (
+              <button
+                type="button"
+                className="nav-link"
+                onClick={() => {
+                  navigate("/patient/dashboard");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                Patient dashboard
+              </button>
+            )}
+
             {/* Booking */}
             <Link
               to={

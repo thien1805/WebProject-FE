@@ -62,3 +62,28 @@ export const createMedicalRecord = async (appointmentId, data) => {
     throw error.response?.data || error.message;
   }
 };
+
+// Cập nhật medical record đã tồn tại (doctor chỉnh sửa)
+export const updateMedicalRecord = async (id, payload) => {
+  if (!id) throw new Error("Record id is required");
+  try {
+    const res = await apiClient.put(
+      `${API_PREFIX}/medical-records/${id}/`,
+      payload
+    );
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+// Xóa medical record (nếu cần)
+export const deleteMedicalRecord = async (id) => {
+  if (!id) throw new Error("Record id is required");
+  try {
+    const res = await apiClient.delete(`${API_PREFIX}/medical-records/${id}/`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

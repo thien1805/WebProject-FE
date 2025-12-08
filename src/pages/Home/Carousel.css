@@ -68,11 +68,12 @@
 }
 
 .slide-title {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1.15;
   margin: 0;
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.3);
+  /* No text shadow */
+  text-shadow: none;
   width: 100%;
   color: #ffffff;
   letter-spacing: -0.02em;
@@ -82,7 +83,7 @@
 
 @media (min-width: 768px) {
   .slide-title {
-    font-size: 3.25rem;
+    font-size: 2.75rem;
     line-height: 1.1;
     letter-spacing: -0.03em;
   }
@@ -90,18 +91,19 @@
 
 @media (min-width: 1024px) {
   .slide-title {
-    font-size: 4rem;
+    font-size: 3.5rem;
     line-height: 1.08;
   }
 }
 
 .slide-subtitle {
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.7;
   margin: 0;
   width: 100%;
   color: #ffffff;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.3);
+  /* No text shadow */
+  text-shadow: none;
   max-width: 55rem;
   margin: 0 auto;
   font-weight: 400;
@@ -111,7 +113,7 @@
 
 @media (min-width: 768px) {
   .slide-subtitle {
-    font-size: 1.125rem;
+    font-size: 1rem;
     line-height: 1.75;
     max-width: 60rem;
   }
@@ -119,7 +121,7 @@
 
 @media (min-width: 1024px) {
   .slide-subtitle {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     line-height: 1.8;
     max-width: 65rem;
   }
@@ -140,7 +142,7 @@
   background-color: #BCDFF1;
   color: #1f2937;
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1rem;
   text-decoration: none;
   border-radius: 2rem;
   transition: all 0.3s ease;
